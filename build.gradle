@@ -1,5 +1,15 @@
 apply plugin: 'com.android.library'
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.3.0'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+}
+
 android {
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
@@ -29,7 +39,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:support-v4:22.0.0'
     compile 'com.google.code.gson:gson:2.3.1'
-    compile project(':external:android-spinnerwheel')
     compile project(':radiomodel-androidlib')
     compile project(':player-androidlib')
     compile project(':androidtoolbox-androidlib')
