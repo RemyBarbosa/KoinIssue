@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Alarm tags -->
+    <string name="xiti_alarm_clock">Reveil</string>
+    <string name="xiti_stations">Stations</string>
+    <string name="xiti_status">Statut</string>
+    <string name="xiti_hour">Heure</string>
+    <string name="xiti_change_hour">Modifier_l_heure</string>
+    <string name="xiti_wake_up">Debout</string>
+    <string name="xiti_repeat">Repeat</string>
+    <string name="xiti_stop">Stop</string>
+
+    <string name="xiti_configuration">Configuration</string>
+    <string name="xiti_clock_snooze">Repeter</string>
+    <string name="xiti_clock_screen">Accueil_Reveil</string>
+    <string name="xiti_hour_changing">Programmation_horaire</string>
+
+
+</resources>

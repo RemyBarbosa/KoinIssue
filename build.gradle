@@ -1,0 +1,36 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
+
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    repositories {
+        jcenter()
+    }
+    maven{ url "https://repo.commonsware.com.s3.amazonaws.com"}
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:22.0.0'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile project(':external:android-spinnerwheel')
+    compile project(':radiomodel-androidlib')
+    compile project(':player-androidlib')
+    compile project(':androidtoolbox-androidlib')
+}
