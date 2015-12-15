@@ -37,7 +37,6 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:22.0.0'
     compile 'com.google.code.gson:gson:2.3.1'
     compile project(':radiomodel-androidlib')
     compile project(':player-androidlib')
