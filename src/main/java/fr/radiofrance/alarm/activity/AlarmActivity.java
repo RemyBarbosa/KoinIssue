@@ -10,7 +10,6 @@ import android.graphics.drawable.GradientDrawable.Orientation;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.text.format.Time;
 
 import com.google.gson.Gson;
 
@@ -22,7 +21,6 @@ import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.fragment.AlarmSettingFragment;
 import fr.radiofrance.alarm.fragment.AlarmWakeUpFragment;
 import fr.radiofrance.androidtoolbox.analytics.AtInternetHelper;
-import fr.radiofrance.androidtoolbox.analytics.Xiti;
 import fr.radiofrance.androidtoolbox.constant.Constants;
 import fr.radiofrance.androidtoolbox.io.PrefsTools;
 import fr.radiofrance.androidtoolbox.log.DebugLog;
@@ -59,7 +57,7 @@ public class AlarmActivity extends FragmentActivity {
         }
 
         if (station != null){
-            AtInternetHelper.sendScreenTag(Xiti.formatLabel(station.getTitle()),
+            AtInternetHelper.sendScreenTag(AtInternetHelper.formatLabel(station.getTitle()),
                     getString(R.string.xiti_configuration),
                     getString(R.string.xiti_alarm_clock),
                     getString(R.string.xiti_clock_screen)
