@@ -5,3 +5,5 @@ include ':radiomodel-androidlib'
 project(':radiomodel-androidlib').projectDir = new File('../radiomodel-androidlib')
 include ':player-androidlib'
 project(':player-androidlib').projectDir = new File('../player-androidlib')
+include ':analytics-androidlib'
+project(':analytics-androidlib').projectDir = new File('../analytics-androidlib/library')

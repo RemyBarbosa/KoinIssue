@@ -24,11 +24,11 @@ import antistatic.spinnerwheel.adapters.NumericWheelAdapter;
 import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.activity.AlarmActivity;
 import fr.radiofrance.alarm.receiver.AlarmReceiver;
-import fr.radiofrance.androidtoolbox.analytics.AtInternetHelper;
 import fr.radiofrance.androidtoolbox.constant.Constants;
 import fr.radiofrance.androidtoolbox.io.PrefsTools;
 import fr.radiofrance.androidtoolbox.view.FontTextView;
 import fr.radiofrance.model.station.Station;
+import fr.radiofrance.analytics.*;
 
 public class AlarmSettingFragment extends Fragment {
 
@@ -97,7 +97,7 @@ public class AlarmSettingFragment extends Fragment {
 
                         if (station != null){
                             AtInternetHelper.sendGestureTag(AtInternetHelper.GESTURE_TOUCH,
-                                    AtInternetHelper.formatLabel(station.getTitle()),
+                                    Xiti.formatLabel(station.getTitle()),
                                     getString(R.string.xiti_alarm_clock),
                                     getString(R.string.xiti_status),
                                     getString(R.string.xiti_on)
@@ -108,7 +108,7 @@ public class AlarmSettingFragment extends Fragment {
                         break;
                     case EDIT_MODE:
                         AtInternetHelper.sendGestureTag(AtInternetHelper.GESTURE_TOUCH,
-                                AtInternetHelper.formatLabel(station.getTitle()),
+                                Xiti.formatLabel(station.getTitle()),
                                 getString(R.string.xiti_alarm_clock),
                                 getString(R.string.xiti_hour_changing)
                         );
@@ -124,7 +124,7 @@ public class AlarmSettingFragment extends Fragment {
 
                         if (station != null){
                             AtInternetHelper.sendGestureTag(AtInternetHelper.GESTURE_TOUCH,
-                                    AtInternetHelper.formatLabel(station.getTitle()),
+                                    Xiti.formatLabel(station.getTitle()),
                                     getString(R.string.xiti_alarm_clock),
                                     getString(R.string.xiti_status),
                                     getString(R.string.xiti_off)
@@ -171,7 +171,7 @@ public class AlarmSettingFragment extends Fragment {
 
                 if (station != null){
                     AtInternetHelper.sendGestureTag(AtInternetHelper.GESTURE_TOUCH,
-                            AtInternetHelper.formatLabel(station.getTitle()),
+                            Xiti.formatLabel(station.getTitle()),
                             getString(R.string.xiti_alarm_clock),
                             getString(R.string.xiti_hour_changing)
                     );

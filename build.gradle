@@ -41,4 +41,5 @@ dependencies {
     compile project(':radiomodel-androidlib')
     compile project(':player-androidlib')
     compile project(':androidtoolbox-androidlib')
+    compile project(':analytics-androidlib')
 }

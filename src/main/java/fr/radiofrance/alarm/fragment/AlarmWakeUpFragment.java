@@ -26,7 +26,8 @@ import java.util.Calendar;
 import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.activity.AlarmActivity;
 import fr.radiofrance.alarm.receiver.AlarmReceiver;
-import fr.radiofrance.androidtoolbox.analytics.AtInternetHelper;
+import fr.radiofrance.analytics.AtInternetHelper;
+import fr.radiofrance.analytics.Xiti;
 import fr.radiofrance.androidtoolbox.constant.Constants;
 import fr.radiofrance.androidtoolbox.io.PrefsTools;
 import fr.radiofrance.model.station.Station;
@@ -59,7 +60,7 @@ public class AlarmWakeUpFragment extends Fragment {
         }
 
         if (station != null){
-            AtInternetHelper.sendScreenTag(AtInternetHelper.formatLabel(station.getTitle()),
+            AtInternetHelper.sendScreenTag(Xiti.formatLabel(station.getTitle()),
                     getString(R.string.xiti_configuration),
                     getString(R.string.xiti_alarm_clock),
                     getString(R.string.xiti_wake_up)
@@ -80,7 +81,7 @@ public class AlarmWakeUpFragment extends Fragment {
 
                 if (station != null){
                     AtInternetHelper.sendGestureTag(AtInternetHelper.GESTURE_TOUCH,
-                            AtInternetHelper.formatLabel(station.getTitle()),
+                            Xiti.formatLabel(station.getTitle()),
                             getString(R.string.xiti_alarm_clock),
                             getString(R.string.xiti_wake_up),
                             getString(R.string.xiti_clock_snooze)
@@ -116,7 +117,7 @@ public class AlarmWakeUpFragment extends Fragment {
 
                 if (station != null){
                     AtInternetHelper.sendGestureTag(AtInternetHelper.GESTURE_TOUCH,
-                            AtInternetHelper.formatLabel(station.getTitle()),
+                            Xiti.formatLabel(station.getTitle()),
                             getString(R.string.xiti_alarm_clock),
                             getString(R.string.xiti_wake_up),
                             getString(R.string.xiti_stop)
@@ -176,7 +177,7 @@ public class AlarmWakeUpFragment extends Fragment {
 
         AtInternetHelper.sendScreenTag(
                 getString(R.string.xiti_alarm_clock), getString(R.string.xiti_wake_up),
-                AtInternetHelper.formatForTag(mRadio.getTitle()), time.get(Calendar.HOUR_OF_DAY) + "_" + time.get(Calendar.MINUTE));
+                Xiti.formatForTag(mRadio.getTitle()), time.get(Calendar.HOUR_OF_DAY) + "_" + time.get(Calendar.MINUTE));
     }
 
     public static void showProgressDialog(Activity activity) {
