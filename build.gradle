@@ -1,45 +1,23 @@
-apply plugin: 'com.android.library'
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.3.0'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+        classpath 'com.android.tools.build:gradle:2.1.0'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
     }
 }
 
-android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
-
-    defaultConfig {
-        minSdkVersion 17
-        targetSdkVersion 22
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-repositories {
+allprojects {
     repositories {
         jcenter()
     }
-    maven{ url "https://repo.commonsware.com.s3.amazonaws.com"}
 }
 
-dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.google.code.gson:gson:2.3.1'
-    compile project(':radiomodel-androidlib')
-    compile project(':player-androidlib')
-    compile project(':androidtoolbox-androidlib')
-    compile project(':analytics-androidlib')
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
