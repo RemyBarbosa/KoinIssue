@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 
@@ -30,7 +31,6 @@ public class AlarmManager {
     private static final String KEY_ALARM_HOURS = "AlarmHours";
     private static final String KEY_ALARM_MINUTES = "AlarmMinutes";
     private static final String KEY_ALARM_INTENT = "AlarmIntent";
-    //    private static final String KEY_ALARM_RADIO_ID = "AlarmRadioId";
     private static final String KEY_ALARM_VOLUME = "AlarmVolume";
     private static final int DEFAULT_SNOOZE_DURATION = 600000;// 10 minutes
 
@@ -243,7 +243,10 @@ public class AlarmManager {
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, alarmType, intent, 0);
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP,
+                    timeInMillis, pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             am.setExact(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
         } else am.set(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
     }

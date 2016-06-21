@@ -11,7 +11,7 @@ import android.widget.EditText;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.radiofrance.alarm.helper.AlarmHelper;
+import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.type.Day;
 
 public class MainActivity extends AppCompatActivity {
@@ -66,8 +66,8 @@ public class MainActivity extends AppCompatActivity {
                 int h = Integer.parseInt(hours.getText().toString());
                 int m = Integer.parseInt(minutes.getText().toString());
 
-                AlarmHelper.setAlarm(MainActivity.this,
-                        new Intent(MainActivity.this, AlarmActivity.class), days, h, m);
+                new AlarmManager(MainActivity.this)
+                        .setAlarm(new Intent(MainActivity.this, AlarmActivity.class), days, h, m);
             }
 
         });

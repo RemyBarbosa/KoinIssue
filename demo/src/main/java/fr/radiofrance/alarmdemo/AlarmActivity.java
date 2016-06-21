@@ -1,13 +1,12 @@
 package fr.radiofrance.alarmdemo;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
-import fr.radiofrance.alarm.helper.AlarmHelper;
+import fr.radiofrance.alarm.manager.AlarmManager;
 
 /**
  * Created by mondon on 17/05/16.
@@ -44,7 +43,7 @@ public class AlarmActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                AlarmHelper.snoozeAlarm(AlarmActivity.this);
+                new AlarmManager(AlarmActivity.this).snoozeAlarm();
                 finish();
             }
 
