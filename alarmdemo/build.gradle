@@ -1,12 +1,13 @@
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
 
     defaultConfig {
+        applicationId "fr.radiofrance.alarmdemo"
         minSdkVersion 10
-        targetSdkVersion 23
+        targetSdkVersion 24
         versionCode 1
         versionName "1.0"
     }
@@ -18,13 +19,9 @@ android {
     }
 }
 
-repositories {
-    maven { url "https://s3.amazonaws.com/repo.commonsware.com" }
-}
-
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile project(':androidtoolbox-androidlib')
+    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile project(':alarm')
 }

@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -17,8 +18,7 @@ import java.util.TimeZone;
 
 import fr.radiofrance.alarm.receiver.AlarmReceiver;
 import fr.radiofrance.alarm.type.Day;
-import fr.radiofrance.androidtoolbox.io.PrefsTools;
-import fr.radiofrance.androidtoolbox.log.DebugLog;
+import fr.radiofrance.alarm.util.PrefsUtils;
 
 /**
  * Created by mondon on 13/05/16.
@@ -138,11 +138,11 @@ public class AlarmManager {
     }
 
     public void setAlarmVolume(int volume) {
-        PrefsTools.setInteger(context, KEY_ALARM_VOLUME, volume);
+        PrefsUtils.setInteger(context, KEY_ALARM_VOLUME, volume);
     }
 
     public int getAlarmVolume() {
-        return PrefsTools.getInteger(context, KEY_ALARM_VOLUME,
+        return PrefsUtils.getInteger(context, KEY_ALARM_VOLUME,
                 audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
     }
 
@@ -157,11 +157,11 @@ public class AlarmManager {
     public void setAlarmSnoozeDuration(int durationInMillis) {
         if (durationInMillis < 0) durationInMillis = DEFAULT_SNOOZE_DURATION;
 
-        PrefsTools.setInteger(context, KEY_ALARM_SNOOZE_DURATION, durationInMillis);
+        PrefsUtils.setInteger(context, KEY_ALARM_SNOOZE_DURATION, durationInMillis);
     }
 
     public int getAlarmSnoozeDuration() {
-        return PrefsTools.getInteger(context, KEY_ALARM_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
+        return PrefsUtils.getInteger(context, KEY_ALARM_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
     }
 
     public void setAlarmDays(List<Day> alarmDays) {
@@ -174,11 +174,11 @@ public class AlarmManager {
             }
         }
 
-        PrefsTools.setString(context, KEY_ALARM_DAYS, alarmDaysString);
+        PrefsUtils.setString(context, KEY_ALARM_DAYS, alarmDaysString);
     }
 
     public List<Day> getAlarmDays() {
-        String alarmDaysString = PrefsTools.getString(context, KEY_ALARM_DAYS, null);
+        String alarmDaysString = PrefsUtils.getString(context, KEY_ALARM_DAYS, null);
 
         List<Day> days = new ArrayList<>();
 
@@ -189,7 +189,7 @@ public class AlarmManager {
             try {
                 days.add(Day.valueOf(dayString));
             } catch (IllegalArgumentException e) {
-                DebugLog.d(TAG, "Error: Bad Day enum");
+                Log.e(TAG, "Error: Bad Day enum");
             }
         }
 
@@ -199,31 +199,31 @@ public class AlarmManager {
     public void setAlarmHours(int hours) {
         if (hours < 0) hours = 0;
 
-        PrefsTools.setInteger(context, KEY_ALARM_HOURS, hours);
+        PrefsUtils.setInteger(context, KEY_ALARM_HOURS, hours);
     }
 
     public int getAlarmHours() {
-        return PrefsTools.getInteger(context, KEY_ALARM_HOURS, -1);
+        return PrefsUtils.getInteger(context, KEY_ALARM_HOURS, -1);
     }
 
     public void setAlarmMinutes(int minutes) {
         if (minutes < 0) minutes = 0;
 
-        PrefsTools.setInteger(context, KEY_ALARM_MINUTES, minutes);
+        PrefsUtils.setInteger(context, KEY_ALARM_MINUTES, minutes);
     }
 
     public int getAlarmMinutes() {
-        return PrefsTools.getInteger(context, KEY_ALARM_MINUTES, -1);
+        return PrefsUtils.getInteger(context, KEY_ALARM_MINUTES, -1);
     }
 
     public void setAlarmIntent(Intent alarmIntent) {
         if (alarmIntent == null) return;
 
-        PrefsTools.setString(context, KEY_ALARM_INTENT, alarmIntent.toUri(0));
+        PrefsUtils.setString(context, KEY_ALARM_INTENT, alarmIntent.toUri(0));
     }
 
     public Intent getAlarmIntent() {
-        String intentUri = PrefsTools.getString(context, KEY_ALARM_INTENT, null);
+        String intentUri = PrefsUtils.getString(context, KEY_ALARM_INTENT, null);
         if (TextUtils.isEmpty(intentUri)) return null;
 
         try {

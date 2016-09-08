@@ -1,2 +1,1 @@
-include ':demo', ':library', ':androidtoolbox-androidlib'
-project(':androidtoolbox-androidlib').projectDir = new File('../androidtoolbox-androidlib')
+include ':alarmdemo', ':alarm'

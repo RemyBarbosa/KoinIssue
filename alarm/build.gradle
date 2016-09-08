@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven'
+
+group = 'com.radiofrance.android'
+version = projectVersionName
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
+
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 24
+        versionCode projectVersionCode as int
+        versionName projectVersionName
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:support-v4:24.2.0'
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: nexusRepoReleases) {
+                authentication(userName: nexusDeployerReleaseUser, password: nexusDeployerReleasePassword)
+            }
+            snapshotRepository(url: nexusRepoSnapshots) {
+                authentication(userName: nexusDeployerSnapshotUser, password: nexusDeployerSnapshotPassword)
+            }
+        }
+    }
+}
