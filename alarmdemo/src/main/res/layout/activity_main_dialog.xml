@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:columnCount="2"
+    app:orientation="horizontal"
+    tools:context="fr.radiofrance.alarmdemo.MainActivity">
+
+    <CheckBox
+        android:id="@+id/monday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Monday"
+        app:layout_column="0"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="0"/>
+
+    <CheckBox
+        android:id="@+id/tuesday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tuesday"
+        app:layout_column="0"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="1"/>
+
+    <CheckBox
+        android:id="@+id/wednesday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wednesday"
+        app:layout_column="0"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="2"/>
+
+    <CheckBox
+        android:id="@+id/thursday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thursday"
+        app:layout_column="0"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="3"/>
+
+    <CheckBox
+        android:id="@+id/friday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Friday"
+        app:layout_column="1"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="0"/>
+
+    <CheckBox
+        android:id="@+id/saturday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Saturday"
+        app:layout_column="1"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="1"/>
+
+    <CheckBox
+        android:id="@+id/sunday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sunday"
+        app:layout_column="1"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="2"/>
+
+    <EditText
+        android:id="@+id/hours"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Hours"
+        android:inputType="numberSigned"
+        app:layout_column="0"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="4"/>
+
+    <EditText
+        android:id="@+id/minutes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Minutes"
+        android:inputType="numberSigned"
+        app:layout_column="1"
+        app:layout_columnWeight="1"
+        app:layout_gravity="fill"
+        app:layout_row="4"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Volume"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_column="0"
+        app:layout_gravity="fill"
+        app:layout_row="5"/>
+
+    <SeekBar
+        android:id="@+id/volume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_column="0"
+        app:layout_columnSpan="2"
+        app:layout_gravity="fill"
+        app:layout_row="6"/>
+
+</android.support.v7.widget.GridLayout>
