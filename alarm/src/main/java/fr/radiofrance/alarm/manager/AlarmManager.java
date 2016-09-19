@@ -7,15 +7,21 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 
-import java.net.URISyntaxException;
+import com.google.gson.Gson;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
+import fr.radiofrance.alarm.exception.AlarmException;
+import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.receiver.AlarmReceiver;
 import fr.radiofrance.alarm.type.Day;
 import fr.radiofrance.alarm.util.PrefsUtils;
@@ -25,242 +31,306 @@ import fr.radiofrance.alarm.util.PrefsUtils;
  */
 public class AlarmManager {
 
+    public static final String INTENT_ALARM_ID = "IntentAlarmId";
+
     private static final String TAG = AlarmManager.class.getSimpleName();
-    private static final String KEY_ALARM_SNOOZE_DURATION = "AlarmSnoozeDuration";
-    private static final String KEY_ALARM_DAYS = "AlarmDays";
-    private static final String KEY_ALARM_HOURS = "AlarmHours";
-    private static final String KEY_ALARM_MINUTES = "AlarmMinutes";
-    private static final String KEY_ALARM_INTENT = "AlarmIntent";
-    private static final String KEY_ALARM_VOLUME = "AlarmVolume";
+    private static final String KEY_ALARMS = "AlarmsList";
+    private static final String KEY_ALARM = "Alarm";
     private static final int DEFAULT_SNOOZE_DURATION = 600000;// 10 minutes
 
-    private final Context context;
-    private final AudioManager audioManager;
-    private final MediaPlayer defaultAlarmSound;
+    private Context context;
+    private AudioManager audioManager;
+    private MediaPlayer defaultAlarmSound;
+    private int streamType = AudioManager.STREAM_ALARM;
+    private int deviceVolume;// Used to keep the device stream volume to restore it when necessary
 
-    // Used to keep the system music volume to restore it when necessary
-    private int systemVolume;
+    public static AlarmManager getInstance() {
+        if (InstanceHolder.INSTANCE.context == null) {
+            throw new AlarmException("You must first initialize AlarmManager");
+        }
 
-    public AlarmManager(Context context) {
-        this.context = context;
-        this.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        this.defaultAlarmSound = MediaPlayer
-                .create(context, Settings.System.DEFAULT_ALARM_ALERT_URI);
-        saveSystemVolume();
+        return InstanceHolder.INSTANCE;
     }
 
     /**
-     * Creates an alarm defined by alarmDays, hours and minutes.
+     * Initializes AlarmManager and sets the audio stream type for this MediaPlayer.
+     * See AudioManager for a list of stream types.
      *
-     * @param alarmIntent The intent that will be used for the alarm.
-     * @param alarmDays   Days when the alarm will ring.
-     * @param hours       The hours (from 0 to 23) when the alarm will ring.
-     * @param minutes     The minutes (from 0 to 59) when the alarm will ring.
+     * @param context    The context
+     * @param streamType The alarm stream type. See AudioManager for a list of stream types
      */
-    public long setAlarm(Intent alarmIntent, List<Day> alarmDays, int hours, int minutes) {
-        if (hours < 0) hours = 0;
-        if (minutes < 0) minutes = 0;
+    public static void initialize(@NonNull Context context, int streamType) {
+        AlarmManager instance = InstanceHolder.INSTANCE;
 
-        Calendar nextAlarm = getNextAlarmDate(alarmDays, hours, minutes);
-        if (nextAlarm == null) return -1;
-
-        setAlarmDays(alarmDays);
-        setAlarmHours(hours);
-        setAlarmMinutes(minutes);
-        setAlarmIntent(alarmIntent);
-
-        long timeInMillis = nextAlarm.getTimeInMillis();
-        scheduleAlarm(AlarmReceiver.ALARM_CODE, timeInMillis);
-
-        return timeInMillis;
+        instance.context = context;
+        instance.streamType = streamType;
+        instance.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        instance.deviceVolume = instance.audioManager.getStreamVolume(streamType);
     }
 
-    public Calendar getAlarm() {
-        if (!isAlarmActivated()) return null;
+    /**
+     * Adds an alarm.
+     *
+     * @param alarm Alarm that will ring.
+     */
+    public void addAlarm(@NonNull Alarm alarm) {
+        int hours = alarm.getHours();
+        int minutes = alarm.getMinutes();
 
-        List<Day> days = getAlarmDays();
-        int hours = getAlarmHours();
-        int minutes = getAlarmMinutes();
-
-        return getNextAlarmDate(days, hours, minutes);
-    }
-
-    public void snoozeAlarm() {
-        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
-        cal.add(Calendar.MILLISECOND, getAlarmSnoozeDuration());
-
-        scheduleAlarm(AlarmReceiver.SNOOZE_CODE, cal.getTimeInMillis());
-    }
-
-    public void cancelAlarm() {
-        android.app.AlarmManager alarmManager = (android.app.AlarmManager) context
-                .getSystemService(Context.ALARM_SERVICE);
-
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.setAction(AlarmReceiver.KEY_ALARM);
-        PendingIntent sender = PendingIntent.getBroadcast(context,
-                AlarmReceiver.ALARM_CODE, intent, 0);
-        alarmManager.cancel(sender);
-
-        intent = new Intent(context, AlarmReceiver.class);
-        intent.setAction(AlarmReceiver.KEY_SNOOZE);
-        sender = PendingIntent.getBroadcast(context, AlarmReceiver.SNOOZE_CODE, intent, 0);
-        alarmManager.cancel(sender);
-    }
-
-    public boolean isAlarmActivated() {
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.setAction(AlarmReceiver.KEY_ALARM);
-
-        return PendingIntent.getBroadcast(context, AlarmReceiver.ALARM_CODE, intent,
-                PendingIntent.FLAG_NO_CREATE) != null;
-    }
-
-    public boolean playDefaultAlarmSound(int volume, boolean looping) {
-        if (defaultAlarmSound == null) return false;
-
-        saveSystemVolume();
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, toValidVolume(volume), 0);
-        defaultAlarmSound.setLooping(looping);
-        defaultAlarmSound.seekTo(0);
-        defaultAlarmSound.start();
-
-        return true;
-    }
-
-    public boolean stopDefaultAlarmSound() {
-        if (defaultAlarmSound == null) return false;
-
-        defaultAlarmSound.pause();
-        restoreSystemVolume();
-
-        return true;
-    }
-
-    public void setAlarmVolume(int volume) {
-        PrefsUtils.setInteger(context, KEY_ALARM_VOLUME, volume);
-    }
-
-    public int getAlarmVolume() {
-        return PrefsUtils.getInteger(context, KEY_ALARM_VOLUME,
-                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
-    }
-
-    public void setSystemVolume(int volume) {
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, toValidVolume(volume), 0);
-    }
-
-    public int getSystemMaxVolume() {
-        return audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-    }
-
-    public void setAlarmSnoozeDuration(int durationInMillis) {
-        if (durationInMillis < 0) durationInMillis = DEFAULT_SNOOZE_DURATION;
-
-        PrefsUtils.setInteger(context, KEY_ALARM_SNOOZE_DURATION, durationInMillis);
-    }
-
-    public int getAlarmSnoozeDuration() {
-        return PrefsUtils.getInteger(context, KEY_ALARM_SNOOZE_DURATION, DEFAULT_SNOOZE_DURATION);
-    }
-
-    public void setAlarmDays(List<Day> alarmDays) {
-        String alarmDaysString = "";
-
-        if (alarmDays != null && alarmDays.size() > 0) {
-            for (int i = 0; i < alarmDays.size(); ++i) {
-                alarmDaysString += alarmDays.get(i).name();
-                if (i < (alarmDays.size() - 1)) alarmDaysString += "-";
-            }
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+            throw new AlarmException("Alarm time is incorrect");
+        } else if (TextUtils.isEmpty(alarm.getId())) {
+            throw new AlarmException("Alarm id is incorrect");
+        } else if (alarm.getIntent() == null) {
+            throw new AlarmException("Alarm intent is incorrect");
         }
 
-        PrefsUtils.setString(context, KEY_ALARM_DAYS, alarmDaysString);
-    }
+        Calendar nextAlarm = getNextAlarmDate(alarm);
+        if (nextAlarm == null) return;
 
-    public List<Day> getAlarmDays() {
-        String alarmDaysString = PrefsUtils.getString(context, KEY_ALARM_DAYS, null);
-
-        List<Day> days = new ArrayList<>();
-
-        if (TextUtils.isEmpty(alarmDaysString)) return days;
-
-        String[] daysString = alarmDaysString.split("-");
-        for (String dayString : daysString) {
-            try {
-                days.add(Day.valueOf(dayString));
-            } catch (IllegalArgumentException e) {
-                Log.e(TAG, "Error: Bad Day enum");
-            }
+        if (alarm.getSnoozeDuration() < 0) {
+            alarm.setSnoozeDuration(DEFAULT_SNOOZE_DURATION);
         }
 
-        return days;
+        saveAlarm(alarm);
+        scheduleAlarm(AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarm.getTimeInMillis());
     }
 
-    public void setAlarmHours(int hours) {
-        if (hours < 0) hours = 0;
+    /**
+     * Gets the Alarm previously added.
+     *
+     * @param alarmId The id of the Alarm to get
+     * @return The Alarm
+     */
+    public Alarm getAlarm(String alarmId) {
+        if (TextUtils.isEmpty(alarmId) || !PrefsUtils.hasKey(context, KEY_ALARM + alarmId)) {
+            return null;
+        }
 
-        PrefsUtils.setInteger(context, KEY_ALARM_HOURS, hours);
-    }
+        String alarmString = PrefsUtils.getString(context, KEY_ALARM + alarmId);
 
-    public int getAlarmHours() {
-        return PrefsUtils.getInteger(context, KEY_ALARM_HOURS, -1);
-    }
-
-    public void setAlarmMinutes(int minutes) {
-        if (minutes < 0) minutes = 0;
-
-        PrefsUtils.setInteger(context, KEY_ALARM_MINUTES, minutes);
-    }
-
-    public int getAlarmMinutes() {
-        return PrefsUtils.getInteger(context, KEY_ALARM_MINUTES, -1);
-    }
-
-    public void setAlarmIntent(Intent alarmIntent) {
-        if (alarmIntent == null) return;
-
-        PrefsUtils.setString(context, KEY_ALARM_INTENT, alarmIntent.toUri(0));
-    }
-
-    public Intent getAlarmIntent() {
-        String intentUri = PrefsUtils.getString(context, KEY_ALARM_INTENT, null);
-        if (TextUtils.isEmpty(intentUri)) return null;
-
-        try {
-            return Intent.parseUri(intentUri, 0);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        if (!TextUtils.isEmpty(alarmString)) {
+            return new Gson().fromJson(alarmString, Alarm.class);
+        } else {
             return null;
         }
     }
 
-    private void scheduleAlarm(int alarmType, long timeInMillis) {
-        android.app.AlarmManager am = (android.app.AlarmManager) context
-                .getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        if (alarmType == AlarmReceiver.SNOOZE_CODE) intent.setAction(AlarmReceiver.KEY_SNOOZE);
-        else if (alarmType == AlarmReceiver.ALARM_CODE) intent.setAction(AlarmReceiver.KEY_ALARM);
+    /**
+     * Gets all alarms previously added.
+     *
+     * @return All alarms
+     */
+    public List<Alarm> getAllAlarms() {
+        List<Alarm> alarms = new ArrayList<>();
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, alarmType, intent, 0);
+        Set<String> alarmsIds = PrefsUtils.getStringSet(context, KEY_ALARMS, new HashSet<String>());
+        for (String alarmId : alarmsIds) {
+            Alarm alarm = getAlarm(alarmId);
+            if (alarm != null) {
+                alarms.add(alarm);
+            }
+        }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP,
-                    timeInMillis, pendingIntent);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            am.setExact(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-        } else am.set(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
+        return alarms;
     }
 
-    private Calendar getNextAlarmDate(List<Day> alarmDays, int hours, int minutes) {
-        if (alarmDays == null || alarmDays.size() <= 0) return null;
-        if (hours < 0) hours = 0;
-        if (minutes < 0) minutes = 0;
+    /**
+     * Gets all alarms ids previously added.
+     *
+     * @return All alarms ids
+     */
+    public Set<String> getAllAlarmsIds() {
+        return PrefsUtils.getStringSet(context, KEY_ALARMS, new HashSet<String>());
+    }
+
+    /**
+     * Updates an Alarm previously added.
+     *
+     * @param alarm The Alarm that contains the updates. This Alarm has to have the same id as the Alarm to update.
+     */
+    public void updateAlarm(@NonNull Alarm alarm) {
+        String alarmId = alarm.getId();
+        if (TextUtils.isEmpty(alarmId) || !PrefsUtils.hasKey(context, KEY_ALARM + alarmId)) {
+            return;
+        }
+
+        Alarm savedAlarm = getAlarm(alarmId);
+
+        // If the days, hours and minutes have not been updated, we are only updating the new Alarm.
+        if (savedAlarm.getDays().equals(alarm.getDays())
+                && savedAlarm.getHours() == alarm.getHours()
+                && savedAlarm.getMinutes() == alarm.getMinutes()) {
+            saveAlarm(alarm);
+        } else { // Else, we need to recreate a new Alarm in the real AlarmManager.
+            removeAlarm(alarmId);
+            addAlarm(alarm);
+        }
+    }
+
+    /**
+     * Removes an Alarm previously added. So the Alarm will be deactivated.
+     * You have to call {@link #addAlarm(Alarm)} again if you want to activate it after.
+     *
+     * @param alarmId The id of the Alarm to remove
+     */
+    public void removeAlarm(String alarmId) {
+        if (TextUtils.isEmpty(alarmId)) return;
+
+        android.app.AlarmManager alarmManager = (android.app.AlarmManager) context
+                .getSystemService(Context.ALARM_SERVICE);
+
+        // Removing the normal alarm's pending intent from the real AlarmManager
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.setAction(AlarmReceiver.KEY_ALARM + alarmId);
+        PendingIntent sender = PendingIntent.getBroadcast(context,
+                AlarmReceiver.TYPE_ALARM, intent, 0);
+        alarmManager.cancel(sender);
+
+        // Removing the snooze alarm's pending intent from the real AlarmManager
+        intent = new Intent(context, AlarmReceiver.class);
+        intent.setAction(AlarmReceiver.KEY_SNOOZE + alarmId);
+        sender = PendingIntent.getBroadcast(context, AlarmReceiver.TYPE_SNOOZE, intent, 0);
+        alarmManager.cancel(sender);
+
+        // Removing the Alarm Id from the list of Alarms Ids
+        Set<String> alarmsIds = PrefsUtils.getStringSet(context, KEY_ALARMS, new HashSet<String>());
+        alarmsIds.remove(alarmId);
+        PrefsUtils.setStringSet(context, KEY_ALARMS, alarmsIds);
+
+        // Removing the Alarm
+        PrefsUtils.removeKey(context, KEY_ALARM + alarmId);
+    }
+
+    /**
+     * Removes all alarms previously added.
+     * You have to call {@link #addAlarm(Alarm)} again if you want to activate them after.
+     */
+    public void removeAllAlarms() {
+        Set<String> alarmsIds = PrefsUtils.getStringSet(context, KEY_ALARMS, new HashSet<String>());
+        Object[] objects = alarmsIds.toArray();
+        for (Object alarmId : objects) {
+            removeAlarm((String) alarmId);
+        }
+    }
+
+    /**
+     * Snoozes an Alarm. The Alarm will ring in a specified frequency defined by {@link fr.radiofrance.alarm.model.Alarm#setSnoozeDuration(int)}.
+     *
+     * @param alarmId The id of the Alarm to snooze
+     */
+    public void snoozeAlarm(String alarmId) {
+        if (TextUtils.isEmpty(alarmId)) return;
+
+        Alarm alarm = getAlarm(alarmId);
+        if (alarm == null) return;
+
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        cal.add(Calendar.MILLISECOND, alarm.getSnoozeDuration());
+
+        scheduleAlarm(AlarmReceiver.TYPE_SNOOZE, alarmId, cal.getTimeInMillis());
+    }
+
+    /**
+     * Checks if an Alarm is added.
+     *
+     * @param alarmId The id of the Alarm to check
+     * @return True if the Alarm is added, false otherwise
+     */
+    public boolean isAlarmAdded(String alarmId) {
+        if (TextUtils.isEmpty(alarmId)) return false;
+
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.setAction(AlarmReceiver.KEY_ALARM + alarmId);
+
+        return PendingIntent.getBroadcast(context, AlarmReceiver.TYPE_ALARM, intent,
+                PendingIntent.FLAG_NO_CREATE) != null;
+    }
+
+    /**
+     * Sets the volume of the device stream.
+     * The device stream defined by {@link #initialize(Context, int)} will have this new volume.
+     * To know the volume max authorized for this stream, please call {@link #getDeviceMaxVolume()}.
+     *
+     * @param volume The volume to set
+     */
+    public void setDeviceVolume(int volume) {
+        audioManager.setStreamVolume(streamType, toValidVolume(volume), 0);
+    }
+
+    /**
+     * Gets the volume of the device stream.
+     * The device stream is defined by {@link #initialize(Context, int)}.
+     *
+     * @return The volume to get
+     */
+    public int getDeviceVolume() {
+        return audioManager.getStreamVolume(streamType);
+    }
+
+    /**
+     * Gets the volume max of the device stream.
+     * The device stream is defined by {@link #initialize(Context, int)}.
+     *
+     * @return The volume to get
+     */
+    public int getDeviceMaxVolume() {
+        return audioManager.getStreamMaxVolume(streamType);
+    }
+
+    /**
+     * Gets the next Alarm that will ring from now.
+     *
+     * @return The next Alarm
+     */
+    public Alarm getNextAlarm() {
+        Calendar nextDate = null;
+        Alarm nextAlarm = null;
+        Set<String> alarmsIds = PrefsUtils.getStringSet(context, KEY_ALARMS, new HashSet<String>());
+
+        for (String alarmId : alarmsIds) {
+            Alarm alarm = getAlarm(alarmId);
+            if (alarm == null) continue;
+
+            Calendar date = getNextAlarmDate(alarm);
+            if (nextDate == null || (date != null && date.before(nextDate))) {
+                nextDate = date;
+                nextAlarm = alarm;
+            }
+        }
+
+        return nextAlarm;
+    }
+
+    /**
+     * Gets the next Alarm date for all Alarms.
+     *
+     * @return The next Alarm date as Calendar
+     */
+    public Calendar getNextAlarmDate() {
+        Alarm nextAlarm = getNextAlarm();
+        if (nextAlarm != null) {
+            return getNextAlarmDate(nextAlarm);
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the next Alarm date for the specified Alarm.
+     *
+     * @param alarm The Alarm to get its next ring date
+     * @return The next Alarm date
+     */
+    public Calendar getNextAlarmDate(@NonNull Alarm alarm) {
+        List<Day> alarmDays = alarm.getDays();
+        int hours = alarm.getHours();
+        int minutes = alarm.getMinutes();
+
+        if (alarmDays == null || alarmDays.isEmpty()) return null;
 
         boolean isNow = true;
         Calendar date = Calendar.getInstance(TimeZone.getDefault());
-
-//        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-//        Log.e("TEST", "Now=" + sdf.format(new Date(date.getTimeInMillis())));
 
         Calendar nextAlarmDate = null;
         while (nextAlarmDate == null) {
@@ -276,41 +346,180 @@ public class AlarmManager {
             date.add(Calendar.DATE, 1);
         }
 
-//        Log.e("TEST", "Next alarm=" + sdf.format(new Date(nextAlarmDate.getTimeInMillis())));
-
         return nextAlarmDate;
     }
 
+    /**
+     * Plays the default alarm sound.
+     *
+     * @param volume  The volume used for this sound
+     * @param looping If you want to play this sound infinitely.
+     * @return True if the sound is playing, false otherwise.
+     */
+    public boolean playDefaultAlarmSound(int volume, boolean looping) {
+        if (defaultAlarmSound == null) {
+            defaultAlarmSound = new MediaPlayer();
+            defaultAlarmSound.setAudioStreamType(streamType);
+        }
+
+        // Saving the current device stream volume so that this volume will be restored when the default alarm sound will be stopped.
+        saveDeviceVolume();
+
+        audioManager.setStreamVolume(streamType, toValidVolume(volume), 0);
+        try {
+            defaultAlarmSound.setDataSource(context,
+                    Settings.System.DEFAULT_ALARM_ALERT_URI);
+            defaultAlarmSound.setLooping(looping);
+            defaultAlarmSound.prepare();
+            defaultAlarmSound.start();
+
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            defaultAlarmSound.release();
+            defaultAlarmSound = null;
+
+            return false;
+        }
+    }
+
+    /**
+     * Stops the default alarm sound started with {@link #playDefaultAlarmSound(int, boolean)}.
+     */
+    public void stopDefaultAlarmSound() {
+        if (defaultAlarmSound == null) return;
+
+        defaultAlarmSound.stop();
+        defaultAlarmSound.release();
+        defaultAlarmSound = null;
+        restoreDeviceVolume();
+    }
+
+    /**
+     * Schedules an Alarm in the real AlarmManager.
+     *
+     * @param alarmType    The type of the Alarm: AlarmReceiver.KEY_SNOOZE or AlarmReceiver.KEY_SNOOZE
+     * @param alarmId      The if of the Alarm to schedule
+     * @param timeInMillis The time in milliseconds of the Alarm
+     * @return True if the Alarm has been scheduled, false otherwise
+     */
+    private boolean scheduleAlarm(int alarmType, String alarmId, long timeInMillis) {
+        if (TextUtils.isEmpty(alarmId) || timeInMillis < 0) return false;
+
+        // Creating Intent and PendingIntent for the AlarmReceiver.
+        // We send the alarmId in the intent action because another Android dev could not retrieve it from the extras in an old project.
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        if (alarmType == AlarmReceiver.TYPE_SNOOZE) {
+            intent.setAction(AlarmReceiver.KEY_SNOOZE + alarmId);
+        } else if (alarmType == AlarmReceiver.TYPE_ALARM) {
+            intent.setAction(AlarmReceiver.KEY_SNOOZE + alarmId);
+        } else {
+            return false;
+        }
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, alarmType, intent, 0);
+
+        // Setting the time in milliseconds to the AlarmManager.
+        android.app.AlarmManager am = (android.app.AlarmManager) context
+                .getSystemService(Context.ALARM_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP,
+                    timeInMillis, pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            am.setExact(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
+        } else {
+            am.set(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
+        }
+
+        return true;
+    }
+
+    /**
+     * Saves the Alarm in the SharedPreference.
+     *
+     * @param alarm The Alarm to save
+     */
+    private void saveAlarm(@NonNull Alarm alarm) {
+        String alarmId = alarm.getId();
+
+        // Updating the list of Alarms Ids
+        Set<String> alarmsIds = PrefsUtils.getStringSet(context, KEY_ALARMS, new HashSet<String>());
+        alarmsIds.add(alarmId);
+        PrefsUtils.setStringSet(context, KEY_ALARMS, alarmsIds);
+
+        // Saving the Alarm
+        PrefsUtils.setString(context, KEY_ALARM + alarmId, new Gson().toJson(alarm));
+    }
+
+    /**
+     * Checks if the date given is in future.
+     *
+     * @param date    The date
+     * @param hours   The hours of the date
+     * @param minutes The minutes of the date
+     * @return True if the date is in future, false otherwise
+     */
     private boolean isInFuture(Calendar date, int hours, int minutes) {
-        if (date.get(Calendar.HOUR_OF_DAY) < hours) return true;
-        else if (date.get(Calendar.HOUR_OF_DAY) == hours && date.get(Calendar.MINUTE) < minutes) {
+        if (date.get(Calendar.HOUR_OF_DAY) < hours) {
+            return true;
+        } else if (date.get(Calendar.HOUR_OF_DAY) == hours && date.get(Calendar.MINUTE) < minutes) {
             return true;
         }
 
         return false;
     }
 
+    /**
+     * Gets the Calendar for the given parameters.
+     *
+     * @param year    The year
+     * @param month   The month
+     * @param day     The day
+     * @param hours   The hours
+     * @param minutes The minutes
+     * @return The generated Calendar
+     */
     private Calendar getCalendar(int year, int month, int day, int hours, int minutes) {
         Calendar date = Calendar.getInstance(TimeZone.getDefault());
         date.set(year, month, day, hours, minutes, 0);
+
         return date;
     }
 
-    private void saveSystemVolume() {
-        systemVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    /**
+     * Saves the current volume of the device stream.
+     * The device stream is defined by {@link #initialize(Context, int)}.
+     */
+    private void saveDeviceVolume() {
+        deviceVolume = audioManager.getStreamVolume(streamType);
     }
 
-    private void restoreSystemVolume() {
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, toValidVolume(systemVolume), 0);
+    /**
+     * Restores the volume of the device stream previously saved by {@link #saveDeviceVolume()}.
+     */
+    private void restoreDeviceVolume() {
+        audioManager.setStreamVolume(streamType, toValidVolume(deviceVolume), 0);
     }
 
+    /**
+     * Returns the volume in a valid value.
+     * If the volume is between 0 and {@link #getDeviceMaxVolume()}, the volume will not be modified.
+     *
+     * @param volume The volume
+     * @return The new valid volume
+     */
     private int toValidVolume(int volume) {
-        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        int maxVolume = getDeviceMaxVolume();
 
-        if (volume < 0) volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        if (volume < 0) volume = audioManager.getStreamVolume(streamType);
         else if (volume > maxVolume) volume = maxVolume;
 
         return volume;
+    }
+
+    private static class InstanceHolder {
+
+        private static final AlarmManager INSTANCE = new AlarmManager();
+
     }
 
 }

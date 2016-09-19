@@ -90,10 +90,20 @@ public class PrefsUtils {
     }
 
     public static void setString(Context ctx, String key, String val) {
-
         SharedPreferences settings = getPrefs(ctx);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(key, val);
+        editor.apply();
+    }
+
+    public static Set<String> getStringSet(Context ctx, String key, Set<String> defaultValue) {
+        return getPrefs(ctx).getStringSet(key, defaultValue);
+    }
+
+    public static void setStringSet(Context ctx, String key, Set<String> val) {
+        SharedPreferences settings = getPrefs(ctx);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putStringSet(key, val);
         editor.apply();
     }
 
