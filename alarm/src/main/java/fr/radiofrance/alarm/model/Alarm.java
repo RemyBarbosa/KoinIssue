@@ -3,6 +3,7 @@ package fr.radiofrance.alarm.model;
 import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -10,9 +11,6 @@ import java.util.List;
 
 import fr.radiofrance.alarm.type.Day;
 
-/**
- * Created by mondon on 09/09/16.
- */
 public class Alarm implements Parcelable {
 
     protected String id;
@@ -22,6 +20,7 @@ public class Alarm implements Parcelable {
     protected int volume;
     protected int snoozeDuration;
     protected String intentUri;
+    protected boolean activated;
 
     public static final Parcelable.Creator<Alarm> CREATOR = new Parcelable.Creator<Alarm>() {
 
@@ -39,10 +38,11 @@ public class Alarm implements Parcelable {
 
     public Alarm(String id) {
         this.id = id;
-        this.volume = -1;
         this.hours = -1;
         this.minutes = -1;
+        this.volume = -1;
         this.snoozeDuration = -1;
+        this.activated = false;
     }
 
     protected Alarm(Parcel in) {
@@ -54,6 +54,7 @@ public class Alarm implements Parcelable {
         this.volume = in.readInt();
         this.snoozeDuration = in.readInt();
         this.intentUri = in.readString();
+        this.activated = in.readInt() == 1;
     }
 
     @Override
@@ -70,6 +71,7 @@ public class Alarm implements Parcelable {
         dest.writeInt(this.volume);
         dest.writeInt(this.snoozeDuration);
         dest.writeString(this.intentUri);
+        dest.writeInt(activated ? 1 : 0);
     }
 
     @Override
@@ -82,6 +84,7 @@ public class Alarm implements Parcelable {
                 ", volume=" + volume +
                 ", snoozeDuration=" + snoozeDuration +
                 ", intentUri='" + intentUri + "'" +
+                ", isActivated='" + activated + "'" +
                 '}';
     }
 
@@ -89,12 +92,17 @@ public class Alarm implements Parcelable {
         return id;
     }
 
+    @NonNull
     public List<Day> getDays() {
+        if (days == null) {
+            days = new ArrayList<>();
+        }
         return days;
     }
 
     /**
      * Sets the days when the alarm will ring.
+     *
      * @param days The days: see Day
      */
     public void setDays(List<Day> days) {
@@ -151,6 +159,14 @@ public class Alarm implements Parcelable {
 
     public void setIntent(Intent intent) {
         this.intentUri = intent.toUri(0);
+    }
+
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
     }
 
 }

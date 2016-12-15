@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by kwaky on 12/03/15.
  * Wrapper for SharedPreferences Android system
  * Assumes that developers most of time don't need several PREFS_NAME for 1 app
  */

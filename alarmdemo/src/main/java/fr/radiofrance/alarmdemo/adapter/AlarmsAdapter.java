@@ -13,14 +13,11 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Locale;
 
+import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.type.Day;
 import fr.radiofrance.alarmdemo.R;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
-import fr.radiofrance.alarmdemo.model.Alarm;
 
-/**
- * Created by mondon on 09/09/16.
- */
 public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder> {
 
     private final Context context;

@@ -10,9 +10,6 @@ import java.util.List;
 import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
 
-/**
- * Created by mondon on 13/05/16.
- */
 public class AlarmReceiver extends WakefulBroadcastReceiver {
 
     public static final String KEY_ALARM = AlarmReceiver.class.getSimpleName() + "KEY_ALARM";
@@ -29,9 +26,9 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             List<Alarm> alarms = AlarmManager.getInstance().getAllAlarms();
-            if (alarms != null) {
-                for (Alarm alarm : alarms) {
-                    AlarmManager.getInstance().addAlarm(alarm);
+            for (Alarm alarm : alarms) {
+                if (alarm.isActivated()) {
+                    AlarmManager.getInstance().updateAlarm(alarm);
                 }
             }
         } else if (action.startsWith(KEY_ALARM) || action.startsWith(KEY_SNOOZE)) {
@@ -50,14 +47,20 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         Alarm alarm = AlarmManager.getInstance().getAlarm(alarmId);
         if (alarm == null) return;
 
+        if (alarm.getDays().isEmpty()) {
+            alarm.setActivated(false);
+            AlarmManager.getInstance().updateAlarm(alarm);
+        }
+
         Intent alarmIntent = alarm.getIntent();
         if (alarmIntent != null) {
             AlarmManager.getInstance().setDeviceVolume(alarm.getVolume());
             alarmIntent.putExtra(AlarmManager.INTENT_ALARM_ID, alarmId);
+            alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(alarmIntent);
 
-            if (!AlarmManager.getInstance().isAlarmAdded(alarmId)) {
-                AlarmManager.getInstance().addAlarm(alarm);
+            if (alarm.isActivated() && !AlarmManager.getInstance().isAlarmScheduled(alarmId)) {
+                AlarmManager.getInstance().updateAlarm(alarm);
             }
         }
     }
