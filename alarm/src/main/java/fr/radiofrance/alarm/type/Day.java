@@ -2,9 +2,6 @@ package fr.radiofrance.alarm.type;
 
 import java.util.Calendar;
 
-/**
- * Created by mondon on 13/05/16.
- */
 public enum Day {
 
     MONDAY(Calendar.MONDAY), TUESDAY(Calendar.TUESDAY), WEDNESDAY(Calendar.WEDNESDAY),

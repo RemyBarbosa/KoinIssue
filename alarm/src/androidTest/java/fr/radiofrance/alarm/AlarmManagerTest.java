@@ -33,7 +33,20 @@ public class AlarmManagerTest {
     @Before
     public void setup() {
         AlarmManager.initialize(InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                AudioManager.STREAM_MUSIC);
+                AudioManager.STREAM_MUSIC, new Intent(), Alarm.class);
+    }
+
+    @Test
+    public void addAlarm_isAlarmAdded() {
+        Alarm alarm = new Alarm("18");
+        alarm.setDays(new ArrayList<>(Arrays.asList(Day.TUESDAY, Day.THURSDAY)));
+        alarm.setHours(7);
+        alarm.setMinutes(50);
+        alarm.setIntent(new Intent());
+        alarm.setActivated(false);
+        AlarmManager.getInstance().addAlarm(alarm);
+
+        assertTrue(isAlarmAdded(alarm.getId()));
     }
 
     @Test
@@ -43,9 +56,10 @@ public class AlarmManagerTest {
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setIntent(new Intent());
+        alarm.setActivated(true);
         AlarmManager.getInstance().addAlarm(alarm);
 
-        assertTrue(isAlarmAdded(alarm.getId()));
+        assertTrue(isAlarmActivated(alarm.getId()));
     }
 
     @Test
@@ -65,7 +79,7 @@ public class AlarmManagerTest {
     }
 
     @Test
-    public void add3Alarms_areAlarmsActivated() {
+    public void add3Alarms_areAlarmsAdded() {
         Alarm alarm = new Alarm("1");
         alarm.setDays(new ArrayList<>(Arrays.asList(Day.MONDAY, Day.THURSDAY)));
         alarm.setHours(7);
@@ -166,10 +180,11 @@ public class AlarmManagerTest {
     }
 
     private boolean isAlarmAdded(String alarmId) {
-        if (TextUtils.isEmpty(alarmId)) return false;
+        return AlarmManager.getInstance().isAlarmAdded(alarmId);
+    }
 
-        Set<String> alarmsIds = AlarmManager.getInstance().getAllAlarmsIds();
-        return alarmsIds != null && alarmsIds.contains(alarmId);
+    private boolean isAlarmActivated(String alarmId) {
+        return AlarmManager.getInstance().isAlarmScheduled(alarmId);
     }
 
 }

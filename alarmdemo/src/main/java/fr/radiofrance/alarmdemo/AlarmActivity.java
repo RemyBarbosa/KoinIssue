@@ -18,9 +18,6 @@ import java.io.IOException;
 import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
 
-/**
- * Created by mondon on 17/05/16.
- */
 public class AlarmActivity extends AppCompatActivity {
 
     private Button stopButton;

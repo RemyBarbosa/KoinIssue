@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.TimeZone;
 
 import fr.radiofrance.alarm.manager.AlarmManager;
+import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.type.Day;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
-import fr.radiofrance.alarmdemo.model.Alarm;
 import fr.radiofrance.alarmdemo.view.DividerItemDecoration;
 
 public class MainActivity extends AppCompatActivity {
