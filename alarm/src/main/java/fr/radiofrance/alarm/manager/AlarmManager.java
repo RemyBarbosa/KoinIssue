@@ -420,6 +420,8 @@ public class AlarmManager {
      * @return True if the sound is playing, false otherwise.
      */
     public boolean playDefaultAlarmSound(int volume, boolean looping) {
+        if (isDefaultAlarmSoundPlaying()) return true;
+
         if (defaultAlarmSound == null) {
             defaultAlarmSound = new MediaPlayer();
             defaultAlarmSound.setAudioStreamType(streamType);
@@ -455,6 +457,10 @@ public class AlarmManager {
         defaultAlarmSound.release();
         defaultAlarmSound = null;
         restoreDeviceVolume();
+    }
+
+    public boolean isDefaultAlarmSoundPlaying() {
+        return defaultAlarmSound != null && defaultAlarmSound.isPlaying();
     }
 
     /**
