@@ -52,7 +52,7 @@ public class AlarmActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
+        } else if (!AlarmManager.getInstance().isDefaultAlarmSoundPlaying()) {
             AlarmManager.getInstance().playDefaultAlarmSound(alarm != null ? alarm.getVolume()
                     : AlarmManager.getInstance().getDeviceMaxVolume(), true);
         }
