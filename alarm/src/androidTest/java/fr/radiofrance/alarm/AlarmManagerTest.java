@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.text.TextUtils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,11 +12,10 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Calendar;
 
 import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
-import fr.radiofrance.alarm.type.Day;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -39,7 +37,7 @@ public class AlarmManagerTest {
     @Test
     public void addAlarm_isAlarmAdded() {
         Alarm alarm = new Alarm("18");
-        alarm.setDays(new ArrayList<>(Arrays.asList(Day.TUESDAY, Day.THURSDAY)));
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setIntent(new Intent());
@@ -52,7 +50,7 @@ public class AlarmManagerTest {
     @Test
     public void addAlarm_isAlarmActivated() {
         Alarm alarm = new Alarm("10");
-        alarm.setDays(new ArrayList<>(Arrays.asList(Day.TUESDAY, Day.THURSDAY)));
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setIntent(new Intent());
@@ -65,7 +63,7 @@ public class AlarmManagerTest {
     @Test
     public void removeAlarm_isAlarmRemoved() {
         Alarm alarm = new Alarm("1");
-        alarm.setDays(new ArrayList<>(Arrays.asList(Day.MONDAY, Day.THURSDAY)));
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setIntent(new Intent());
@@ -81,21 +79,21 @@ public class AlarmManagerTest {
     @Test
     public void add3Alarms_areAlarmsAdded() {
         Alarm alarm = new Alarm("1");
-        alarm.setDays(new ArrayList<>(Arrays.asList(Day.MONDAY, Day.THURSDAY)));
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setIntent(new Intent());
         AlarmManager.getInstance().addAlarm(alarm);
 
         Alarm alarm2 = new Alarm("2");
-        alarm2.setDays(new ArrayList<>(Arrays.asList(Day.TUESDAY, Day.FRIDAY)));
+        alarm2.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         alarm2.setHours(15);
         alarm2.setMinutes(12);
         alarm2.setIntent(new Intent());
         AlarmManager.getInstance().addAlarm(alarm2);
 
         Alarm alarm3 = new Alarm("3");
-        alarm3.setDays(new ArrayList<>(Arrays.asList(Day.WEDNESDAY, Day.SATURDAY)));
+        alarm3.setDays(new ArrayList<>(Arrays.asList(Calendar.WEDNESDAY, Calendar.SATURDAY)));
         alarm3.setHours(23);
         alarm3.setMinutes(4);
         alarm3.setIntent(new Intent());
@@ -109,21 +107,21 @@ public class AlarmManagerTest {
     @Test
     public void remove3Alarms_areAlarmsRemoved() {
         Alarm alarm = new Alarm("1");
-        alarm.setDays(new ArrayList<>(Arrays.asList(Day.MONDAY, Day.THURSDAY)));
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setIntent(new Intent());
         AlarmManager.getInstance().addAlarm(alarm);
 
         Alarm alarm2 = new Alarm("2");
-        alarm2.setDays(new ArrayList<>(Arrays.asList(Day.TUESDAY, Day.FRIDAY)));
+        alarm2.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         alarm2.setHours(15);
         alarm2.setMinutes(12);
         alarm2.setIntent(new Intent());
         AlarmManager.getInstance().addAlarm(alarm2);
 
         Alarm alarm3 = new Alarm("3");
-        alarm3.setDays(new ArrayList<>(Arrays.asList(Day.WEDNESDAY, Day.SATURDAY)));
+        alarm3.setDays(new ArrayList<>(Arrays.asList(Calendar.WEDNESDAY, Calendar.SATURDAY)));
         alarm3.setHours(23);
         alarm3.setMinutes(4);
         alarm3.setIntent(new Intent());
@@ -141,7 +139,7 @@ public class AlarmManagerTest {
     @Test
     public void updateAlarm_isAlarmUpdated() {
         Alarm alarm = new Alarm("1");
-        alarm.setDays(new ArrayList<>(Arrays.asList(Day.MONDAY, Day.THURSDAY)));
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setIntent(new Intent());
@@ -157,7 +155,7 @@ public class AlarmManagerTest {
         assertEquals(alarm.getMinutes(), savedAlarm.getMinutes());
 
         Alarm updatedAlarm = new Alarm("1");
-        updatedAlarm.setDays(new ArrayList<>(Arrays.asList(Day.TUESDAY, Day.FRIDAY)));
+        updatedAlarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         updatedAlarm.setHours(13);
         updatedAlarm.setMinutes(16);
         updatedAlarm.setIntent(new Intent());

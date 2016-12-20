@@ -24,7 +24,6 @@ import java.util.TimeZone;
 import fr.radiofrance.alarm.exception.AlarmException;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.receiver.AlarmReceiver;
-import fr.radiofrance.alarm.type.Day;
 import fr.radiofrance.alarm.util.PrefsUtils;
 
 public class AlarmManager {
@@ -386,13 +385,14 @@ public class AlarmManager {
      */
     @NonNull
     public Calendar getNextAlarmDate(@NonNull Alarm alarm) {
-        List<Day> alarmDays = alarm.getDays();
+        List<Integer> alarmDays = alarm.getDays();
         int hours = alarm.getHours();
         int minutes = alarm.getMinutes();
 
         // If no days are selected, we schedule a one shot alarm.
         if (alarmDays.isEmpty()) {
-            alarmDays = Arrays.asList(Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY, Day.SUNDAY);
+            alarmDays = Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+                    Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY);
         }
 
         boolean isNow = true;
@@ -400,7 +400,7 @@ public class AlarmManager {
 
         Calendar nextAlarmDate = null;
         while (nextAlarmDate == null) {
-            if (alarmDays.contains(Day.getDayFromValue(date.get(Calendar.DAY_OF_WEEK))) && (!isNow || isInFuture(date, hours, minutes))) {
+            if (alarmDays.contains(date.get(Calendar.DAY_OF_WEEK)) && (!isNow || isInFuture(date, hours, minutes))) {
                 nextAlarmDate = getCalendar(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH), hours, minutes);
                 continue;
             }

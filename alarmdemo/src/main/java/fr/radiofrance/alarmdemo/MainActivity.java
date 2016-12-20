@@ -28,7 +28,6 @@ import java.util.TimeZone;
 
 import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
-import fr.radiofrance.alarm.type.Day;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
 import fr.radiofrance.alarmdemo.view.DividerItemDecoration;
@@ -55,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        AlarmManager.getInstance().removeAllAlarms();
 
         setContentView(R.layout.activity_main);
         findViews();
@@ -128,37 +125,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        alarmsAdapter = new AlarmsAdapter(this, new ArrayList<Alarm>(),
-                new OnAlarmActionListener() {
+        alarmsAdapter = new AlarmsAdapter(this, AlarmManager.getInstance().getAllAlarms(), new OnAlarmActionListener() {
 
-                    @Override
-                    public void onAlarmClick(Alarm alarm, int position) {
-                        showUpdateAlarmDialog(alarm, position);
-                    }
+            @Override
+            public void onAlarmClick(Alarm alarm, int position) {
+                showUpdateAlarmDialog(alarm, position);
+            }
 
-                    @Override
-                    public void onAlarmLongClick(Alarm alarm, int position) {
-                        AlarmManager.getInstance().removeAlarm(alarm.getId());
-                        alarmsAdapter.removeAlarm(alarm);
-                        updateNextAlarmMessage();
-                    }
+            @Override
+            public void onAlarmLongClick(Alarm alarm, int position) {
+                AlarmManager.getInstance().removeAlarm(alarm.getId());
+                alarmsAdapter.removeAlarm(alarm);
+                updateNextAlarmMessage();
+            }
 
-                    @Override
-                    public void onAlarmActivated(Alarm alarm, boolean isActivated, int position) {
-                        if (!isActivated) {
-                            AlarmManager.getInstance().removeAlarm(alarm.getId());
-                        } else {
-                            AlarmManager.getInstance().addAlarm(alarm);
-                        }
-                        alarm.setActivated(isActivated);
-                        updateNextAlarmMessage();
-                    }
+            @Override
+            public void onAlarmActivated(Alarm alarm, boolean isActivated, int position) {
+                if (alarm == null) return;
 
-                });
+                alarm.setActivated(isActivated);
+                AlarmManager.getInstance().updateAlarm(alarm);
+                updateNextAlarmMessage();
+            }
+
+        });
 
         alarmsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        alarmsRecyclerView.addItemDecoration(
-                new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
+        alarmsRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST));
         alarmsRecyclerView.setAdapter(alarmsAdapter);
 
         addAlarmButton.setOnClickListener(new View.OnClickListener() {
@@ -235,14 +228,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createAlarm() {
-        List<Day> days = new ArrayList<>();
-        if (monday.isChecked()) days.add(Day.MONDAY);
-        if (tuesday.isChecked()) days.add(Day.TUESDAY);
-        if (wednesday.isChecked()) days.add(Day.WEDNESDAY);
-        if (thursday.isChecked()) days.add(Day.THURSDAY);
-        if (friday.isChecked()) days.add(Day.FRIDAY);
-        if (saturday.isChecked()) days.add(Day.SATURDAY);
-        if (sunday.isChecked()) days.add(Day.SUNDAY);
+        List<Integer> days = new ArrayList<>();
+        if (monday.isChecked()) days.add(Calendar.MONDAY);
+        if (tuesday.isChecked()) days.add(Calendar.TUESDAY);
+        if (wednesday.isChecked()) days.add(Calendar.WEDNESDAY);
+        if (thursday.isChecked()) days.add(Calendar.THURSDAY);
+        if (friday.isChecked()) days.add(Calendar.FRIDAY);
+        if (saturday.isChecked()) days.add(Calendar.SATURDAY);
+        if (sunday.isChecked()) days.add(Calendar.SUNDAY);
 
         int h = Integer.parseInt(hours.getText().toString());
         int m = Integer.parseInt(minutes.getText().toString());
@@ -264,14 +257,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateAlarm(@NonNull Alarm alarm, int alarmPosition) {
-        List<Day> days = new ArrayList<>();
-        if (monday.isChecked()) days.add(Day.MONDAY);
-        if (tuesday.isChecked()) days.add(Day.TUESDAY);
-        if (wednesday.isChecked()) days.add(Day.WEDNESDAY);
-        if (thursday.isChecked()) days.add(Day.THURSDAY);
-        if (friday.isChecked()) days.add(Day.FRIDAY);
-        if (saturday.isChecked()) days.add(Day.SATURDAY);
-        if (sunday.isChecked()) days.add(Day.SUNDAY);
+        List<Integer> days = new ArrayList<>();
+        if (monday.isChecked()) days.add(Calendar.MONDAY);
+        if (tuesday.isChecked()) days.add(Calendar.TUESDAY);
+        if (wednesday.isChecked()) days.add(Calendar.WEDNESDAY);
+        if (thursday.isChecked()) days.add(Calendar.THURSDAY);
+        if (friday.isChecked()) days.add(Calendar.FRIDAY);
+        if (saturday.isChecked()) days.add(Calendar.SATURDAY);
+        if (sunday.isChecked()) days.add(Calendar.SUNDAY);
 
         int h = Integer.parseInt(hours.getText().toString());
         int m = Integer.parseInt(minutes.getText().toString());

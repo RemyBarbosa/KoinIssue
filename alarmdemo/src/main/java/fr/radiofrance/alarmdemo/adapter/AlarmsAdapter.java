@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Locale;
 
 import fr.radiofrance.alarm.model.Alarm;
-import fr.radiofrance.alarm.type.Day;
 import fr.radiofrance.alarmdemo.R;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
 
@@ -110,10 +109,10 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         notifyItemRemoved(alarmPosition);
     }
 
-    private String daysToString(List<Day> days) {
+    private String daysToString(List<Integer> days) {
         String daysAsString = "";
-        for (Day day : days) {
-            daysAsString += day.name() + " ";
+        for (Integer day : days) {
+            daysAsString += "Day #" + day + " ";
         }
 
         return daysAsString;

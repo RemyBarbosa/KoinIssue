@@ -9,12 +9,10 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.radiofrance.alarm.type.Day;
-
 public class Alarm implements Parcelable {
 
     protected String id;
-    protected List<Day> days;
+    protected List<Integer> days;
     protected int hours;
     protected int minutes;
     protected int volume;
@@ -48,7 +46,7 @@ public class Alarm implements Parcelable {
     protected Alarm(Parcel in) {
         this.id = in.readString();
         this.days = new ArrayList<>();
-        in.readList(this.days, Day.class.getClassLoader());
+        in.readList(this.days, Integer.class.getClassLoader());
         this.hours = in.readInt();
         this.minutes = in.readInt();
         this.volume = in.readInt();
@@ -93,7 +91,7 @@ public class Alarm implements Parcelable {
     }
 
     @NonNull
-    public List<Day> getDays() {
+    public List<Integer> getDays() {
         if (days == null) {
             days = new ArrayList<>();
         }
@@ -105,7 +103,7 @@ public class Alarm implements Parcelable {
      *
      * @param days The days: see Day
      */
-    public void setDays(List<Day> days) {
+    public void setDays(List<Integer> days) {
         this.days = days;
     }
 
