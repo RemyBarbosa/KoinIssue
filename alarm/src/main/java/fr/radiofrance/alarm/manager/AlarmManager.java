@@ -38,7 +38,6 @@ public class AlarmManager {
     private Context context;
     private int streamType = AudioManager.STREAM_ALARM;
     private Intent alarmClockIntent;
-    private Class alarmItemClass;
     private AudioManager audioManager;
     private int deviceVolume;// Used to keep the device stream volume to restore it when necessary
     private MediaPlayer defaultAlarmSound;
@@ -58,13 +57,12 @@ public class AlarmManager {
      * @param context    The context
      * @param streamType The alarm stream type. See AudioManager for a list of stream types
      */
-    public static void initialize(@NonNull Context context, int streamType, Intent alarmClockIntent, Class alarmItemClass) {
+    public static void initialize(@NonNull Context context, int streamType, Intent alarmClockIntent) {
         AlarmManager instance = InstanceHolder.INSTANCE;
 
         instance.context = context;
         instance.streamType = streamType;
         instance.alarmClockIntent = alarmClockIntent;
-        instance.alarmItemClass = alarmItemClass;
         instance.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         instance.deviceVolume = instance.audioManager.getStreamVolume(streamType);
     }
@@ -114,7 +112,7 @@ public class AlarmManager {
         String alarmString = PrefsUtils.getString(context, KEY_ALARM + alarmId);
 
         if (!TextUtils.isEmpty(alarmString)) {
-            return (Alarm) new Gson().fromJson(alarmString, alarmItemClass);
+            return new Gson().fromJson(alarmString, Alarm.class);
         } else {
             return null;
         }
@@ -197,10 +195,10 @@ public class AlarmManager {
                 Calendar nextAlarmDate = getNextAlarmDate(alarm);
                 scheduleAlarm(AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
             }
-        } else if (!savedAlarm.isActivated() && isAlarmActivated) {
+        } else if (isAlarmActivated || !savedAlarm.isActivated()) {
             Calendar nextAlarmDate = getNextAlarmDate(alarm);
             scheduleAlarm(AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
-        } else if (!isAlarmActivated) {
+        } else {
             cancelAlarm(alarmId);
         }
     }
@@ -310,7 +308,7 @@ public class AlarmManager {
 
     /**
      * Sets the volume of the device stream.
-     * The device stream defined by {@link #initialize(Context, int, Intent, Class)} will have this new volume.
+     * The device stream defined by {@link #initialize(Context, int, Intent)} will have this new volume.
      * To know the volume max authorized for this stream, please call {@link #getDeviceMaxVolume()}.
      *
      * @param volume The volume to set
@@ -321,7 +319,7 @@ public class AlarmManager {
 
     /**
      * Gets the volume of the device stream.
-     * The device stream is defined by {@link #initialize(Context, int, Intent, Class)}.
+     * The device stream is defined by {@link #initialize(Context, int, Intent)}.
      *
      * @return The volume to get
      */
@@ -331,7 +329,7 @@ public class AlarmManager {
 
     /**
      * Gets the volume max of the device stream.
-     * The device stream is defined by {@link #initialize(Context, int, Intent, Class)}.
+     * The device stream is defined by {@link #initialize(Context, int, Intent)}.
      *
      * @return The volume to get
      */
@@ -555,7 +553,7 @@ public class AlarmManager {
 
     /**
      * Saves the current volume of the device stream.
-     * The device stream is defined by {@link #initialize(Context, int, Intent, Class)}.
+     * The device stream is defined by {@link #initialize(Context, int, Intent)}.
      */
     private void saveDeviceVolume() {
         deviceVolume = audioManager.getStreamVolume(streamType);

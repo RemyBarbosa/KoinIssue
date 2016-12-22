@@ -13,7 +13,7 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
 
-        AlarmManager.initialize(this, AudioManager.STREAM_MUSIC, new Intent(this, MainActivity.class), Alarm.class);
+        AlarmManager.initialize(this, AudioManager.STREAM_MUSIC, new Intent(this, MainActivity.class));
     }
 
 }

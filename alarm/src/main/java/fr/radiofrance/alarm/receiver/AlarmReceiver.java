@@ -32,11 +32,11 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
                 }
             }
         } else if (action.startsWith(KEY_ALARM) || action.startsWith(KEY_SNOOZE)) {
-            showAlarmActivity(context, action);
+            triggerAlarmIntent(context, action);
         }
     }
 
-    private void showAlarmActivity(Context context, String action) {
+    private void triggerAlarmIntent(Context context, String action) {
         String alarmId = null;
         if (action.startsWith(KEY_ALARM)) {
             alarmId = action.replace(KEY_ALARM, "");
@@ -59,7 +59,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(alarmIntent);
 
-            if (alarm.isActivated() && !AlarmManager.getInstance().isAlarmScheduled(alarmId)) {
+            if (alarm.isActivated()) {
                 AlarmManager.getInstance().updateAlarm(alarm);
             }
         }
