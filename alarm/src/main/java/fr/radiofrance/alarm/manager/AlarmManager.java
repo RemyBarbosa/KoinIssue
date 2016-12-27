@@ -195,7 +195,10 @@ public class AlarmManager {
                 Calendar nextAlarmDate = getNextAlarmDate(alarm);
                 scheduleAlarm(AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
             }
-        } else if (isAlarmActivated || !savedAlarm.isActivated()) {
+        } else if (isAlarmActivated && !savedAlarm.isActivated()) {
+            Calendar nextAlarmDate = getNextAlarmDate(alarm);
+            scheduleAlarm(AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
+        } else if (isAlarmActivated && !alarm.getDays().isEmpty()) {
             Calendar nextAlarmDate = getNextAlarmDate(alarm);
             scheduleAlarm(AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
         } else {
