@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -421,6 +422,18 @@ public class AlarmManager {
      * @return True if the sound is playing, false otherwise.
      */
     public boolean playDefaultAlarmSound(int volume, boolean looping) {
+        return playAlarmSound(volume, looping, Settings.System.DEFAULT_ALARM_ALERT_URI);
+    }
+
+    /**
+     * Plays the alarm sound specified by soundUri.
+     *
+     * @param volume   The volume used for this sound
+     * @param looping  If you want to play this sound infinitely.
+     * @param soundUri The Uri of the sound media.
+     * @return True if the sound is playing, false otherwise.
+     */
+    public boolean playAlarmSound(int volume, boolean looping, Uri soundUri) {
         if (isDefaultAlarmSoundPlaying()) return true;
 
         if (defaultAlarmSound == null) {
@@ -433,7 +446,7 @@ public class AlarmManager {
 
         audioManager.setStreamVolume(streamType, toValidVolume(volume), 0);
         try {
-            defaultAlarmSound.setDataSource(context, Settings.System.DEFAULT_ALARM_ALERT_URI);
+            defaultAlarmSound.setDataSource(context, soundUri);
             defaultAlarmSound.setLooping(looping);
             defaultAlarmSound.prepare();
             defaultAlarmSound.start();
