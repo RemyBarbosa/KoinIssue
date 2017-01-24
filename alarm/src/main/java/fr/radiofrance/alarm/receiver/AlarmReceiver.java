@@ -25,10 +25,10 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         if (TextUtils.isEmpty(action)) return;
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            List<Alarm> alarms = AlarmManager.getInstance().getAllAlarms();
+            List<Alarm> alarms = AlarmManager.getAllAlarms(context);
             for (Alarm alarm : alarms) {
                 if (alarm.isActivated()) {
-                    AlarmManager.getInstance().updateAlarm(alarm);
+                    AlarmManager.updateAlarm(context, alarm);
                 }
             }
         } else if (action.startsWith(KEY_ALARM) || action.startsWith(KEY_SNOOZE)) {
@@ -44,23 +44,23 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             alarmId = action.replace(KEY_SNOOZE, "");
         }
 
-        Alarm alarm = AlarmManager.getInstance().getAlarm(alarmId);
+        Alarm alarm = AlarmManager.getAlarm(context, alarmId);
         if (alarm == null) return;
 
         if (alarm.getDays().isEmpty()) {
             alarm.setActivated(false);
-            AlarmManager.getInstance().updateAlarm(alarm);
+            AlarmManager.updateAlarm(context, alarm);
         }
 
         Intent alarmIntent = alarm.getIntent();
         if (alarmIntent != null) {
-            AlarmManager.getInstance().setDeviceVolume(alarm.getVolume());
+            AlarmManager.setDeviceVolume(context, alarm.getVolume());
             alarmIntent.putExtra(AlarmManager.INTENT_ALARM_ID, alarmId);
             alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(alarmIntent);
 
             if (alarm.isActivated()) {
-                AlarmManager.getInstance().updateAlarm(alarm);
+                AlarmManager.updateAlarm(context, alarm);
             }
         }
     }

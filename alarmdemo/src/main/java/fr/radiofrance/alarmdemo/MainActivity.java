@@ -79,13 +79,12 @@ public class MainActivity extends AppCompatActivity {
         int menuItemId = item.getItemId();
 
         if (menuItemId == R.id.clean_all) {
-            AlarmManager.getInstance().removeAllAlarms();
+            AlarmManager.removeAllAlarms(this);
             alarmsAdapter.getAlarms().clear();
             alarmsAdapter.notifyDataSetChanged();
             updateNextAlarmMessage();
         } else if (menuItemId == R.id.debug) {
-            List<fr.radiofrance.alarm.model.Alarm> alarms = AlarmManager
-                    .getInstance().getAllAlarms();
+            List<fr.radiofrance.alarm.model.Alarm> alarms = AlarmManager.getAllAlarms(this);
 
             String debug = "";
             for (fr.radiofrance.alarm.model.Alarm alarm : alarms) {
@@ -125,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        alarmsAdapter = new AlarmsAdapter(this, AlarmManager.getInstance().getAllAlarms(), new OnAlarmActionListener() {
+        alarmsAdapter = new AlarmsAdapter(this, AlarmManager.getAllAlarms(this), new OnAlarmActionListener() {
 
             @Override
             public void onAlarmClick(Alarm alarm, int position) {
@@ -134,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAlarmLongClick(Alarm alarm, int position) {
-                AlarmManager.getInstance().removeAlarm(alarm.getId());
+                AlarmManager.removeAlarm(MainActivity.this, alarm.getId());
                 alarmsAdapter.removeAlarm(alarm);
                 updateNextAlarmMessage();
             }
@@ -144,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 if (alarm == null) return;
 
                 alarm.setActivated(isActivated);
-                AlarmManager.getInstance().updateAlarm(alarm);
+                AlarmManager.updateAlarm(MainActivity.this, alarm);
                 updateNextAlarmMessage();
             }
 
@@ -163,8 +162,8 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        volume.setMax(AlarmManager.getInstance().getDeviceMaxVolume());
-        volume.setProgress(AlarmManager.getInstance().getDeviceVolume());
+        volume.setMax(AlarmManager.getDeviceMaxVolume(this));
+        volume.setProgress(AlarmManager.getDeviceVolume(this));
     }
 
     private void showAddAlarmDialog() {
@@ -252,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
 
         alarmsAdapter.addAlarm(alarm);
 
-        AlarmManager.getInstance().addAlarm(alarm);
+        AlarmManager.addAlarm(this, alarm);
         updateNextAlarmMessage();
     }
 
@@ -277,12 +276,12 @@ public class MainActivity extends AppCompatActivity {
 
         alarmsAdapter.notifyItemChanged(alarmPosition);
 
-        AlarmManager.getInstance().updateAlarm(alarm);
+        AlarmManager.updateAlarm(this, alarm);
         updateNextAlarmMessage();
     }
 
     private void updateNextAlarmMessage() {
-        Calendar nextAlarmDate = AlarmManager.getInstance().getNextAlarmDate();
+        Calendar nextAlarmDate = AlarmManager.getNextAlarmDate(this);
         if (nextAlarmDate != null) {
             nextAlarmMessageTextView.setText(DateUtils
                     .getRelativeTimeSpanString(nextAlarmDate.getTimeInMillis(),

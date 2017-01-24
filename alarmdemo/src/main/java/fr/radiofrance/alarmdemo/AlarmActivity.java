@@ -24,6 +24,7 @@ public class AlarmActivity extends AppCompatActivity {
     private Button snoozeButton;
     private MediaPlayer player;
     private Alarm alarm;
+    private MediaPlayer alarmMediaPlayer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,7 +35,7 @@ public class AlarmActivity extends AppCompatActivity {
             Bundle extras = intent.getExtras();
             if (extras != null) {
                 String alarmId = extras.getString(AlarmManager.INTENT_ALARM_ID);
-                alarm = AlarmManager.getInstance().getAlarm(alarmId);
+                alarm = AlarmManager.getAlarm(this, alarmId);
             }
         }
 
@@ -52,9 +53,8 @@ public class AlarmActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else if (!AlarmManager.getInstance().isDefaultAlarmSoundPlaying()) {
-            AlarmManager.getInstance().playDefaultAlarmSound(alarm != null ? alarm.getVolume()
-                    : AlarmManager.getInstance().getDeviceMaxVolume(), true);
+        } else if (alarmMediaPlayer == null) {
+            alarmMediaPlayer = AlarmManager.playDefaultAlarmSound(this, alarm != null ? alarm.getVolume() : AlarmManager.getDeviceMaxVolume(this), true);
         }
     }
 
@@ -66,7 +66,8 @@ public class AlarmActivity extends AppCompatActivity {
             player = null;
         }
 
-        AlarmManager.getInstance().stopDefaultAlarmSound();
+        AlarmManager.stopDefaultAlarmSound(this, alarmMediaPlayer);
+        alarmMediaPlayer = null;
 
         super.onDestroy();
     }
@@ -98,7 +99,7 @@ public class AlarmActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View v) {
-                    AlarmManager.getInstance().snoozeAlarm(alarm.getId());
+                    AlarmManager.snoozeAlarm(AlarmActivity.this, alarm.getId());
                     finish();
                 }
 
