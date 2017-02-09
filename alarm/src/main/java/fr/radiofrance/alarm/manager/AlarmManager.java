@@ -207,7 +207,7 @@ public class AlarmManager {
         } else if (isAlarmActivated && !alarm.getDays().isEmpty()) {
             Calendar nextAlarmDate = getNextAlarmDate(alarm);
             scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
-        } else {
+        } else if (!isAlarmActivated) {
             cancelAlarm(context, alarmId);
         }
     }
