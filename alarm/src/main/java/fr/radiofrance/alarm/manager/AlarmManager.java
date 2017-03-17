@@ -199,16 +199,19 @@ public class AlarmManager {
 
             if (isAlarmActivated) {
                 Calendar nextAlarmDate = getNextAlarmDate(alarm);
-                scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
+                scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarmId, nextAlarmDate.getTimeInMillis());
             }
         } else if (isAlarmActivated && !savedAlarm.isActivated()) {
             Calendar nextAlarmDate = getNextAlarmDate(alarm);
-            scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
+            scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarmId, nextAlarmDate.getTimeInMillis());
         } else if (isAlarmActivated && !alarm.getDays().isEmpty()) {
             Calendar nextAlarmDate = getNextAlarmDate(alarm);
-            scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
+            scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarmId, nextAlarmDate.getTimeInMillis());
         } else if (!isAlarmActivated) {
             cancelAlarm(context, alarmId);
+        } else if (!isAlarmScheduled(context, alarmId)) {
+            Calendar nextAlarmDate = getNextAlarmDate(alarm);
+            scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarmId, nextAlarmDate.getTimeInMillis());
         }
     }
 
