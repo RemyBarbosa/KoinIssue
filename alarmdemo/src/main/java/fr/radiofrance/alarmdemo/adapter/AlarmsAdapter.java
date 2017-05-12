@@ -94,6 +94,16 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         return alarms;
     }
 
+    public void setAlarms(final List<Alarm> alarms) {
+        if (alarms == null || alarms.isEmpty()) {
+            return;
+        }
+
+        this.alarms.clear();
+        this.alarms.addAll(alarms);
+        this.notifyDataSetChanged();
+    }
+
     public void addAlarm(Alarm alarm) {
         if (alarm == null) return;
 

@@ -43,7 +43,7 @@ public class Alarm implements Parcelable {
         this.activated = false;
     }
 
-    protected Alarm(Parcel in) {
+    protected Alarm(final Parcel in) {
         this.id = in.readString();
         this.days = new ArrayList<>();
         in.readList(this.days, Integer.class.getClassLoader());
@@ -52,7 +52,7 @@ public class Alarm implements Parcelable {
         this.volume = in.readInt();
         this.snoozeDuration = in.readInt();
         this.intentUri = in.readString();
-        this.activated = in.readInt() == 1;
+        this.activated = in.readByte() == 1;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class Alarm implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
+    public void writeToParcel(final Parcel dest, final int flags) {
         dest.writeString(this.id);
         dest.writeList(this.days);
         dest.writeInt(this.hours);
@@ -69,7 +69,7 @@ public class Alarm implements Parcelable {
         dest.writeInt(this.volume);
         dest.writeInt(this.snoozeDuration);
         dest.writeString(this.intentUri);
-        dest.writeInt(activated ? 1 : 0);
+        dest.writeByte(this.activated ? (byte) 1 : (byte) 0);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class Alarm implements Parcelable {
      *
      * @param days The days: see Day
      */
-    public void setDays(List<Integer> days) {
+    public void setDays(final List<Integer> days) {
         this.days = days;
     }
 
@@ -111,7 +111,7 @@ public class Alarm implements Parcelable {
         return hours;
     }
 
-    public void setHours(int hours) {
+    public void setHours(final int hours) {
         this.hours = hours;
     }
 
@@ -119,7 +119,7 @@ public class Alarm implements Parcelable {
         return minutes;
     }
 
-    public void setMinutes(int minutes) {
+    public void setMinutes(final int minutes) {
         this.minutes = minutes;
     }
 
@@ -132,7 +132,7 @@ public class Alarm implements Parcelable {
      *
      * @param volume The volume of the current alarm.
      */
-    public void setVolume(int volume) {
+    public void setVolume(final int volume) {
         this.volume = volume;
     }
 
@@ -140,12 +140,14 @@ public class Alarm implements Parcelable {
         return snoozeDuration;
     }
 
-    public void setSnoozeDuration(int snoozeDurationInMillis) {
+    public void setSnoozeDuration(final int snoozeDurationInMillis) {
         this.snoozeDuration = snoozeDurationInMillis;
     }
 
     public Intent getIntent() {
-        if (intentUri == null) return null;
+        if (intentUri == null) {
+            return null;
+        }
 
         try {
             return Intent.parseUri(intentUri, 0);
@@ -155,7 +157,7 @@ public class Alarm implements Parcelable {
         }
     }
 
-    public void setIntent(Intent intent) {
+    public void setIntent(final Intent intent) {
         this.intentUri = intent.toUri(0);
     }
 
@@ -163,7 +165,7 @@ public class Alarm implements Parcelable {
         return activated;
     }
 
-    public void setActivated(boolean activated) {
+    public void setActivated(final boolean activated) {
         this.activated = activated;
     }
 

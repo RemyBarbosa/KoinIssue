@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar volume;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -64,19 +64,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        alarmsAdapter.setAlarms(AlarmManager.getAllAlarms(this));
         updateNextAlarmMessage();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int menuItemId = item.getItemId();
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        final int menuItemId = item.getItemId();
 
         if (menuItemId == R.id.clean_all) {
             AlarmManager.removeAllAlarms(this);
@@ -84,10 +85,10 @@ public class MainActivity extends AppCompatActivity {
             alarmsAdapter.notifyDataSetChanged();
             updateNextAlarmMessage();
         } else if (menuItemId == R.id.debug) {
-            List<fr.radiofrance.alarm.model.Alarm> alarms = AlarmManager.getAllAlarms(this);
+            final List<Alarm> alarms = AlarmManager.getAllAlarms(this);
 
             String debug = "";
-            for (fr.radiofrance.alarm.model.Alarm alarm : alarms) {
+            for (final Alarm alarm : alarms) {
                 if (alarm != null) {
                     debug += alarm + "\n";
                 }
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 debug = getString(R.string.no_alarms);
             }
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(debug);
             builder.show();
         }
@@ -124,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        alarmsAdapter = new AlarmsAdapter(this, AlarmManager.getAllAlarms(this), new OnAlarmActionListener() {
+        alarmsAdapter = new AlarmsAdapter(this, new ArrayList<Alarm>(), new OnAlarmActionListener() {
 
             @Override
             public void onAlarmClick(Alarm alarm, int position) {
@@ -140,7 +141,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAlarmActivated(Alarm alarm, boolean isActivated, int position) {
-                if (alarm == null) return;
+                if (alarm == null) {
+                    return;
+                }
 
                 alarm.setActivated(isActivated);
                 AlarmManager.updateAlarm(MainActivity.this, alarm);
@@ -167,12 +170,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showAddAlarmDialog() {
-        ViewGroup parentView = (ViewGroup) addAlarmDialogView.getParent();
+        final ViewGroup parentView = (ViewGroup) addAlarmDialogView.getParent();
         if (parentView != null) {
             parentView.removeAllViews();
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setView(addAlarmDialogView);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
@@ -182,27 +185,21 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Cancel", null);
 
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-            }
-
-        });
-
-        AlertDialog alertDialog = builder.create();
+        final AlertDialog alertDialog = builder.create();
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
         alertDialog.show();
     }
 
     private void showUpdateAlarmDialog(@NonNull final Alarm alarm, final int alarmPosition) {
-        ViewGroup parentView = (ViewGroup) addAlarmDialogView.getParent();
+        final ViewGroup parentView = (ViewGroup) addAlarmDialogView.getParent();
         if (parentView != null) {
             parentView.removeAllViews();
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setView(addAlarmDialogView);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
@@ -212,22 +209,16 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Cancel", null);
 
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-            }
-
-        });
-
-        AlertDialog alertDialog = builder.create();
+        final AlertDialog alertDialog = builder.create();
         alertDialog.setCancelable(true);
         alertDialog.setCanceledOnTouchOutside(true);
         alertDialog.show();
     }
 
     private void createAlarm() {
-        List<Integer> days = new ArrayList<>();
+        final List<Integer> days = new ArrayList<>();
         if (monday.isChecked()) days.add(Calendar.MONDAY);
         if (tuesday.isChecked()) days.add(Calendar.TUESDAY);
         if (wednesday.isChecked()) days.add(Calendar.WEDNESDAY);
@@ -236,10 +227,10 @@ public class MainActivity extends AppCompatActivity {
         if (saturday.isChecked()) days.add(Calendar.SATURDAY);
         if (sunday.isChecked()) days.add(Calendar.SUNDAY);
 
-        int h = Integer.parseInt(hours.getText().toString());
-        int m = Integer.parseInt(minutes.getText().toString());
+        final int h = Integer.parseInt(hours.getText().toString());
+        final int m = Integer.parseInt(minutes.getText().toString());
 
-        Alarm alarm = new Alarm(String.format("%s", new Date().getTime()));
+        final Alarm alarm = new Alarm(String.format("%s", new Date().getTime()));
         alarm.setDays(days);
         alarm.setHours(h);
         alarm.setMinutes(m);
@@ -255,8 +246,8 @@ public class MainActivity extends AppCompatActivity {
         updateNextAlarmMessage();
     }
 
-    private void updateAlarm(@NonNull Alarm alarm, int alarmPosition) {
-        List<Integer> days = new ArrayList<>();
+    private void updateAlarm(@NonNull final Alarm alarm, final int alarmPosition) {
+        final List<Integer> days = new ArrayList<>();
         if (monday.isChecked()) days.add(Calendar.MONDAY);
         if (tuesday.isChecked()) days.add(Calendar.TUESDAY);
         if (wednesday.isChecked()) days.add(Calendar.WEDNESDAY);
@@ -265,8 +256,8 @@ public class MainActivity extends AppCompatActivity {
         if (saturday.isChecked()) days.add(Calendar.SATURDAY);
         if (sunday.isChecked()) days.add(Calendar.SUNDAY);
 
-        int h = Integer.parseInt(hours.getText().toString());
-        int m = Integer.parseInt(minutes.getText().toString());
+        final int h = Integer.parseInt(hours.getText().toString());
+        final int m = Integer.parseInt(minutes.getText().toString());
 
         alarm.setDays(days);
         alarm.setHours(h);
@@ -281,11 +272,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateNextAlarmMessage() {
-        Calendar nextAlarmDate = AlarmManager.getNextAlarmDate(this);
+        final Calendar nextAlarmDate = AlarmManager.getNextAlarmDate(this);
         if (nextAlarmDate != null) {
-            nextAlarmMessageTextView.setText(DateUtils
-                    .getRelativeTimeSpanString(nextAlarmDate.getTimeInMillis(),
-                            Calendar.getInstance(TimeZone.getDefault()).getTimeInMillis(), 0));
+            nextAlarmMessageTextView.setText(DateUtils.getRelativeTimeSpanString(nextAlarmDate.getTimeInMillis(),
+                    Calendar.getInstance(TimeZone.getDefault()).getTimeInMillis(), 0));
         } else {
             nextAlarmMessageTextView.setText(R.string.no_alarms);
         }

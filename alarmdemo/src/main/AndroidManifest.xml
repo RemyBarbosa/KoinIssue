@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
-        android:name=".application.Application"
+        android:name="fr.radiofrance.alarmdemo.application.Application"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -16,7 +16,8 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name="fr.radiofrance.alarmdemo.MainActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="userPortrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -26,7 +27,8 @@
         </activity>
 
         <activity
-            android:name=".AlarmActivity"
+            android:name="fr.radiofrance.alarmdemo.AlarmActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="userPortrait"/>
 
         <receiver

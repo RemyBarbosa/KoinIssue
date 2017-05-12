@@ -20,7 +20,6 @@ import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -82,7 +81,7 @@ public class AlarmManagerTest {
     }
 
     @Test
-    public void add3Alarms_areAlarmsAdded() {
+    public void addAlarms_areAlarmsAdded() {
         Alarm alarm = new Alarm("1");
         alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
@@ -110,7 +109,7 @@ public class AlarmManagerTest {
     }
 
     @Test
-    public void remove3Alarms_areAlarmsRemoved() {
+    public void removeAlarms_areAlarmsRemoved() {
         Alarm alarm = new Alarm("1");
         alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
@@ -143,40 +142,160 @@ public class AlarmManagerTest {
 
     @Test
     public void updateAlarm_isAlarmUpdated() {
-        Alarm alarm = new Alarm("1");
-        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
-        alarm.setHours(7);
-        alarm.setMinutes(50);
-        alarm.setIntent(new Intent());
+        // Create
+        Alarm alarm = getDefaultAlarm();
         AlarmManager.addAlarm(context, alarm);
 
-        assertTrue(isAlarmAdded(alarm.getId()));
+        // Update
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
+        alarm.setHours(13);
+        alarm.setMinutes(16);
+        alarm.setVolume(4);
+        alarm.setSnoozeDuration(50);
+        alarm.setIntent(new Intent("action"));
+        AlarmManager.updateAlarm(context, alarm);
 
-        // Is alarm well saved
-        Alarm savedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+        // Get updated alarm
+        Alarm updatedAlarm = AlarmManager.getAlarm(context, alarm.getId());
 
-        assertNotNull(savedAlarm);
-        assertEquals(alarm.getDays(), savedAlarm.getDays());
-        assertEquals(alarm.getHours(), savedAlarm.getHours());
-        assertEquals(alarm.getMinutes(), savedAlarm.getMinutes());
+        // Then
+        assertNotNull(updatedAlarm);
+        assertEquals(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)), updatedAlarm.getDays());
+        assertEquals(13, updatedAlarm.getHours());
+        assertEquals(16, updatedAlarm.getMinutes());
+        assertEquals(4, updatedAlarm.getVolume());
+        assertEquals(50, updatedAlarm.getSnoozeDuration());
+        assertNotNull(updatedAlarm.getIntent());
+        assertEquals("action", updatedAlarm.getIntent().getAction());
+    }
 
-        Alarm updatedAlarm = new Alarm("1");
-        updatedAlarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
-        updatedAlarm.setHours(13);
-        updatedAlarm.setMinutes(16);
-        updatedAlarm.setIntent(new Intent());
-        AlarmManager.updateAlarm(context, updatedAlarm);
+    @Test
+    public void updateAlarmDays_isAlarmActivated() {
+        // Create
+        Alarm alarm = getDefaultAlarm();
+        AlarmManager.addAlarm(context, alarm);
 
-        // Is alarm well updated
-        savedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+        // Update
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
+        AlarmManager.updateAlarm(context, alarm);
 
-        assertNotNull(savedAlarm);
-        assertNotEquals(alarm.getDays(), savedAlarm.getDays());
-        assertNotEquals(alarm.getHours(), savedAlarm.getHours());
-        assertNotEquals(alarm.getMinutes(), savedAlarm.getMinutes());
-        assertEquals(updatedAlarm.getDays(), savedAlarm.getDays());
-        assertEquals(updatedAlarm.getHours(), savedAlarm.getHours());
-        assertEquals(updatedAlarm.getMinutes(), savedAlarm.getMinutes());
+        // Get updated alarm
+        Alarm updatedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+
+        // Then
+        assertNotNull(updatedAlarm);
+        assertEquals(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)), updatedAlarm.getDays());
+        assertTrue(isAlarmActivated(updatedAlarm.getId()));
+    }
+
+    @Test
+    public void updateAlarmHours_isAlarmActivated() {
+        // Create
+        Alarm alarm = getDefaultAlarm();
+        AlarmManager.addAlarm(context, alarm);
+
+        // Update
+        alarm.setHours(13);
+        AlarmManager.updateAlarm(context, alarm);
+
+        // Get updated alarm
+        Alarm updatedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+
+        // Then
+        assertNotNull(updatedAlarm);
+        assertEquals(13, updatedAlarm.getHours());
+        assertTrue(isAlarmActivated(updatedAlarm.getId()));
+    }
+
+    @Test
+    public void updateAlarmMinutes_isAlarmActivated() {
+        // Create
+        Alarm alarm = getDefaultAlarm();
+        AlarmManager.addAlarm(context, alarm);
+
+        // Update
+        alarm.setMinutes(16);
+        AlarmManager.updateAlarm(context, alarm);
+
+        // Get updated alarm
+        Alarm updatedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+
+        // Then
+        assertNotNull(updatedAlarm);
+        assertEquals(16, updatedAlarm.getMinutes());
+        assertTrue(isAlarmActivated(updatedAlarm.getId()));
+    }
+
+    @Test
+    public void updateAlarmVolume_isAlarmActivated() {
+        // Create
+        Alarm alarm = getDefaultAlarm();
+        AlarmManager.addAlarm(context, alarm);
+
+        // Update
+        alarm.setVolume(4);
+        AlarmManager.updateAlarm(context, alarm);
+
+        // Get updated alarm
+        Alarm updatedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+
+        // Then
+        assertNotNull(updatedAlarm);
+        assertEquals(4, updatedAlarm.getVolume());
+        assertTrue(isAlarmActivated(updatedAlarm.getId()));
+    }
+
+    @Test
+    public void updateAlarmSnoozeDuration_isAlarmActivated() {
+        // Create
+        Alarm alarm = getDefaultAlarm();
+        AlarmManager.addAlarm(context, alarm);
+
+        // Update
+        alarm.setSnoozeDuration(50);
+        AlarmManager.updateAlarm(context, alarm);
+
+        // Get updated alarm
+        Alarm updatedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+
+        // Then
+        assertNotNull(updatedAlarm);
+        assertEquals(50, updatedAlarm.getSnoozeDuration());
+        assertTrue(isAlarmActivated(updatedAlarm.getId()));
+    }
+
+    @Test
+    public void updateAlarmIntent_isAlarmActivated() {
+        // Create
+        Alarm alarm = getDefaultAlarm();
+        AlarmManager.addAlarm(context, alarm);
+
+        // Update
+        alarm.setIntent(new Intent("action"));
+        AlarmManager.updateAlarm(context, alarm);
+
+        // Get updated alarm
+        Alarm updatedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+
+        // Then
+        assertNotNull(updatedAlarm);
+        assertNotNull(updatedAlarm.getIntent());
+        assertEquals("action", updatedAlarm.getIntent().getAction());
+        assertTrue(isAlarmActivated(updatedAlarm.getId()));
+    }
+
+    @Test
+    public void updateAlarmActivated_isAlarmActivated() {
+        // Create
+        Alarm alarm = getDefaultAlarm();
+        AlarmManager.addAlarm(context, alarm);
+
+        // Get added alarm
+        Alarm addedAlarm = AlarmManager.getAlarm(context, alarm.getId());
+
+        // Then
+        assertNotNull(addedAlarm);
+        assertTrue(isAlarmActivated(addedAlarm.getId()));
     }
 
     @After
@@ -184,11 +303,23 @@ public class AlarmManagerTest {
         AlarmManager.removeAllAlarms(context);
     }
 
-    private boolean isAlarmAdded(String alarmId) {
+    private Alarm getDefaultAlarm() {
+        Alarm alarm = new Alarm("1");
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
+        alarm.setHours(7);
+        alarm.setMinutes(50);
+        alarm.setVolume(2);
+        alarm.setSnoozeDuration(10000);
+        alarm.setIntent(new Intent());
+        alarm.setActivated(true);
+        return alarm;
+    }
+
+    private boolean isAlarmAdded(final String alarmId) {
         return AlarmManager.isAlarmAdded(context, alarmId);
     }
 
-    private boolean isAlarmActivated(String alarmId) {
+    private boolean isAlarmActivated(final String alarmId) {
         return AlarmManager.isAlarmScheduled(context, alarmId);
     }
 

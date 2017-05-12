@@ -2,6 +2,7 @@ package fr.radiofrance.alarm.receiver;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.TextUtils;
 
@@ -20,39 +21,51 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
     private static final String TAG = AlarmReceiver.class.getSimpleName();
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
-        if (TextUtils.isEmpty(action)) return;
+    public void onReceive(final Context context, final Intent intent) {
+        final String action = intent.getAction();
+        if (context == null || TextUtils.isEmpty(action)) {
+            return;
+        }
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            List<Alarm> alarms = AlarmManager.getAllAlarms(context);
-            for (Alarm alarm : alarms) {
+            // The device has booted: we schedule all alarms that had been activated before the reboot
+            final List<Alarm> alarms = AlarmManager.getAllAlarms(context);
+            for (final Alarm alarm : alarms) {
                 if (alarm.isActivated()) {
                     AlarmManager.updateAlarm(context, alarm);
                 }
             }
         } else if (action.startsWith(KEY_ALARM) || action.startsWith(KEY_SNOOZE)) {
-            triggerAlarmIntent(context, action);
+
+            // Getting the alarm id from the intent action
+            String alarmId = null;
+            if (action.startsWith(KEY_ALARM)) {
+                alarmId = action.replace(KEY_ALARM, "");
+            } else if (action.startsWith(KEY_SNOOZE)) {
+                alarmId = action.replace(KEY_SNOOZE, "");
+            }
+
+            if (TextUtils.isEmpty(alarmId)) {
+                return;
+            }
+
+            triggerAlarm(context, alarmId);
         }
     }
 
-    private void triggerAlarmIntent(Context context, String action) {
-        String alarmId = null;
-        if (action.startsWith(KEY_ALARM)) {
-            alarmId = action.replace(KEY_ALARM, "");
-        } else if (action.startsWith(KEY_SNOOZE)) {
-            alarmId = action.replace(KEY_SNOOZE, "");
+    private void triggerAlarm(@NonNull final Context context, @NonNull final String alarmId) {
+        final Alarm alarm = AlarmManager.getAlarm(context, alarmId);
+        if (alarm == null) {
+            return;
         }
 
-        Alarm alarm = AlarmManager.getAlarm(context, alarmId);
-        if (alarm == null) return;
-
         if (alarm.getDays().isEmpty()) {
+            // If the alarm is a one shot alarm, we deactivate it
             alarm.setActivated(false);
             AlarmManager.updateAlarm(context, alarm);
         }
 
-        Intent alarmIntent = alarm.getIntent();
+        final Intent alarmIntent = alarm.getIntent();
         if (alarmIntent != null) {
             AlarmManager.setDeviceVolume(context, alarm.getVolume());
             alarmIntent.putExtra(AlarmManager.INTENT_ALARM_ID, alarmId);
@@ -60,6 +73,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             context.startActivity(alarmIntent);
 
             if (alarm.isActivated()) {
+                // If the alarm is still activated (means that it is a multi shot alarm), we schedule the next alarm
                 AlarmManager.updateAlarm(context, alarm);
             }
         }

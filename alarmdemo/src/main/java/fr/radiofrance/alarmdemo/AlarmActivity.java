@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 
 import java.io.IOException;
@@ -30,11 +31,17 @@ public class AlarmActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = getIntent();
+        // Showing on lock screen
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+        final Intent intent = getIntent();
         if (intent != null) {
-            Bundle extras = intent.getExtras();
+            final Bundle extras = intent.getExtras();
             if (extras != null) {
-                String alarmId = extras.getString(AlarmManager.INTENT_ALARM_ID);
+                final String alarmId = extras.getString(AlarmManager.INTENT_ALARM_ID);
                 alarm = AlarmManager.getAlarm(this, alarmId);
             }
         }
@@ -44,15 +51,22 @@ public class AlarmActivity extends AppCompatActivity {
         initViews();
 
         if (isNetworkAvailable(this)) {
-            try {
-                player = new MediaPlayer();
-                player.setDataSource(this, Uri.parse("http://audio.scdn.arkena.com/11016/fip-midfi128.mp3"));
-                player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                player.prepare();
-                player.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        player = new MediaPlayer();
+                        player.setDataSource(AlarmActivity.this, Uri.parse("http://direct.fipradio.fr/live/fip-lofi.mp3"));
+                        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                        player.prepare();
+                        player.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }).start();
         } else if (alarmMediaPlayer == null) {
             alarmMediaPlayer = AlarmManager.playDefaultAlarmSound(this, alarm != null ? alarm.getVolume() : AlarmManager.getDeviceMaxVolume(this), true);
         }
@@ -70,6 +84,11 @@ public class AlarmActivity extends AppCompatActivity {
         alarmMediaPlayer = null;
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Block back like the Android Alarms App
     }
 
     private void findViews() {
@@ -113,17 +132,20 @@ public class AlarmActivity extends AppCompatActivity {
      * @param context
      * @return TRUE if connection exists, else FALSE.
      */
-    private boolean isNetworkAvailable(Context context) {
-        ConnectivityManager connectivity = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity != null) {
-            NetworkInfo[] info = connectivity.getAllNetworkInfo();
-            if (info != null) {
-                for (NetworkInfo anInfo : info) {
-                    if (anInfo.getState() == NetworkInfo.State.CONNECTED) {
-                        return true;
-                    }
-                }
+    private boolean isNetworkAvailable(final Context context) {
+        final ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity == null) {
+            return false;
+        }
+
+        final NetworkInfo[] info = connectivity.getAllNetworkInfo();
+        if (info == null) {
+            return false;
+        }
+
+        for (final NetworkInfo anInfo : info) {
+            if (anInfo.getState() == NetworkInfo.State.CONNECTED) {
+                return true;
             }
         }
 
