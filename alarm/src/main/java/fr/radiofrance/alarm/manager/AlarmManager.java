@@ -38,11 +38,13 @@ public class AlarmManager {
     private static final String KEY_DEVICE_VOLUME = "alarm.manager.device.volume";
     private static final String KEY_SYSTEM_ALARM_CLOCK_INTENT = "alarm.manager.system.alarm.clock.intent";
     private static final String KEY_STREAM_TYPE = "alarm.manager.stream.type";
+    private static final String KEY_ALARM_CLASS = "alarm.manager.alarm.class";
     private static final int DEFAULT_SNOOZE_DURATION = 600000;// 10 minutes
 
-    public static void initialize(final Context context, final Intent systemAlarmClockIntent, final int streamType) {
+    public static void initialize(final Context context, final Intent systemAlarmClockIntent, final int streamType, final Class<?> alarmClass) {
         setSystemAlarmClockIntent(context, systemAlarmClockIntent);
         setStreamType(context, streamType);
+        setAlarmClass(context, alarmClass);
     }
 
     /**
@@ -50,7 +52,7 @@ public class AlarmManager {
      *
      * @param alarm Alarm that will ring.
      */
-    public static void addAlarm(final Context context, @NonNull final Alarm alarm) {
+    public static <T extends Alarm> void addAlarm(final Context context, @NonNull final T alarm) {
         final int hours = alarm.getHours();
         final int minutes = alarm.getMinutes();
 
@@ -81,8 +83,7 @@ public class AlarmManager {
      * @param alarmId The id of the Alarm to get
      * @return The Alarm
      */
-    @SuppressWarnings("unchecked")
-    public static Alarm getAlarm(final Context context, final String alarmId) {
+    public static <T extends Alarm> T getAlarm(final Context context, final String alarmId) {
         if (TextUtils.isEmpty(alarmId) || !PrefsUtils.hasKey(context, KEY_ALARM + alarmId)) {
             return null;
         }
@@ -90,7 +91,11 @@ public class AlarmManager {
         final String alarmString = PrefsUtils.getString(context, KEY_ALARM + alarmId, null);
 
         if (!TextUtils.isEmpty(alarmString)) {
-            return new Gson().fromJson(alarmString, Alarm.class);
+            final Class<Alarm> alarmClass = getAlarmClass(context);
+            if (alarmClass == null) {
+                return null;
+            }
+            return new Gson().<T>fromJson(alarmString, alarmClass);
         } else {
             return null;
         }
@@ -102,12 +107,12 @@ public class AlarmManager {
      * @return All alarms
      */
     @NonNull
-    public static List<Alarm> getAllAlarms(final Context context) {
-        final List<Alarm> alarms = new ArrayList<>();
+    public static <T extends Alarm> List<T> getAllAlarms(final Context context) {
+        final List<T> alarms = new ArrayList<>();
 
         final Set<String> alarmsIds = getAllAlarmsIds(context);
         for (final String alarmId : alarmsIds) {
-            final Alarm alarm = getAlarm(context, alarmId);
+            final T alarm = getAlarm(context, alarmId);
             if (alarm != null) {
                 alarms.add(alarm);
             }
@@ -121,12 +126,12 @@ public class AlarmManager {
      *
      * @return All alarms
      */
-    public static List<Alarm> getAllActivatedAlarms(final Context context) {
-        final List<Alarm> alarms = new ArrayList<>();
+    public static <T extends Alarm> List<T> getAllActivatedAlarms(final Context context) {
+        final List<T> alarms = new ArrayList<>();
 
         final Set<String> alarmsIds = getAllAlarmsIds(context);
         for (final String alarmId : alarmsIds) {
-            final Alarm alarm = getAlarm(context, alarmId);
+            final T alarm = getAlarm(context, alarmId);
             if (alarm != null && alarm.isActivated()) {
                 alarms.add(alarm);
             }
@@ -172,18 +177,31 @@ public class AlarmManager {
         return streamType;
     }
 
+    private static void setAlarmClass(final Context context, final Class<?> alarmClass) {
+        PrefsUtils.setString(context, KEY_ALARM_CLASS, alarmClass.getCanonicalName());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Alarm> Class<T> getAlarmClass(final Context context) {
+        try {
+            return (Class<T>) Class.forName(PrefsUtils.getString(context, KEY_ALARM_CLASS, ""));
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     /**
      * Updates an Alarm previously added.
      *
      * @param alarm The Alarm that contains the updates. This Alarm has to have the same id as the Alarm to update.
      */
-    public static void updateAlarm(final Context context, @NonNull final Alarm alarm) {
+    public static <T extends Alarm> void updateAlarm(final Context context, @NonNull final T alarm) {
         final String alarmId = alarm.getId();
         if (TextUtils.isEmpty(alarmId) || !PrefsUtils.hasKey(context, KEY_ALARM + alarmId)) {
             return;
         }
 
-        final Alarm savedAlarm = getAlarm(context, alarmId);
+        final T savedAlarm = getAlarm(context, alarmId);
         if (savedAlarm == null) {
             return;
         }
@@ -280,16 +298,16 @@ public class AlarmManager {
     }
 
     /**
-     * Snoozes an Alarm. The Alarm will ring in a specified frequency defined by {@link fr.radiofrance.alarm.model.Alarm#setSnoozeDuration(int)}.
+     * Snoozes an Alarm. The Alarm will ring in a specified frequency defined by {@link Alarm#setSnoozeDuration(int)}.
      *
      * @param alarmId The id of the Alarm to snooze
      */
-    public static void snoozeAlarm(final Context context, final String alarmId) {
+    public static <T extends Alarm> void snoozeAlarm(final Context context, final String alarmId) {
         if (TextUtils.isEmpty(alarmId)) {
             return;
         }
 
-        final Alarm alarm = getAlarm(context, alarmId);
+        final T alarm = getAlarm(context, alarmId);
         if (alarm == null) {
             return;
         }
@@ -393,13 +411,13 @@ public class AlarmManager {
      *
      * @return The next Alarm
      */
-    public static Alarm getNextAlarm(final Context context) {
+    public static <T extends Alarm> T getNextAlarm(final Context context) {
         Calendar nextDate = null;
-        Alarm nextAlarm = null;
+        T nextAlarm = null;
 
         final Set<String> alarmsIds = getAllAlarmsIds(context);
         for (final String alarmId : alarmsIds) {
-            final Alarm alarm = getAlarm(context, alarmId);
+            final T alarm = getAlarm(context, alarmId);
             if (alarm == null || !alarm.isActivated()) {
                 continue;
             }
@@ -419,8 +437,8 @@ public class AlarmManager {
      *
      * @return The next Alarm date as Calendar
      */
-    public static Calendar getNextAlarmDate(final Context context) {
-        final Alarm nextAlarm = getNextAlarm(context);
+    public static <T extends Alarm> Calendar getNextAlarmDate(final Context context) {
+        final T nextAlarm = getNextAlarm(context);
         if (nextAlarm != null) {
             return getNextAlarmDate(nextAlarm);
         }
@@ -435,7 +453,7 @@ public class AlarmManager {
      * @return The next Alarm date
      */
     @NonNull
-    public static Calendar getNextAlarmDate(@NonNull final Alarm alarm) {
+    public static <T extends Alarm> Calendar getNextAlarmDate(@NonNull final T alarm) {
         final int hours = alarm.getHours();
         final int minutes = alarm.getMinutes();
 
@@ -567,7 +585,7 @@ public class AlarmManager {
      *
      * @param alarm The Alarm to save
      */
-    private static void saveAlarm(final Context context, @NonNull final Alarm alarm) {
+    private static <T extends Alarm> void saveAlarm(final Context context, @NonNull final T alarm) {
         final String alarmId = alarm.getId();
 
         // Updating the list of Alarms Ids

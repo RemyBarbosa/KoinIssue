@@ -17,14 +17,14 @@ import android.widget.Button;
 import java.io.IOException;
 
 import fr.radiofrance.alarm.manager.AlarmManager;
-import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarmdemo.model.AlarmModel;
 
 public class AlarmActivity extends AppCompatActivity {
 
     private Button stopButton;
     private Button snoozeButton;
     private MediaPlayer player;
-    private Alarm alarm;
+    private AlarmModel alarm;
     private MediaPlayer alarmMediaPlayer;
 
     @Override

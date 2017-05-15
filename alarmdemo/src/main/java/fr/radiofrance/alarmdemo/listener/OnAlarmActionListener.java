@@ -1,13 +1,13 @@
 package fr.radiofrance.alarmdemo.listener;
 
-import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarmdemo.model.AlarmModel;
 
 public interface OnAlarmActionListener {
 
-    void onAlarmClick(Alarm alarm, int position);
+    void onAlarmClick(AlarmModel alarm, int position);
 
-    void onAlarmLongClick(Alarm alarm, int position);
+    void onAlarmLongClick(AlarmModel alarm, int position);
 
-    void onAlarmActivated(Alarm alarm, boolean isActivated, int position);
+    void onAlarmActivated(AlarmModel alarm, boolean isActivated, int position);
 
 }

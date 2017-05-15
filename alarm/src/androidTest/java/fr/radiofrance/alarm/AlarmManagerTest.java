@@ -35,7 +35,7 @@ public class AlarmManagerTest {
     @Before
     public void setup() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        AlarmManager.initialize(context, new Intent(Intent.ACTION_VIEW, Uri.parse("http://google.com")), AudioManager.STREAM_MUSIC);
+        AlarmManager.initialize(context, new Intent(Intent.ACTION_VIEW, Uri.parse("http://google.com")), AudioManager.STREAM_MUSIC, Alarm.class);
     }
 
     @Test

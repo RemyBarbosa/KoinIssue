@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 
 import fr.radiofrance.alarm.manager.AlarmManager;
-import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarmdemo.model.AlarmModel;
 import fr.radiofrance.alarmdemo.MainActivity;
 
 public class Application extends android.app.Application {
@@ -13,7 +13,7 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
 
-        AlarmManager.initialize(this, new Intent(this, MainActivity.class), AudioManager.STREAM_MUSIC);
+        AlarmManager.initialize(this, new Intent(this, MainActivity.class), AudioManager.STREAM_MUSIC, AlarmModel.class);
     }
 
 }

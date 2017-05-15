@@ -11,16 +11,7 @@ import java.util.List;
 
 public class Alarm implements Parcelable {
 
-    protected String id;
-    protected List<Integer> days;
-    protected int hours;
-    protected int minutes;
-    protected int volume;
-    protected int snoozeDuration;
-    protected String intentUri;
-    protected boolean activated;
-
-    public static final Parcelable.Creator<Alarm> CREATOR = new Parcelable.Creator<Alarm>() {
+    public static final Creator<Alarm> CREATOR = new Creator<Alarm>() {
 
         @Override
         public Alarm createFromParcel(Parcel source) {
@@ -33,6 +24,15 @@ public class Alarm implements Parcelable {
         }
 
     };
+
+    protected String id;
+    protected List<Integer> days;
+    protected int hours;
+    protected int minutes;
+    protected int volume;
+    protected int snoozeDuration;
+    protected String intentUri;
+    protected boolean activated;
 
     public Alarm(String id) {
         this.id = id;
