@@ -20,15 +20,15 @@ public class AlarmModel extends Alarm {
 
     };
 
-    private String uuid;
+    private String customField;
 
-    public AlarmModel(String id) {
+    public AlarmModel(final String id) {
         super(id);
     }
 
-    private AlarmModel(Parcel in) {
+    private AlarmModel(final Parcel in) {
         super(in);
-        uuid = in.readString();
+        customField = in.readString();
     }
 
     @Override
@@ -37,17 +37,17 @@ public class AlarmModel extends Alarm {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
+    public void writeToParcel(final Parcel dest, final int flags) {
         super.writeToParcel(dest, flags);
-        dest.writeString(uuid);
+        dest.writeString(customField);
     }
 
-    public String getUuid() {
-        return uuid;
+    public String getCustomField() {
+        return customField;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setCustomField(final String customField) {
+        this.customField = customField;
     }
 
 }

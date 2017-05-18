@@ -11,7 +11,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import java.util.List;
-import java.util.Locale;
 
 import fr.radiofrance.alarmdemo.R;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
@@ -41,7 +40,7 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         if (!alarms.isEmpty() && holder.getAdapterPosition() >= 0 && holder.getAdapterPosition() < alarms.size()) {
             final AlarmModel alarm = alarms.get(holder.getAdapterPosition());
-            holder.timeTextView.setText(context.getString(R.string.alarm_time, getGoodTimeNumber(alarm.getHours()), getGoodTimeNumber(alarm.getMinutes())));
+            holder.timeTextView.setText(context.getString(R.string.alarm_time, alarm.getHours(), alarm.getMinutes()));
             holder.daysTextView.setText(daysToString(alarm.getDays()));
             holder.activateAlarmSwitch.setChecked(alarm.isActivated());
             holder.activateAlarmSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -123,10 +122,6 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         }
 
         return daysAsString;
-    }
-
-    private String getGoodTimeNumber(int number) {
-        return String.format(Locale.getDefault(), (number < 10 ? "0" : "") + "%d", number);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

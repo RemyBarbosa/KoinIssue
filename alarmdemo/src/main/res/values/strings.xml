@@ -1,7 +1,7 @@
 <resources>
 
     <string name="app_name">AlarmDemo</string>
-    <string name="alarm_time">%1$s:%2$s</string>
+    <string name="alarm_time">%1$02d:%2$02d</string>
     <string name="no_alarms">No alarms defined</string>
 
 </resources>

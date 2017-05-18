@@ -59,12 +59,6 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             return;
         }
 
-        if (alarm.getDays().isEmpty()) {
-            // If the alarm is a one shot alarm, we deactivate it
-            alarm.setActivated(false);
-            AlarmManager.updateAlarm(context, alarm);
-        }
-
         final Intent alarmIntent = alarm.getIntent();
         if (alarmIntent != null) {
             AlarmManager.setDeviceVolume(context, alarm.getVolume());
@@ -72,8 +66,9 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(alarmIntent);
 
-            if (alarm.isActivated()) {
-                // If the alarm is still activated (means that it is a multi shot alarm), we schedule the next alarm
+            if (alarm.isActivated() && !alarm.getDays().isEmpty()) {
+                // If the alarm is still activated and has minimum 1 day configured (means that it is a multi shot alarm),
+                // we schedule the next alarm
                 AlarmManager.updateAlarm(context, alarm);
             }
         }
