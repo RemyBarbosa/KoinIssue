@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -106,6 +107,10 @@ public class AlarmActivity extends AppCompatActivity {
                     player.release();
                     player = null;
                 }
+                alarm.setActivated(false);
+                if (!AlarmManager.updateAlarm(AlarmActivity.this, alarm)) {
+                    Toast.makeText(AlarmActivity.this, "Error when updating the alarm", Toast.LENGTH_SHORT).show();
+                }
                 finish();
             }
 
@@ -118,7 +123,9 @@ public class AlarmActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View v) {
-                    AlarmManager.snoozeAlarm(AlarmActivity.this, alarm.getId());
+                    if (!AlarmManager.snoozeAlarm(AlarmActivity.this, alarm.getId())) {
+                        Toast.makeText(AlarmActivity.this, "Error when snoozing the alarm", Toast.LENGTH_SHORT).show();
+                    }
                     finish();
                 }
 

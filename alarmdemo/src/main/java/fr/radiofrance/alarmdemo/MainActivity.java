@@ -19,6 +19,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -133,9 +134,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAlarmLongClick(AlarmModel alarm, int position) {
-                AlarmManager.removeAlarm(MainActivity.this, alarm.getId());
-                alarmsAdapter.removeAlarm(alarm);
-                updateNextAlarmMessage();
+                if (AlarmManager.removeAlarm(MainActivity.this, alarm.getId())) {
+                    alarmsAdapter.removeAlarm(alarm);
+                    updateNextAlarmMessage();
+                } else {
+                    Toast.makeText(MainActivity.this, "Error when removing the alarm", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
@@ -145,8 +149,11 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 alarm.setActivated(isActivated);
-                AlarmManager.updateAlarm(MainActivity.this, alarm);
-                updateNextAlarmMessage();
+                if (AlarmManager.updateAlarm(MainActivity.this, alarm)) {
+                    updateNextAlarmMessage();
+                } else {
+                    Toast.makeText(MainActivity.this, "Error when updating the alarm", Toast.LENGTH_SHORT).show();
+                }
             }
 
         });
@@ -236,13 +243,16 @@ public class MainActivity extends AppCompatActivity {
         alarm.setSnoozeDuration(10000);
         alarm.setVolume(volume.getProgress());
         alarm.setActivated(true);
-        alarm.setUuid("caca");
+        alarm.setCustomField("custom field");
         alarm.setIntent(new Intent(MainActivity.this, AlarmActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
 
         alarmsAdapter.addAlarm(alarm);
 
-        AlarmManager.addAlarm(this, alarm);
-        updateNextAlarmMessage();
+        if (AlarmManager.addAlarm(this, alarm)) {
+            updateNextAlarmMessage();
+        } else {
+            Toast.makeText(this, "Error when adding the alarm", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateAlarm(@NonNull final AlarmModel alarm, final int alarmPosition) {
@@ -266,8 +276,11 @@ public class MainActivity extends AppCompatActivity {
 
         alarmsAdapter.notifyItemChanged(alarmPosition);
 
-        AlarmManager.updateAlarm(this, alarm);
-        updateNextAlarmMessage();
+        if (AlarmManager.updateAlarm(this, alarm)) {
+            updateNextAlarmMessage();
+        } else {
+            Toast.makeText(this, "Error when updating the alarm", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateNextAlarmMessage() {

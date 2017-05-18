@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
@@ -18,6 +19,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +44,7 @@ public class AlarmManager {
     private static final String KEY_ALARM_CLASS = "alarm.manager.alarm.class";
     private static final int DEFAULT_SNOOZE_DURATION = 600000;// 10 minutes
 
-    public static void initialize(final Context context, final Intent systemAlarmClockIntent, final int streamType, final Class<?> alarmClass) {
+    public static void initialize(final Context context, final Intent systemAlarmClockIntent, final int streamType, final Class<? extends Alarm> alarmClass) {
         setSystemAlarmClockIntent(context, systemAlarmClockIntent);
         setStreamType(context, streamType);
         setAlarmClass(context, alarmClass);
@@ -50,30 +53,40 @@ public class AlarmManager {
     /**
      * Adds an alarm.
      *
-     * @param alarm Alarm that will ring.
+     * @param alarm Alarm that will ring
+     * @return True if the alarm has been added, false otherwise
      */
-    public static <T extends Alarm> void addAlarm(final Context context, @NonNull final T alarm) {
-        final int hours = alarm.getHours();
-        final int minutes = alarm.getMinutes();
+    public static <T extends Alarm> boolean addAlarm(final Context context, @NonNull final T alarm) {
+        try {
+            final int hours = alarm.getHours();
+            final int minutes = alarm.getMinutes();
 
-        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-            throw new AlarmException("Alarm time is incorrect");
-        } else if (TextUtils.isEmpty(alarm.getId())) {
-            throw new AlarmException("Alarm id is incorrect");
-        } else if (alarm.getIntent() == null) {
-            throw new AlarmException("Alarm intent is incorrect");
-        }
+            if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+                throw new AlarmException("Alarm time is incorrect");
+            }
+            if (TextUtils.isEmpty(alarm.getId())) {
+                throw new AlarmException("Alarm id is incorrect");
+            }
+            if (alarm.getIntent() == null) {
+                throw new AlarmException("Alarm intent is incorrect");
+            }
 
-        final Calendar nextAlarmDate = getNextAlarmDate(alarm);
+            final Calendar nextAlarmDate = getNextAlarmDate(alarm);
 
-        if (alarm.getSnoozeDuration() < 0) {
-            alarm.setSnoozeDuration(DEFAULT_SNOOZE_DURATION);
-        }
+            if (alarm.getSnoozeDuration() < 0) {
+                alarm.setSnoozeDuration(DEFAULT_SNOOZE_DURATION);
+            }
 
-        saveAlarm(context, alarm);
+            saveAlarm(context, alarm);
 
-        if (alarm.isActivated()) {
-            scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
+            if (alarm.isActivated()) {
+                scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarm.getId(), nextAlarmDate.getTimeInMillis());
+            }
+
+            return true;
+        } catch (AlarmException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -81,8 +94,9 @@ public class AlarmManager {
      * Gets the Alarm previously added.
      *
      * @param alarmId The id of the Alarm to get
-     * @return The Alarm
+     * @return The Alarm wanted
      */
+    @Nullable
     public static <T extends Alarm> T getAlarm(final Context context, final String alarmId) {
         if (TextUtils.isEmpty(alarmId) || !PrefsUtils.hasKey(context, KEY_ALARM + alarmId)) {
             return null;
@@ -96,9 +110,9 @@ public class AlarmManager {
                 return null;
             }
             return new Gson().<T>fromJson(alarmString, alarmClass);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -108,6 +122,17 @@ public class AlarmManager {
      */
     @NonNull
     public static <T extends Alarm> List<T> getAllAlarms(final Context context) {
+        return getAllAlarms(context, null);
+    }
+
+    /**
+     * Gets all alarms previously added and sorted by the given Comparator.
+     *
+     * @param sortComparator The Comparator to sort alarms
+     * @return All alarms
+     */
+    @NonNull
+    public static <T extends Alarm> List<T> getAllAlarms(final Context context, final Comparator<T> sortComparator) {
         final List<T> alarms = new ArrayList<>();
 
         final Set<String> alarmsIds = getAllAlarmsIds(context);
@@ -118,6 +143,10 @@ public class AlarmManager {
             }
         }
 
+        if (sortComparator != null) {
+            Collections.sort(alarms, sortComparator);
+        }
+
         return alarms;
     }
 
@@ -126,7 +155,19 @@ public class AlarmManager {
      *
      * @return All alarms
      */
+    @NonNull
     public static <T extends Alarm> List<T> getAllActivatedAlarms(final Context context) {
+        return getAllActivatedAlarms(context, null);
+    }
+
+    /**
+     * Gets all activated alarms previously added and activated and sorted by the given Comparator.
+     *
+     * @param sortComparator The Comparator to sort alarms
+     * @return All alarms
+     */
+    @NonNull
+    public static <T extends Alarm> List<T> getAllActivatedAlarms(final Context context, final Comparator<T> sortComparator) {
         final List<T> alarms = new ArrayList<>();
 
         final Set<String> alarmsIds = getAllAlarmsIds(context);
@@ -137,6 +178,10 @@ public class AlarmManager {
             }
         }
 
+        if (sortComparator != null) {
+            Collections.sort(alarms, sortComparator);
+        }
+
         return alarms;
     }
 
@@ -145,6 +190,7 @@ public class AlarmManager {
      *
      * @return All alarms ids
      */
+    @NonNull
     public static Set<String> getAllAlarmsIds(final Context context) {
         return new HashSet<>(PrefsUtils.getStringSet(context, KEY_ALARMS, new HashSet<String>()));
     }
@@ -153,16 +199,18 @@ public class AlarmManager {
         PrefsUtils.setString(context, KEY_SYSTEM_ALARM_CLOCK_INTENT, systemAlarmClockIntent.toUri(0));
     }
 
+    @NonNull
     public static Intent getSystemAlarmClockIntent(final Context context) {
         final String intentUri = PrefsUtils.getString(context, KEY_SYSTEM_ALARM_CLOCK_INTENT, null);
-        if (!TextUtils.isEmpty(intentUri)) {
-            try {
-                return Intent.parseUri(intentUri, 0);
-            } catch (URISyntaxException e) {
-                throw new AlarmException("You must call AlarmManager.initialize(Context, Intent, int) first.");
-            }
+        if (TextUtils.isEmpty(intentUri)) {
+            throw new AlarmException("You must call AlarmManager.initialize(Context, Intent, int) first.");
         }
-        return null;
+
+        try {
+            return Intent.parseUri(intentUri, 0);
+        } catch (URISyntaxException e) {
+            throw new AlarmException("You must call AlarmManager.initialize(Context, Intent, int) first.");
+        }
     }
 
     public static void setStreamType(final Context context, final int streamType) {
@@ -177,33 +225,21 @@ public class AlarmManager {
         return streamType;
     }
 
-    private static void setAlarmClass(final Context context, final Class<?> alarmClass) {
-        PrefsUtils.setString(context, KEY_ALARM_CLASS, alarmClass.getCanonicalName());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T extends Alarm> Class<T> getAlarmClass(final Context context) {
-        try {
-            return (Class<T>) Class.forName(PrefsUtils.getString(context, KEY_ALARM_CLASS, ""));
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
     /**
      * Updates an Alarm previously added.
      *
-     * @param alarm The Alarm that contains the updates. This Alarm has to have the same id as the Alarm to update.
+     * @param alarm The Alarm that contains the updates. This Alarm has to have the same id as the Alarm to update
+     * @return True if the Alarm has been updated (and maybe scheduled), false otherwise
      */
-    public static <T extends Alarm> void updateAlarm(final Context context, @NonNull final T alarm) {
+    public static <T extends Alarm> boolean updateAlarm(final Context context, @NonNull final T alarm) {
         final String alarmId = alarm.getId();
         if (TextUtils.isEmpty(alarmId) || !PrefsUtils.hasKey(context, KEY_ALARM + alarmId)) {
-            return;
+            return false;
         }
 
         final T savedAlarm = getAlarm(context, alarmId);
         if (savedAlarm == null) {
-            return;
+            return false;
         }
 
         saveAlarm(context, alarm);
@@ -231,6 +267,8 @@ public class AlarmManager {
             Calendar nextAlarmDate = getNextAlarmDate(alarm);
             scheduleAlarm(context, AlarmReceiver.TYPE_ALARM, alarmId, nextAlarmDate.getTimeInMillis());
         }
+
+        return true;
     }
 
     /**
@@ -267,10 +305,11 @@ public class AlarmManager {
      * You have to call {@link #addAlarm(Context, Alarm)} again if you want to activate it after.
      *
      * @param alarmId The id of the Alarm to remove
+     * @return True if the Alarm has been removed, false otherwise
      */
-    public static void removeAlarm(final Context context, final String alarmId) {
+    public static boolean removeAlarm(final Context context, final String alarmId) {
         if (TextUtils.isEmpty(alarmId)) {
-            return;
+            return false;
         }
 
         // Canceling the alarm
@@ -283,39 +322,51 @@ public class AlarmManager {
 
         // Removing the Alarm
         PrefsUtils.removeKey(context, KEY_ALARM + alarmId);
+
+        return true;
     }
 
     /**
      * Removes all alarms previously added.
      * You have to call {@link #addAlarm(Context, Alarm)} again if you want to activate them after.
+     *
+     * @return True if all alarms have been removed, false if one or many have not
      */
-    public static void removeAllAlarms(final Context context) {
+    public static boolean removeAllAlarms(final Context context) {
         final Set<String> alarmsIds = getAllAlarmsIds(context);
         final Object[] objects = alarmsIds.toArray();
+        boolean areAllAlarmsRemoved = true;
         for (final Object alarmId : objects) {
-            removeAlarm(context, (String) alarmId);
+            if (!removeAlarm(context, (String) alarmId)) {
+                areAllAlarmsRemoved = false;
+            }
         }
+
+        return areAllAlarmsRemoved;
     }
 
     /**
      * Snoozes an Alarm. The Alarm will ring in a specified frequency defined by {@link Alarm#setSnoozeDuration(int)}.
      *
      * @param alarmId The id of the Alarm to snooze
+     * @return True if the Alarm has been snoozed, false otherwise
      */
-    public static <T extends Alarm> void snoozeAlarm(final Context context, final String alarmId) {
+    public static <T extends Alarm> boolean snoozeAlarm(final Context context, final String alarmId) {
         if (TextUtils.isEmpty(alarmId)) {
-            return;
+            return false;
         }
 
         final T alarm = getAlarm(context, alarmId);
         if (alarm == null) {
-            return;
+            return false;
         }
 
         final Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         cal.add(Calendar.MILLISECOND, alarm.getSnoozeDuration());
 
         scheduleAlarm(context, AlarmReceiver.TYPE_SNOOZE, alarmId, cal.getTimeInMillis());
+
+        return true;
     }
 
     /**
@@ -342,36 +393,6 @@ public class AlarmManager {
             return false;
         }
         return isAlarmNormalScheduled(context, alarmId) || isAlarmSnoozeScheduled(context, alarmId);
-    }
-
-    /**
-     * Checks if an Alarm normal (not snooze) is scheduled.
-     *
-     * @param alarmId The id of the Alarm to check
-     * @return True if the Alarm is scheduled, false otherwise
-     */
-    private static boolean isAlarmNormalScheduled(final Context context, final String alarmId) {
-        if (TextUtils.isEmpty(alarmId)) {
-            return false;
-        }
-
-        final Intent intentAlarm = new Intent(context, AlarmReceiver.class).setAction(AlarmReceiver.KEY_ALARM + alarmId);
-        return PendingIntent.getBroadcast(context, AlarmReceiver.TYPE_ALARM, intentAlarm, PendingIntent.FLAG_NO_CREATE) != null;
-    }
-
-    /**
-     * Checks if an Alarm snooze is scheduled.
-     *
-     * @param alarmId The id of the Alarm to check
-     * @return True if the Alarm is scheduled, false otherwise
-     */
-    private static boolean isAlarmSnoozeScheduled(final Context context, final String alarmId) {
-        if (TextUtils.isEmpty(alarmId)) {
-            return false;
-        }
-
-        final Intent intentSnooze = new Intent(context, AlarmReceiver.class).setAction(AlarmReceiver.KEY_SNOOZE + alarmId);
-        return PendingIntent.getBroadcast(context, AlarmReceiver.TYPE_SNOOZE, intentSnooze, PendingIntent.FLAG_NO_CREATE) != null;
     }
 
     /**
@@ -541,6 +562,59 @@ public class AlarmManager {
     }
 
     /**
+     * Sets the Alarm class to set.
+     *
+     * @param alarmClass The class to set
+     */
+    private static void setAlarmClass(final Context context, final Class<?> alarmClass) {
+        PrefsUtils.setString(context, KEY_ALARM_CLASS, alarmClass.getCanonicalName());
+    }
+
+    /**
+     * Gets the Alarm class set in {@link #initialize(Context, Intent, int, Class)}.
+     *
+     * @return The class set
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends Alarm> Class<T> getAlarmClass(final Context context) {
+        try {
+            return (Class<T>) Class.forName(PrefsUtils.getString(context, KEY_ALARM_CLASS, ""));
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Checks if an Alarm normal (not snooze) is scheduled.
+     *
+     * @param alarmId The id of the Alarm to check
+     * @return True if the Alarm is scheduled, false otherwise
+     */
+    private static boolean isAlarmNormalScheduled(final Context context, final String alarmId) {
+        if (TextUtils.isEmpty(alarmId)) {
+            return false;
+        }
+
+        final Intent intentAlarm = new Intent(context, AlarmReceiver.class).setAction(AlarmReceiver.KEY_ALARM + alarmId);
+        return PendingIntent.getBroadcast(context, AlarmReceiver.TYPE_ALARM, intentAlarm, PendingIntent.FLAG_NO_CREATE) != null;
+    }
+
+    /**
+     * Checks if an Alarm snooze is scheduled.
+     *
+     * @param alarmId The id of the Alarm to check
+     * @return True if the Alarm is scheduled, false otherwise
+     */
+    private static boolean isAlarmSnoozeScheduled(final Context context, final String alarmId) {
+        if (TextUtils.isEmpty(alarmId)) {
+            return false;
+        }
+
+        final Intent intentSnooze = new Intent(context, AlarmReceiver.class).setAction(AlarmReceiver.KEY_SNOOZE + alarmId);
+        return PendingIntent.getBroadcast(context, AlarmReceiver.TYPE_SNOOZE, intentSnooze, PendingIntent.FLAG_NO_CREATE) != null;
+    }
+
+    /**
      * Schedules an Alarm in the real AlarmManager.
      *
      * @param alarmType    The type of the Alarm: AlarmReceiver.KEY_SNOOZE or AlarmReceiver.KEY_SNOOZE
@@ -608,7 +682,8 @@ public class AlarmManager {
     private static boolean isInFuture(final Calendar date, final int hours, final int minutes) {
         if (date.get(Calendar.HOUR_OF_DAY) < hours) {
             return true;
-        } else if (date.get(Calendar.HOUR_OF_DAY) == hours && date.get(Calendar.MINUTE) < minutes) {
+        }
+        if (date.get(Calendar.HOUR_OF_DAY) == hours && date.get(Calendar.MINUTE) < minutes) {
             return true;
         }
 
