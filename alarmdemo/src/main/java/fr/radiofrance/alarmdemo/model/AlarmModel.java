@@ -22,6 +22,10 @@ public class AlarmModel extends Alarm {
 
     private String customField;
 
+    public AlarmModel() {
+        super();
+    }
+
     private AlarmModel(final Parcel in) {
         super(in);
         customField = in.readString();

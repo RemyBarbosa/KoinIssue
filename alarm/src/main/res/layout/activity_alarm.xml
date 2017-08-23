@@ -14,7 +14,19 @@
         style="@style/Base.TextAppearance.AppCompat.Large.Inverse"/>
 
     <Button
-        android:id="@+id/stop"
+        android:id="@+id/alarm_continue_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="92dp"
+        android:layout_marginLeft="36dp"
+        android:layout_marginRight="36dp"
+        android:text="@string/alarm_screen_continue_button"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"/>
+
+    <Button
+        android:id="@+id/alarm_stop_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -24,7 +36,7 @@
         style="@style/Widget.AppCompat.Button.Borderless.Colored"/>
 
     <Button
-        android:id="@+id/snooze"
+        android:id="@+id/alarm_snooze_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
