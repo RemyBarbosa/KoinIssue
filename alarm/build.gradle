@@ -5,12 +5,12 @@ group = 'com.radiofrance.android'
 version = projectVersionName
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.1'
 
     defaultConfig {
-        minSdkVersion 11
-        targetSdkVersion 25
+        minSdkVersion 16
+        targetSdkVersion 26
         versionCode projectVersionCode as int
         versionName projectVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -27,12 +27,10 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-
-    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:appcompat-v7:26.0.1'
     compile 'com.google.code.gson:gson:2.7'
 
-    androidTestCompile 'com.android.support:support-annotations:25.3.1'
+    androidTestCompile 'com.android.support:support-annotations:26.0.1'
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="alarm_screen_stop_button">Stop</string>
+    <string name="alarm_screen_snooze_button">Snooze</string>
+    <string name="alarm_screen_label">Il est temps de vous réveiller !!</string>
+
+</resources>

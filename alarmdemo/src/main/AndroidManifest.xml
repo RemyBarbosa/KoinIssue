@@ -27,9 +27,10 @@
         </activity>
 
         <activity
-            android:name="fr.radiofrance.alarmdemo.AlarmActivity"
+            android:name="fr.radiofrance.alarmdemo.DemoAlarmActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="userPortrait"/>
+            android:screenOrientation="userPortrait"
+            android:theme="@style/AlarmActivityTheme"/>
 
         <receiver
             android:name="fr.radiofrance.alarm.receiver.AlarmReceiver"

@@ -181,6 +181,13 @@ public class MainActivity extends AppCompatActivity {
             parentView.removeAllViews();
         }
 
+        final Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, 1);
+
+        hours.setText(String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY)));
+        minutes.setText(String.format("%02d", calendar.get(Calendar.MINUTE)));
+        volume.setProgress(5);
+
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setView(addAlarmDialogView);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -244,7 +251,8 @@ public class MainActivity extends AppCompatActivity {
         alarm.setVolume(volume.getProgress());
         alarm.setActivated(true);
         alarm.setCustomField("custom field");
-        alarm.setIntent(new Intent(MainActivity.this, AlarmActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        alarm.setIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
 
         alarmsAdapter.addAlarm(alarm);
 
