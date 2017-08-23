@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         final int h = Integer.parseInt(hours.getText().toString());
         final int m = Integer.parseInt(minutes.getText().toString());
 
-        final AlarmModel alarm = new AlarmModel(String.format("%s", new Date().getTime()));
+        final AlarmModel alarm = new AlarmModel();
         alarm.setDays(days);
         alarm.setHours(h);
         alarm.setMinutes(m);

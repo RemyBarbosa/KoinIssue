@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Alarm implements Parcelable {
 
@@ -34,8 +35,18 @@ public class Alarm implements Parcelable {
     protected String intentUri;
     protected boolean activated;
 
+    @Deprecated
     public Alarm(String id) {
         this.id = id;
+        this.hours = -1;
+        this.minutes = -1;
+        this.volume = -1;
+        this.snoozeDuration = -1;
+        this.activated = false;
+    }
+
+    public Alarm() {
+        this.id = UUID.randomUUID().toString();
         this.hours = -1;
         this.minutes = -1;
         this.volume = -1;
