@@ -1,16 +1,24 @@
 package fr.radiofrance.alarm.activity;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import fr.radiofrance.alarm.R;
@@ -19,6 +27,10 @@ import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
 public abstract class AlarmActivity extends AppCompatActivity {
+
+    public enum TypeAction {
+        Stop, Snooze, Continue
+    }
 
     private MediaPlayer player;
     private Alarm alarm;
@@ -51,6 +63,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     reference.onStopButtonClick();
+                    reference.onActionDone(TypeAction.Stop, view);
                 }
             });
         }
@@ -60,6 +73,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     reference.onSnoozeButtonClick();
+                    reference.onActionDone(TypeAction.Snooze, view);
                 }
             });
         }
@@ -69,6 +83,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     reference.onContinueButtonClick();
+                    reference.onActionDone(TypeAction.Continue, view);
                 }
             });
         }
@@ -85,7 +100,6 @@ public abstract class AlarmActivity extends AppCompatActivity {
         if (!AlarmManager.updateAlarm(AlarmActivity.this, alarm)) {
             onAlarmError();
         }
-        finish();
     }
 
     protected final void onSnoozeButtonClick() {
@@ -97,7 +111,6 @@ public abstract class AlarmActivity extends AppCompatActivity {
         if (!AlarmManager.snoozeAlarm(AlarmActivity.this, alarm.getId())) {
             onAlarmError();
         }
-        finish();
     }
 
     protected final void onContinueButtonClick() {
@@ -106,7 +119,6 @@ public abstract class AlarmActivity extends AppCompatActivity {
             AlarmManager.stopDefaultAlarmSound(this, defaultRingMediaPlayer);
             defaultRingMediaPlayer = null;
         }
-        finish();
     }
 
     @LayoutRes
@@ -131,6 +143,63 @@ public abstract class AlarmActivity extends AppCompatActivity {
 
     protected void onAlarmError() {
         Toast.makeText(AlarmActivity.this, "Error when trying to midify the alarm.", Toast.LENGTH_SHORT).show();
+    }
+
+    protected void onActionDone(final TypeAction typeAction, final View actionView) {
+        final View revealedLayout = findViewById(R.id.alarm_revealed_layout);
+        final TextView revealedTextView = findViewById(R.id.alarm_revealed_textview);
+        switch (typeAction) {
+            case Snooze:
+                revealedTextView.setText(R.string.alarm_screen_snooze_revealed_label);
+                break;
+            case Stop:
+                revealedTextView.setText(R.string.alarm_screen_stop_revealed_label);
+                break;
+            case Continue:
+                revealedTextView.setText(R.string.alarm_screen_continue_revealed_label);
+                break;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            revealedLayout.setVisibility(View.VISIBLE);
+            finishWithDelay();
+            return;
+        }
+
+        revealWithAnimation(revealedLayout, actionView);
+        finishWithDelay();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void revealWithAnimation(final View revealedLayout, final View actionView) {
+        final View revealView = findViewById(R.id.alarm_reveal_view);
+        final int x = actionView.getRight();
+        final int y = actionView.getBottom();
+
+        final int startRadius = 0;
+        final int endRadius = (int) Math.hypot(revealView.getWidth(), revealView.getHeight());
+
+        final Animator anim = ViewAnimationUtils.createCircularReveal(revealView, x, y, startRadius, endRadius);
+        revealView.setVisibility(View.VISIBLE);
+
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                revealedLayout.setVisibility(View.VISIBLE);
+                revealView.animate().setDuration(300L).alpha(0F);
+            }
+        });
+
+        anim.start();
+    }
+
+    private void finishWithDelay() {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                AlarmActivity.this.finish();
+            }
+        }, 2000L);
     }
 
     @Override

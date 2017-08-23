@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="alarm_screen_label">Il est temps de vous réveiller !!</string>
+
     <string name="alarm_screen_stop_button">Stop</string>
     <string name="alarm_screen_snooze_button">Snooze</string>
     <string name="alarm_screen_continue_button">Continuer la lecture</string>
-    <string name="alarm_screen_label">Il est temps de vous réveiller !!</string>
+
+    <string name="alarm_screen_stop_revealed_label">Stop done</string>
+    <string name="alarm_screen_snooze_revealed_label">Snooze done</string>
+    <string name="alarm_screen_continue_revealed_label">Continuer la lecture done</string>
 
 </resources>
