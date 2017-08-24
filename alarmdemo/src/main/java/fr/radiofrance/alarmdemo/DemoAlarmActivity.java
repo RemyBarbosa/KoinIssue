@@ -3,6 +3,7 @@ package fr.radiofrance.alarmdemo;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import fr.radiofrance.alarm.activity.AlarmActivity;
@@ -51,4 +52,8 @@ public class DemoAlarmActivity extends AlarmActivity {
         super.onAlarmShouldStop(alarm);
     }
 
+    @Override
+    protected int getThemeColor() {
+        return ContextCompat.getColor(getApplicationContext(), R.color.colorAccent);
+    }
 }

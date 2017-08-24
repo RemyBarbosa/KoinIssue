@@ -112,7 +112,7 @@
         android:id="@+id/alarm_action_done_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/alarm_revealed_color"
+        android:background="@color/alarm_theme_color"
         android:visibility="invisible"
         tools:visibility="invisible">
 
@@ -140,7 +140,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:background="@color/alarm_revealed_color"
+        android:background="@color/alarm_theme_color"
         android:visibility="invisible"/>
 
 </RelativeLayout>

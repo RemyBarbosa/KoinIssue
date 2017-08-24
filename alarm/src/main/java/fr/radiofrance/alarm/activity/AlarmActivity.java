@@ -14,8 +14,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.ColorInt;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
@@ -132,6 +134,11 @@ public abstract class AlarmActivity extends AppCompatActivity {
         return R.layout.activity_alarm;
     }
 
+    @ColorInt
+    protected int getThemeColor() {
+        return ContextCompat.getColor(getApplicationContext(), R.color.alarm_theme_color);
+    }
+
     protected final boolean onActionStop() {
         onAlarmShouldStop(alarm);
         if (alarm == null) {
@@ -180,7 +187,9 @@ public abstract class AlarmActivity extends AppCompatActivity {
             return;
         }
 
-        final View revealedLayout = findViewById(R.id.alarm_action_done_layout);
+        final View actionDoneLayout = findViewById(R.id.alarm_action_done_layout);
+        actionDoneLayout.setBackgroundColor(getThemeColor());
+
         final TextView actionDoneTextView = findViewById(R.id.alarm_action_done_textview);
         final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
         switch (typeAction) {
@@ -203,18 +212,20 @@ public abstract class AlarmActivity extends AppCompatActivity {
         }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            revealedLayout.setVisibility(View.VISIBLE);
+            actionDoneLayout.setVisibility(View.VISIBLE);
             finishWithDelay();
             return;
         }
 
-        revealWithAnimation(revealedLayout, actionView);
+        revealWithAnimation(actionDoneLayout, actionView);
         finishWithDelay();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void revealWithAnimation(final View revealedLayout, final View actionView) {
         final View revealView = findViewById(R.id.alarm_reveal_view);
+        revealView.setBackgroundColor(getThemeColor());
+
         final int x = actionView.getLeft() + actionView.getWidth() / 2;
         final int y = actionView.getTop() + actionView.getHeight() / 2;
 

@@ -10,6 +10,6 @@
     <color name="alarm_action_background">#19FFFFFF</color>
     <color name="alarm_continue_background">#26FFFFFF</color>
 
-    <color name="alarm_revealed_color">@color/colorPrimary</color>
+    <color name="alarm_theme_color">@color/colorPrimary</color>
 
 </resources>
