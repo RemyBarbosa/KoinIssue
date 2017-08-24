@@ -109,12 +109,11 @@ public abstract class AlarmActivity extends AppCompatActivity {
             });
         }
 
-        onAlarmShouldStart(alarm, isNetworkAvailable(this));
-
-
         timeTickBroadcastReceiver = new TimeTickBroadcastReceiver(this);
         registerReceiver(timeTickBroadcastReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
         bindCurrentTime();
+
+        onAlarmShouldStart(alarm, isNetworkAvailable(this));
     }
 
     @Override
