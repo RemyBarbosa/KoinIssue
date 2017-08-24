@@ -43,7 +43,7 @@ import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Continue;
 import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Snooze;
 import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Stop;
 
-public abstract class AlarmActivity extends AppCompatActivity {
+public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
 
     private static final long FINISH_DELAYED_TIME_MS = 2500L;
     private static final long REVEALED_TRANSITION_DURATION_MS = 600L;
@@ -53,7 +53,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
         Stop, Snooze, Continue
     }
 
-    private Alarm alarm;
+    private T alarm;
     private MediaPlayer defaultRingMediaPlayer;
     private TimeTickBroadcastReceiver timeTickBroadcastReceiver;
 
@@ -73,7 +73,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
             final Bundle extras = intent.getExtras();
             if (extras != null) {
                 final String alarmId = extras.getString(AlarmManager.INTENT_ALARM_ID);
-                alarm = AlarmManager.getAlarm(this, alarmId);
+                alarm = AlarmManager.getAlarm(getApplicationContext(), alarmId);
             }
         }
 
@@ -114,7 +114,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
         registerReceiver(timeTickBroadcastReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
         bindCurrentTime();
 
-        onAlarmShouldStart(alarm, isNetworkAvailable(this));
+        onAlarmShouldStart(alarm, isNetworkAvailable(getApplicationContext()));
     }
 
     @Override
@@ -135,7 +135,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
     }
 
     @ColorInt
-    protected int getThemeColor(final Alarm alarm) {
+    protected int getThemeColor(final T alarm) {
         return ContextCompat.getColor(getApplicationContext(), R.color.alarm_theme_color);
     }
 
@@ -145,7 +145,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
             return true;
         }
         alarm.setActivated(false);
-        return AlarmManager.updateAlarm(AlarmActivity.this, alarm);
+        return AlarmManager.updateAlarm(getApplicationContext(), alarm);
     }
 
     protected final boolean onActionSnooze() {
@@ -154,7 +154,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
             return false;
         }
         onAlarmShouldStop(alarm);
-        return AlarmManager.snoozeAlarm(AlarmActivity.this, alarm.getId());
+        return AlarmManager.snoozeAlarm(getApplicationContext(), alarm.getId());
     }
 
     protected final boolean onActionContinue() {
@@ -166,14 +166,14 @@ public abstract class AlarmActivity extends AppCompatActivity {
         return true;
     }
 
-    protected void onAlarmShouldStart(final Alarm alarm, final boolean networkAvailable) {
+    protected void onAlarmShouldStart(final T alarm, final boolean networkAvailable) {
         if (defaultRingMediaPlayer != null) {
             return;
         }
         defaultRingMediaPlayer = AlarmManager.playDefaultAlarmSound(this, alarm != null ? alarm.getVolume() : AlarmManager.getDeviceMaxVolume(this), true);
     }
 
-    protected void onAlarmShouldStop(final Alarm alarm) {
+    protected void onAlarmShouldStop(final T alarm) {
         if (defaultRingMediaPlayer == null) {
             return;
         }
@@ -181,9 +181,9 @@ public abstract class AlarmActivity extends AppCompatActivity {
         defaultRingMediaPlayer = null;
     }
 
-    protected void onActionDone(final Alarm alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
+    protected void onActionDone(final T alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
         if (!succeed) {
-            Toast.makeText(AlarmActivity.this, R.string.alarm_screen_error_toast, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.alarm_screen_error_toast, Toast.LENGTH_SHORT).show();
             return;
         }
 

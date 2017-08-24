@@ -4,29 +4,29 @@ import android.os.Parcel;
 
 import fr.radiofrance.alarm.model.Alarm;
 
-public class AlarmModel extends Alarm {
+public class DemoAlarm extends Alarm {
 
-    public static final Creator<AlarmModel> CREATOR = new Creator<AlarmModel>() {
+    public static final Creator<DemoAlarm> CREATOR = new Creator<DemoAlarm>() {
 
         @Override
-        public AlarmModel createFromParcel(Parcel source) {
-            return new AlarmModel(source);
+        public DemoAlarm createFromParcel(Parcel source) {
+            return new DemoAlarm(source);
         }
 
         @Override
-        public AlarmModel[] newArray(int size) {
-            return new AlarmModel[size];
+        public DemoAlarm[] newArray(int size) {
+            return new DemoAlarm[size];
         }
 
     };
 
     private String customField;
 
-    public AlarmModel() {
+    public DemoAlarm() {
         super();
     }
 
-    private AlarmModel(final Parcel in) {
+    private DemoAlarm(final Parcel in) {
         super(in);
         customField = in.readString();
     }

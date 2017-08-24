@@ -14,16 +14,16 @@ import java.util.List;
 
 import fr.radiofrance.alarmdemo.R;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
-import fr.radiofrance.alarmdemo.model.AlarmModel;
+import fr.radiofrance.alarmdemo.model.DemoAlarm;
 
 public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder> {
 
     private final Context context;
-    private final List<AlarmModel> alarms;
+    private final List<DemoAlarm> alarms;
     private final OnAlarmActionListener onAlarmActionListener;
 
     public AlarmsAdapter(final Context context,
-                         @NonNull final List<AlarmModel> alarms,
+                         @NonNull final List<DemoAlarm> alarms,
                          final OnAlarmActionListener onAlarmActionListener) {
         this.context = context;
         this.alarms = alarms;
@@ -39,7 +39,7 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         if (!alarms.isEmpty() && holder.getAdapterPosition() >= 0 && holder.getAdapterPosition() < alarms.size()) {
-            final AlarmModel alarm = alarms.get(holder.getAdapterPosition());
+            final DemoAlarm alarm = alarms.get(holder.getAdapterPosition());
             holder.timeTextView.setText(context.getString(R.string.alarm_time, alarm.getHours(), alarm.getMinutes()));
             holder.daysTextView.setText(daysToString(alarm.getDays()));
             holder.activateAlarmSwitch.setChecked(alarm.isActivated());
@@ -82,11 +82,11 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         return alarms.size();
     }
 
-    public List<AlarmModel> getAlarms() {
+    public List<DemoAlarm> getAlarms() {
         return alarms;
     }
 
-    public void setAlarms(final List<AlarmModel> alarms) {
+    public void setAlarms(final List<DemoAlarm> alarms) {
         if (alarms == null || alarms.isEmpty()) {
             return;
         }
@@ -96,7 +96,7 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         this.notifyDataSetChanged();
     }
 
-    public void addAlarm(final AlarmModel alarm) {
+    public void addAlarm(final DemoAlarm alarm) {
         if (alarm == null) {
             return;
         }
@@ -105,7 +105,7 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         notifyItemInserted(alarms.size() - 1);
     }
 
-    public void removeAlarm(final AlarmModel alarm) {
+    public void removeAlarm(final DemoAlarm alarm) {
         if (alarm == null || !alarms.contains(alarm)) {
             return;
         }

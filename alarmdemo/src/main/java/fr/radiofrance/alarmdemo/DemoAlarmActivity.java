@@ -9,16 +9,16 @@ import android.view.View;
 import android.widget.ImageView;
 
 import fr.radiofrance.alarm.activity.AlarmActivity;
-import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarmdemo.model.DemoAlarm;
 
-public class DemoAlarmActivity extends AlarmActivity {
+public class DemoAlarmActivity extends AlarmActivity<DemoAlarm> {
 
     private static final String LOG_TAG = DemoAlarmActivity.class.getSimpleName();
 
     private MediaPlayer player;
 
     @Override
-    protected void onAlarmShouldStart(final Alarm alarm, final boolean networkAvailable) {
+    protected void onAlarmShouldStart(final DemoAlarm alarm, final boolean networkAvailable) {
         if (!networkAvailable) {
             super.onAlarmShouldStart(alarm, networkAvailable);
             return;
@@ -45,7 +45,7 @@ public class DemoAlarmActivity extends AlarmActivity {
     }
 
     @Override
-    protected void onAlarmShouldStop(final Alarm alarm) {
+    protected void onAlarmShouldStop(final DemoAlarm alarm) {
         if (player != null) {
             player.stop();
             player.release();
@@ -55,12 +55,12 @@ public class DemoAlarmActivity extends AlarmActivity {
     }
 
     @Override
-    protected int getThemeColor(final Alarm alarm) {
+    protected int getThemeColor(final DemoAlarm alarm) {
         return ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
     }
 
     @Override
-    protected void onActionDone(final Alarm alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
+    protected void onActionDone(final DemoAlarm alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
         super.onActionDone(alarm, typeAction, succeed, actionView);
         if (typeAction == TypeAction.Continue) {
             final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
