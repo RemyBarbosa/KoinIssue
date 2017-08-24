@@ -55,7 +55,7 @@ public class DemoAlarmActivity extends AlarmActivity {
     }
 
     @Override
-    protected int getThemeColor() {
+    protected int getThemeColor(final Alarm alarm) {
         return ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
     }
 

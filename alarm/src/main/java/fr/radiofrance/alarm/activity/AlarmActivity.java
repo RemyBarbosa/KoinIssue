@@ -135,7 +135,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
     }
 
     @ColorInt
-    protected int getThemeColor() {
+    protected int getThemeColor(final Alarm alarm) {
         return ContextCompat.getColor(getApplicationContext(), R.color.alarm_theme_color);
     }
 
@@ -192,7 +192,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
         final TextView actionDoneTextView = findViewById(R.id.alarm_action_done_textview);
         final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
 
-        int revealColor = getThemeColor();
+        int revealColor = getThemeColor(alarm);
 
         switch (typeAction) {
             case Snooze:
