@@ -3,8 +3,10 @@ package fr.radiofrance.alarm.activity;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -15,12 +17,18 @@ import android.os.Looper;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.manager.AlarmManager;
@@ -38,6 +46,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
 
     private Alarm alarm;
     private MediaPlayer defaultRingMediaPlayer;
+    private TimeTickBroadcastReceiver timeTickBroadcastReceiver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,12 +58,6 @@ public abstract class AlarmActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            //window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-            //window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            //window.setStatusBarColor(Color.TRANSPARENT);
-        }
-
 
         final Intent intent = getIntent();
         if (intent != null) {
@@ -99,6 +102,23 @@ public abstract class AlarmActivity extends AppCompatActivity {
         }
 
         onAlarmShouldStart(alarm, isNetworkAvailable(this));
+
+
+        timeTickBroadcastReceiver = new TimeTickBroadcastReceiver(this);
+        registerReceiver(timeTickBroadcastReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
+        bindCurrentTime();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Block back like the Android Alarms App
+    }
+
+    @Override
+    protected void onDestroy() {
+        onAlarmShouldStop(alarm);
+        unregisterReceiver(timeTickBroadcastReceiver);
+        super.onDestroy();
     }
 
     @LayoutRes
@@ -210,15 +230,14 @@ public abstract class AlarmActivity extends AppCompatActivity {
         }, FINISH_DELAYED_TIME_MS);
     }
 
-    @Override
-    protected void onDestroy() {
-        onAlarmShouldStop(alarm);
-        super.onDestroy();
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Block back like the Android Alarms App
+    private void bindCurrentTime() {
+        final TextView textView = findViewById(R.id.alarm_hour_label_textview);
+        final Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        if (DateFormat.is24HourFormat(getApplicationContext())) {
+            textView.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.getTime()));
+        } else {
+            textView.setText(new SimpleDateFormat("hh:mm", Locale.getDefault()).format(calendar.getTime()));
+        }
     }
 
     /**
@@ -238,6 +257,24 @@ public abstract class AlarmActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    private static class TimeTickBroadcastReceiver extends BroadcastReceiver {
+
+        private final WeakReference<AlarmActivity> refActivity;
+
+        TimeTickBroadcastReceiver(final AlarmActivity activity) {
+            this.refActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final AlarmActivity activity = refActivity.get();
+            if (activity == null) {
+                return;
+            }
+            activity.bindCurrentTime();
+        }
     }
 
 }
