@@ -68,7 +68,7 @@
             android:layout_height="56dp"
             android:background="@drawable/background_alarm_action"
             android:scaleType="center"
-            android:src="@drawable/ic_alarm_action_snooze"/>
+            android:src="@drawable/ic_alarm_action_snooze_24dp"/>
 
         <android.support.v7.widget.AppCompatTextView
             style="@style/TextAlarmActionLabel"
@@ -98,7 +98,7 @@
             android:layout_height="56dp"
             android:background="@drawable/background_alarm_action"
             android:scaleType="center"
-            android:src="@drawable/ic_alarm_action_stop"/>
+            android:src="@drawable/ic_alarm_action_stop_24dp"/>
 
         <android.support.v7.widget.AppCompatTextView
             style="@style/TextAlarmActionLabel"
@@ -109,18 +109,29 @@
     </LinearLayout>
 
     <RelativeLayout
-        android:id="@+id/alarm_revealed_layout"
+        android:id="@+id/alarm_action_done_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/alarm_white"
-        android:visibility="invisible">
+        android:background="@color/alarm_revealed_color"
+        android:visibility="invisible"
+        tools:visibility="invisible">
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/alarm_revealed_textview"
+        <ImageView
+            android:id="@+id/alarm_action_done_imageview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="@string/alarm_screen_continue_revealed_label"/>
+            tools:src="@drawable/ic_alarm_action_stop_48dp"/>
+
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/alarm_action_done_textview"
+            style="@style/TextAlarmActionDoneLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/alarm_action_done_imageview"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="33dp"
+            tools:text="@string/alarm_screen_stop_done_label"/>
     </RelativeLayout>
 
     <View
@@ -129,7 +140,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:background="@color/alarm_white"
+        android:background="@color/alarm_revealed_color"
         android:visibility="invisible"/>
 
 </RelativeLayout>

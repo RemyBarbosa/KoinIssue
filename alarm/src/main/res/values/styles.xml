@@ -32,4 +32,12 @@
         <item name="android:gravity">center_horizontal</item>
     </style>
 
+    <style name="TextAlarmActionDoneLabel">
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/alarm_white</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
 </resources>

@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,8 +38,9 @@ import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
 public abstract class AlarmActivity extends AppCompatActivity {
 
-    private static final long FINISH_DELAYED_TIME_MS = 2000L;
-    private static final long REVEALED_TRANSITION_DURATION_MS = 300L;
+    private static final long FINISH_DELAYED_TIME_MS = 2500L;
+    private static final long REVEALED_TRANSITION_DURATION_MS = 600L;
+    private static final long REVEALED_TRANSITION_FADE_OUT_MS = 300L;
 
     protected enum TypeAction {
         Stop, Snooze, Continue
@@ -174,17 +176,20 @@ public abstract class AlarmActivity extends AppCompatActivity {
             return;
         }
 
-        final View revealedLayout = findViewById(R.id.alarm_revealed_layout);
-        final TextView revealedTextView = findViewById(R.id.alarm_revealed_textview);
+        final View revealedLayout = findViewById(R.id.alarm_action_done_layout);
+        final TextView actionDoneTextView = findViewById(R.id.alarm_action_done_textview);
+        final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
         switch (typeAction) {
             case Snooze:
-                revealedTextView.setText(R.string.alarm_screen_snooze_revealed_label);
+                actionDoneTextView.setText(R.string.alarm_screen_snooze_done_label);
+                actionDoneImageView.setImageResource(R.drawable.ic_alarm_action_snooze_48dp);
                 break;
             case Stop:
-                revealedTextView.setText(R.string.alarm_screen_stop_revealed_label);
+                actionDoneTextView.setText(R.string.alarm_screen_stop_done_label);
+                actionDoneImageView.setImageResource(R.drawable.ic_alarm_action_stop_48dp);
                 break;
             case Continue:
-                revealedTextView.setText(R.string.alarm_screen_continue_revealed_label);
+                actionDoneTextView.setText(R.string.alarm_screen_continue_done_label);
                 break;
         }
 
@@ -201,22 +206,26 @@ public abstract class AlarmActivity extends AppCompatActivity {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void revealWithAnimation(final View revealedLayout, final View actionView) {
         final View revealView = findViewById(R.id.alarm_reveal_view);
-        final int x = actionView.getRight();
-        final int y = actionView.getBottom();
+        final int x = (actionView.getRight() - actionView.getLeft()) / 2;
+        final int y = (actionView.getBottom() - actionView.getTop()) / 2;
 
         final int startRadius = 0;
         final int endRadius = (int) Math.hypot(revealView.getWidth(), revealView.getHeight());
 
-        final Animator anim = ViewAnimationUtils.createCircularReveal(revealView, x, y, startRadius, endRadius);
+        final Animator anim = ViewAnimationUtils.createCircularReveal(revealView, x, y, startRadius, endRadius)
+                .setDuration(REVEALED_TRANSITION_DURATION_MS);
         revealView.setVisibility(View.VISIBLE);
 
         anim.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 revealedLayout.setVisibility(View.VISIBLE);
-                revealView.animate().setDuration(REVEALED_TRANSITION_DURATION_MS).alpha(0F);
+                revealView.animate().setDuration(REVEALED_TRANSITION_FADE_OUT_MS).alpha(0F);
+                actionView.animate().setDuration(REVEALED_TRANSITION_FADE_OUT_MS).alpha(0F);
             }
         });
+
+        actionView.bringToFront();
 
         anim.start();
     }
