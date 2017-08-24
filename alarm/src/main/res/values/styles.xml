@@ -8,4 +8,28 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="TextAlarmMainLabel">
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/alarm_white</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+    <style name="TextAlarmHourLabel">
+        <item name="android:textSize">64sp</item>
+        <item name="android:fontFamily">sans-serif-thin</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/alarm_white</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+    <style name="TextAlarmActionLabel">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/alarm_white</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
 </resources>

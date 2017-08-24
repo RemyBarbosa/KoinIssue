@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewAnimationUtils;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +36,6 @@ public abstract class AlarmActivity extends AppCompatActivity {
         Stop, Snooze, Continue
     }
 
-    private MediaPlayer player;
     private Alarm alarm;
     private MediaPlayer defaultRingMediaPlayer;
 
@@ -44,10 +44,17 @@ public abstract class AlarmActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Showing on lock screen
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        final Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            //window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            //window.setStatusBarColor(Color.TRANSPARENT);
+        }
+
 
         final Intent intent = getIntent();
         if (intent != null) {
@@ -60,7 +67,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
 
         setContentView(getLayoutRes());
 
-        final View stopView = findViewById(R.id.alarm_stop_button);
+        final View stopView = findViewById(R.id.alarm_stop_action_view);
         if (stopView != null) {
             stopView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
@@ -70,7 +77,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 }
             });
         }
-        final View snoozeView = findViewById(R.id.alarm_snooze_button);
+        final View snoozeView = findViewById(R.id.alarm_snooze_action_view);
         if (snoozeView != null) {
             snoozeView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
@@ -80,7 +87,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 }
             });
         }
-        final View continueView = findViewById(R.id.alarm_continue_button);
+        final View continueView = findViewById(R.id.alarm_continue_action_view);
         if (continueView != null) {
             continueView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override

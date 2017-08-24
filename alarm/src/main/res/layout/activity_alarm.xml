@@ -1,61 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/alarm_black"
     android:orientation="vertical"
-    android:background="@color/colorPrimary">
+    tools:context=".activity.AlarmActivity">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#000000"/>
-
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/alarm_main_label_textview"
+        style="@style/TextAlarmMainLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/alarm_screen_label"
+        android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
-        style="@style/Base.TextAppearance.AppCompat.Large.Inverse"/>
+        android:layout_marginTop="102dp"
+        android:text="@string/alarm_screen_main_label"/>
 
-    <Button
-        android:id="@+id/alarm_continue_button"
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/alarm_hour_label_textview"
+        style="@style/TextAlarmHourLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/alarm_main_label_textview"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="20dp"
+        tools:text="09:00"/>
+
+    <FrameLayout
+        android:id="@+id/alarm_continue_action_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="92dp"
-        android:layout_marginLeft="36dp"
-        android:layout_marginRight="36dp"
-        android:text="@string/alarm_screen_continue_button"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"/>
+        android:layout_marginBottom="227dp"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <Button
-        android:id="@+id/alarm_stop_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="36dp"
-        android:text="@string/alarm_screen_stop_button"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"/>
+        <android.support.v7.widget.AppCompatTextView
+            style="@style/TextAlarmActionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_alarm_continue"
+            android:padding="16dp"
+            android:text="@string/alarm_screen_continue_button"/>
+    </FrameLayout>
 
-    <Button
-        android:id="@+id/alarm_snooze_button"
+    <LinearLayout
+        android:id="@+id/alarm_snooze_action_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_margin="36dp"
-        android:text="@string/alarm_screen_snooze_button"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"/>
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="68dp"
+        android:layout_marginLeft="44dp"
+        android:layout_marginStart="44dp"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/background_alarm_action"
+            android:scaleType="center"
+            android:src="@drawable/ic_alarm_action_snooze"/>
+
+        <android.support.v7.widget.AppCompatTextView
+            style="@style/TextAlarmActionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/alarm_screen_snooze_button"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/alarm_stop_action_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="68dp"
+        android:layout_marginEnd="44dp"
+        android:layout_marginRight="44dp"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/background_alarm_action"
+            android:scaleType="center"
+            android:src="@drawable/ic_alarm_action_stop"/>
+
+        <android.support.v7.widget.AppCompatTextView
+            style="@style/TextAlarmActionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/alarm_screen_stop_button"/>
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/alarm_revealed_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:background="#FFFFFF">
+        android:background="@color/alarm_white"
+        android:visibility="invisible">
+
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/alarm_revealed_textview"
             android:layout_width="wrap_content"
@@ -70,7 +129,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:visibility="invisible"
-        android:background="#FFFFFF"/>
+        android:background="@color/alarm_white"
+        android:visibility="invisible"/>
 
 </RelativeLayout>

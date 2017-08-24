@@ -15,7 +15,7 @@
 
     <item
         android:id="@+id/test_alarm_screen"
-        android:title="Test alarm screen"
+        android:title="Test screen"
         app:showAsAction="always"/>
 
 </menu>
