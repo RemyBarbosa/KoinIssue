@@ -5,6 +5,8 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 
 import fr.radiofrance.alarm.activity.AlarmActivity;
 import fr.radiofrance.alarm.model.Alarm;
@@ -54,6 +56,15 @@ public class DemoAlarmActivity extends AlarmActivity {
 
     @Override
     protected int getThemeColor() {
-        return ContextCompat.getColor(getApplicationContext(), R.color.colorAccent);
+        return ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
+    }
+
+    @Override
+    protected void onActionDone(final Alarm alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
+        super.onActionDone(alarm, typeAction, succeed, actionView);
+        if (typeAction == TypeAction.Continue) {
+            final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
+            actionDoneImageView.setImageResource(R.drawable.alarm_continue_done_logo);
+        }
     }
 }

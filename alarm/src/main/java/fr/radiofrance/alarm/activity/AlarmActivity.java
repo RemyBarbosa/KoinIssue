@@ -40,6 +40,7 @@ import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
 import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Continue;
+import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Snooze;
 import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Stop;
 
 public abstract class AlarmActivity extends AppCompatActivity {
@@ -84,7 +85,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionStop();
-                    reference.onActionDone(Stop, succeed, view);
+                    reference.onActionDone(alarm, Stop, succeed, view);
                 }
             });
         }
@@ -94,7 +95,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionSnooze();
-                    reference.onActionDone(TypeAction.Snooze, succeed, view);
+                    reference.onActionDone(alarm, Snooze, succeed, view);
                 }
             });
         }
@@ -104,7 +105,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionContinue();
-                    reference.onActionDone(Continue, succeed, view);
+                    reference.onActionDone(alarm, Continue, succeed, view);
                 }
             });
         }
@@ -180,17 +181,19 @@ public abstract class AlarmActivity extends AppCompatActivity {
         defaultRingMediaPlayer = null;
     }
 
-    protected void onActionDone(final TypeAction typeAction, final boolean succeed, final View actionView) {
+    protected void onActionDone(final Alarm alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
         if (!succeed) {
             Toast.makeText(AlarmActivity.this, R.string.alarm_screen_error_toast, Toast.LENGTH_SHORT).show();
             return;
         }
 
         final View actionDoneLayout = findViewById(R.id.alarm_action_done_layout);
-        actionDoneLayout.setBackgroundColor(getThemeColor());
 
         final TextView actionDoneTextView = findViewById(R.id.alarm_action_done_textview);
         final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
+
+        int revealColor = getThemeColor();
+
         switch (typeAction) {
             case Snooze:
                 final int minutes = (alarm != null && alarm.getSnoozeDuration() > DateUtils.MINUTE_IN_MILLIS) ? (int) (alarm.getSnoozeDuration() / DateUtils.MINUTE_IN_MILLIS) : 0;
@@ -207,8 +210,11 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 break;
             case Continue:
                 actionDoneTextView.setText(R.string.alarm_screen_continue_done_label);
+                revealColor = ContextCompat.getColor(getApplicationContext(), R.color.alarm_black);
                 break;
         }
+
+        actionDoneLayout.setBackgroundColor(revealColor);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             actionDoneLayout.setVisibility(View.VISIBLE);
@@ -216,14 +222,14 @@ public abstract class AlarmActivity extends AppCompatActivity {
             return;
         }
 
-        revealWithAnimation(actionDoneLayout, actionView);
+        revealWithAnimation(actionDoneLayout, actionView, revealColor);
         finishWithDelay();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void revealWithAnimation(final View revealedLayout, final View actionView) {
+    private void revealWithAnimation(final View revealedLayout, final View actionView, @ColorInt final int revealColor) {
         final View revealView = findViewById(R.id.alarm_reveal_view);
-        revealView.setBackgroundColor(getThemeColor());
+        revealView.setBackgroundColor(revealColor);
 
         final int x = actionView.getLeft() + actionView.getWidth() / 2;
         final int y = actionView.getTop() + actionView.getHeight() / 2;
