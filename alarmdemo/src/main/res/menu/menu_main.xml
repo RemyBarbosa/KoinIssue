@@ -13,4 +13,9 @@
         android:title="Clean All"
         app:showAsAction="always"/>
 
+    <item
+        android:id="@+id/test_alarm_screen"
+        android:title="Test alarm screen"
+        app:showAsAction="always"/>
+
 </menu>

@@ -23,7 +23,6 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -79,28 +78,36 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         final int menuItemId = item.getItemId();
 
-        if (menuItemId == R.id.clean_all) {
-            AlarmManager.removeAllAlarms(this);
-            alarmsAdapter.getAlarms().clear();
-            alarmsAdapter.notifyDataSetChanged();
-            updateNextAlarmMessage();
-        } else if (menuItemId == R.id.debug) {
-            final List<AlarmModel> alarms = AlarmManager.getAllAlarms(this);
+        switch (item.getItemId()) {
+            case R.id.clean_all:
+                AlarmManager.removeAllAlarms(this);
+                alarmsAdapter.getAlarms().clear();
+                alarmsAdapter.notifyDataSetChanged();
+                updateNextAlarmMessage();
+                break;
+            case R.id.debug:
+                final List<AlarmModel> alarms = AlarmManager.getAllAlarms(this);
 
-            String debug = "";
-            for (final AlarmModel alarm : alarms) {
-                if (alarm != null) {
-                    debug += alarm + "\n";
+                String debug = "";
+                for (final AlarmModel alarm : alarms) {
+                    if (alarm != null) {
+                        debug += alarm + "\n";
+                    }
                 }
-            }
 
-            if (TextUtils.isEmpty(debug)) {
-                debug = getString(R.string.no_alarms);
-            }
+                if (TextUtils.isEmpty(debug)) {
+                    debug = getString(R.string.no_alarms);
+                }
 
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(debug);
-            builder.show();
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(debug);
+                builder.show();
+                break;
+            case R.id.test_alarm_screen:
+                startActivity(new Intent(getApplicationContext(), DemoAlarmActivity.class));
+                break;
+            default:
+
         }
 
         return super.onOptionsItemSelected(item);

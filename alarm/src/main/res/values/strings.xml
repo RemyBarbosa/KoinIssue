@@ -11,4 +11,6 @@
     <string name="alarm_screen_snooze_revealed_label">Snooze done</string>
     <string name="alarm_screen_continue_revealed_label">Continuer la lecture done</string>
 
+    <string name="alarm_screen_error_toast">Oups une erreur s\'est produite</string>
+
 </resources>

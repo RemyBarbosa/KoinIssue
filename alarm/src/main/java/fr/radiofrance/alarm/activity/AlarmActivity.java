@@ -28,7 +28,10 @@ import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
 public abstract class AlarmActivity extends AppCompatActivity {
 
-    public enum TypeAction {
+    private static final long FINISH_DELAYED_TIME_MS = 2000L;
+    private static final long REVEALED_TRANSITION_DURATION_MS = 300L;
+
+    protected enum TypeAction {
         Stop, Snooze, Continue
     }
 
@@ -62,8 +65,8 @@ public abstract class AlarmActivity extends AppCompatActivity {
             stopView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
-                    reference.onStopButtonClick();
-                    reference.onActionDone(TypeAction.Stop, view);
+                    final boolean succeed = reference.onActionStop();
+                    reference.onActionDone(TypeAction.Stop, succeed, view);
                 }
             });
         }
@@ -72,8 +75,8 @@ public abstract class AlarmActivity extends AppCompatActivity {
             snoozeView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
-                    reference.onSnoozeButtonClick();
-                    reference.onActionDone(TypeAction.Snooze, view);
+                    final boolean succeed = reference.onActionSnooze();
+                    reference.onActionDone(TypeAction.Snooze, succeed, view);
                 }
             });
         }
@@ -82,8 +85,8 @@ public abstract class AlarmActivity extends AppCompatActivity {
             continueView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
-                    reference.onContinueButtonClick();
-                    reference.onActionDone(TypeAction.Continue, view);
+                    final boolean succeed = reference.onActionContinue();
+                    reference.onActionDone(TypeAction.Continue, succeed, view);
                 }
             });
         }
@@ -91,39 +94,36 @@ public abstract class AlarmActivity extends AppCompatActivity {
         onAlarmShouldStart(alarm, isNetworkAvailable(this));
     }
 
-    protected final void onStopButtonClick() {
+    @LayoutRes
+    protected int getLayoutRes() {
+        return R.layout.activity_alarm;
+    }
+
+    protected final boolean onActionStop() {
         onAlarmShouldStop(alarm);
         if (alarm == null) {
-            return;
+            return true;
         }
         alarm.setActivated(false);
-        if (!AlarmManager.updateAlarm(AlarmActivity.this, alarm)) {
-            onAlarmError();
-        }
+        return AlarmManager.updateAlarm(AlarmActivity.this, alarm);
     }
 
-    protected final void onSnoozeButtonClick() {
+    protected final boolean onActionSnooze() {
         if (alarm == null) {
             // Its a security, just do nothing on snooze if we are not able to reprogram a new alarm
-            return;
+            return false;
         }
         onAlarmShouldStop(alarm);
-        if (!AlarmManager.snoozeAlarm(AlarmActivity.this, alarm.getId())) {
-            onAlarmError();
-        }
+        return AlarmManager.snoozeAlarm(AlarmActivity.this, alarm.getId());
     }
 
-    protected final void onContinueButtonClick() {
+    protected final boolean onActionContinue() {
         if (defaultRingMediaPlayer != null) {
             // Security check to let default ring go on
             AlarmManager.stopDefaultAlarmSound(this, defaultRingMediaPlayer);
             defaultRingMediaPlayer = null;
         }
-    }
-
-    @LayoutRes
-    protected int getLayoutRes() {
-        return R.layout.activity_alarm;
+        return true;
     }
 
     protected void onAlarmShouldStart(final Alarm alarm, final boolean networkAvailable) {
@@ -141,11 +141,12 @@ public abstract class AlarmActivity extends AppCompatActivity {
         defaultRingMediaPlayer = null;
     }
 
-    protected void onAlarmError() {
-        Toast.makeText(AlarmActivity.this, "Error when trying to midify the alarm.", Toast.LENGTH_SHORT).show();
-    }
+    protected void onActionDone(final TypeAction typeAction, final boolean succeed, final View actionView) {
+        if (!succeed) {
+            Toast.makeText(AlarmActivity.this, R.string.alarm_screen_error_toast, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-    protected void onActionDone(final TypeAction typeAction, final View actionView) {
         final View revealedLayout = findViewById(R.id.alarm_revealed_layout);
         final TextView revealedTextView = findViewById(R.id.alarm_revealed_textview);
         switch (typeAction) {
@@ -186,7 +187,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
                 revealedLayout.setVisibility(View.VISIBLE);
-                revealView.animate().setDuration(300L).alpha(0F);
+                revealView.animate().setDuration(REVEALED_TRANSITION_DURATION_MS).alpha(0F);
             }
         });
 
@@ -199,7 +200,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
             public void run() {
                 AlarmActivity.this.finish();
             }
-        }, 2000L);
+        }, FINISH_DELAYED_TIME_MS);
     }
 
     @Override

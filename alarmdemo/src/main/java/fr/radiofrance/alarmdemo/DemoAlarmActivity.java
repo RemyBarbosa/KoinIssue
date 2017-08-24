@@ -3,13 +3,14 @@ package fr.radiofrance.alarmdemo;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-
-import java.io.IOException;
+import android.util.Log;
 
 import fr.radiofrance.alarm.activity.AlarmActivity;
 import fr.radiofrance.alarm.model.Alarm;
 
 public class DemoAlarmActivity extends AlarmActivity {
+
+    private static final String LOG_TAG = DemoAlarmActivity.class.getSimpleName();
 
     private MediaPlayer player;
 
@@ -32,8 +33,8 @@ public class DemoAlarmActivity extends AlarmActivity {
                     player.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     player.prepare();
                     player.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    Log.w(LOG_TAG, "Error on MediaPlayer start: ", e);
                 }
             }
 
