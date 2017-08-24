@@ -8,7 +8,8 @@
     <string name="alarm_screen_continue_button">CONTINUER À ÉCOUTER</string>
 
     <string name="alarm_screen_stop_done_label">Réveil arrété</string>
-    <string name="alarm_screen_snooze_done_label">Snooze done</string>
+    <string name="alarm_screen_snooze_done_label">%d minutes</string>
+    <string name="alarm_screen_snooze_done_less_label">Moins d\'une minute</string>
     <string name="alarm_screen_continue_done_label">Bonne journée</string>
 
     <string name="alarm_screen_error_toast">Oups une erreur s\'est produite</string>

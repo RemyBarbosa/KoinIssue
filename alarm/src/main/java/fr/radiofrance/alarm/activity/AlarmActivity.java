@@ -18,6 +18,7 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
@@ -35,6 +36,9 @@ import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
+
+import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Continue;
+import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Stop;
 
 public abstract class AlarmActivity extends AppCompatActivity {
 
@@ -78,7 +82,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionStop();
-                    reference.onActionDone(TypeAction.Stop, succeed, view);
+                    reference.onActionDone(Stop, succeed, view);
                 }
             });
         }
@@ -98,7 +102,7 @@ public abstract class AlarmActivity extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionContinue();
-                    reference.onActionDone(TypeAction.Continue, succeed, view);
+                    reference.onActionDone(Continue, succeed, view);
                 }
             });
         }
@@ -181,7 +185,12 @@ public abstract class AlarmActivity extends AppCompatActivity {
         final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
         switch (typeAction) {
             case Snooze:
-                actionDoneTextView.setText(R.string.alarm_screen_snooze_done_label);
+                final int minutes = (alarm != null && alarm.getSnoozeDuration() > DateUtils.MINUTE_IN_MILLIS) ? (int) (alarm.getSnoozeDuration() / DateUtils.MINUTE_IN_MILLIS) : 0;
+                if (minutes == 0) {
+                    actionDoneTextView.setText(R.string.alarm_screen_snooze_done_less_label);
+                } else {
+                    actionDoneTextView.setText(getResources().getString(R.string.alarm_screen_snooze_done_label, minutes));
+                }
                 actionDoneImageView.setImageResource(R.drawable.ic_alarm_action_snooze_48dp);
                 break;
             case Stop:
@@ -206,8 +215,8 @@ public abstract class AlarmActivity extends AppCompatActivity {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void revealWithAnimation(final View revealedLayout, final View actionView) {
         final View revealView = findViewById(R.id.alarm_reveal_view);
-        final int x = (actionView.getRight() - actionView.getLeft()) / 2;
-        final int y = (actionView.getBottom() - actionView.getTop()) / 2;
+        final int x = actionView.getLeft() + actionView.getWidth() / 2;
+        final int y = actionView.getTop() + actionView.getHeight() / 2;
 
         final int startRadius = 0;
         final int endRadius = (int) Math.hypot(revealView.getWidth(), revealView.getHeight());
