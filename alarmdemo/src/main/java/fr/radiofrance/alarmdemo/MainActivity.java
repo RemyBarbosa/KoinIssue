@@ -2,6 +2,7 @@ package fr.radiofrance.alarmdemo;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import fr.radiofrance.alarm.manager.AlarmManager;
+import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
 import fr.radiofrance.alarmdemo.model.DemoAlarm;
@@ -177,9 +179,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-
-        volume.setMax(AlarmManager.getDeviceMaxVolume(this));
-        volume.setProgress(AlarmManager.getDeviceVolume(this));
     }
 
     private void showAddAlarmDialog() {
@@ -193,7 +192,9 @@ public class MainActivity extends AppCompatActivity {
 
         hours.setText(String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY)));
         minutes.setText(String.format("%02d", calendar.get(Calendar.MINUTE)));
-        volume.setProgress(5);
+        final int volumeMax = DeviceVolumeUtils.getDeviceMaxVolume(getApplicationContext(), AudioManager.STREAM_MUSIC);
+        volume.setMax(volumeMax);
+        volume.setProgress(volumeMax / 2);
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setView(addAlarmDialogView);

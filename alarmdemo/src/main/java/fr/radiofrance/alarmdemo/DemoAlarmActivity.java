@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import fr.radiofrance.alarm.activity.AlarmActivity;
+import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.model.DemoAlarm;
 
 public class DemoAlarmActivity extends AlarmActivity<DemoAlarm> {
@@ -31,6 +32,8 @@ public class DemoAlarmActivity extends AlarmActivity<DemoAlarm> {
             @Override
             public void run() {
                 try {
+                    DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, DeviceVolumeUtils.getValidVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, alarm));
+
                     player = new MediaPlayer();
                     player.setDataSource(DemoAlarmActivity.this, Uri.parse("http://direct.fipradio.fr/live/fip-lofi.mp3"));
                     player.setAudioStreamType(AudioManager.STREAM_MUSIC);

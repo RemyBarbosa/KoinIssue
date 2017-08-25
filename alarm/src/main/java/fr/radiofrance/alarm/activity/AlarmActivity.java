@@ -7,7 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.MediaPlayer;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -37,6 +37,7 @@ import java.util.Locale;
 import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.manager.AlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
 import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Continue;
@@ -54,7 +55,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
     }
 
     private T alarm;
-    private MediaPlayer defaultRingMediaPlayer;
+    private DefaultRingMediaPlayer defaultRingMediaPlayer;
     private TimeTickBroadcastReceiver timeTickBroadcastReceiver;
 
     @Override
@@ -125,8 +126,10 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         if (defaultRingMediaPlayer != null) {
-            AlarmManager.stopDefaultAlarmSound(this, defaultRingMediaPlayer);
+            defaultRingMediaPlayer.stop();
             defaultRingMediaPlayer = null;
+
+            DeviceVolumeUtils.restoreDeviceVolume(getApplicationContext(), AudioManager.STREAM_ALARM);
         }
         unregisterReceiver(timeTickBroadcastReceiver);
         super.onDestroy();
@@ -162,9 +165,11 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
 
     protected final boolean onActionContinue() {
         if (defaultRingMediaPlayer != null) {
-            // Security check to let default ring go on
-            AlarmManager.stopDefaultAlarmSound(this, defaultRingMediaPlayer);
+            // Security check to not let default ring go on
+            defaultRingMediaPlayer.stop();
             defaultRingMediaPlayer = null;
+
+            DeviceVolumeUtils.restoreDeviceVolume(getApplicationContext(), AudioManager.STREAM_ALARM);
         }
         return true;
     }
@@ -173,15 +178,26 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         if (defaultRingMediaPlayer != null) {
             return;
         }
-        defaultRingMediaPlayer = AlarmManager.playDefaultAlarmSound(this, alarm != null ? alarm.getVolume() : AlarmManager.getDeviceMaxVolume(this), true);
+        final int streamType = AudioManager.STREAM_ALARM;
+        final int volume = alarm != null ? alarm.getVolume() : DeviceVolumeUtils.getDeviceMaxVolume(getApplicationContext(), AudioManager.STREAM_MUSIC);
+        // Because is set with a default STREAM_MUSIC volume, we should convert it to STREAM_ALARM volume
+        final int convertedVolume = DeviceVolumeUtils.convertDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, streamType, volume);
+
+        DeviceVolumeUtils.saveDeviceVolume(getApplicationContext(), streamType);
+        DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), streamType, convertedVolume);
+
+        defaultRingMediaPlayer = new DefaultRingMediaPlayer(getApplicationContext(), streamType);
+        defaultRingMediaPlayer.start();
     }
 
     protected void onAlarmShouldStop(final T alarm) {
         if (defaultRingMediaPlayer == null) {
             return;
         }
-        AlarmManager.stopDefaultAlarmSound(this, defaultRingMediaPlayer);
+        defaultRingMediaPlayer.stop();
         defaultRingMediaPlayer = null;
+
+        DeviceVolumeUtils.restoreDeviceVolume(getApplicationContext(), AudioManager.STREAM_ALARM);
     }
 
     protected void onActionDone(final T alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {

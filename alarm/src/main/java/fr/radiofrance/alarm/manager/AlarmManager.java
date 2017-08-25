@@ -3,18 +3,13 @@ package fr.radiofrance.alarm.manager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,15 +33,12 @@ public class AlarmManager {
     private static final String TAG = AlarmManager.class.getSimpleName();
     private static final String KEY_ALARMS = "AlarmsList";
     private static final String KEY_ALARM = "Alarm";
-    private static final String KEY_DEVICE_VOLUME = "alarm.manager.device.volume";
     private static final String KEY_SYSTEM_ALARM_CLOCK_INTENT = "alarm.manager.system.alarm.clock.intent";
-    private static final String KEY_STREAM_TYPE = "alarm.manager.stream.type";
     private static final String KEY_ALARM_CLASS = "alarm.manager.alarm.class";
     private static final int DEFAULT_SNOOZE_DURATION = 600000;// 10 minutes
 
-    public static void initialize(final Context context, final Intent systemAlarmClockIntent, final int streamType, final Class<? extends Alarm> alarmClass) {
+    public static void initialize(final Context context, final Intent systemAlarmClockIntent, final Class<? extends Alarm> alarmClass) {
         setSystemAlarmClockIntent(context, systemAlarmClockIntent);
-        setStreamType(context, streamType);
         setAlarmClass(context, alarmClass);
     }
 
@@ -211,18 +203,6 @@ public class AlarmManager {
         } catch (URISyntaxException e) {
             throw new AlarmException("You must call AlarmManager.initialize(Context, Intent, int) first.");
         }
-    }
-
-    public static void setStreamType(final Context context, final int streamType) {
-        PrefsUtils.setInteger(context, KEY_STREAM_TYPE, streamType);
-    }
-
-    public static int getStreamType(final Context context) {
-        final int streamType = PrefsUtils.getInteger(context, KEY_STREAM_TYPE, -1);
-        if (streamType == -1) {
-            return AudioManager.STREAM_ALARM;
-        }
-        return streamType;
     }
 
     /**
@@ -396,38 +376,6 @@ public class AlarmManager {
     }
 
     /**
-     * Sets the volume of the device stream.
-     * To know the volume max authorized for this stream, please call {@link #getDeviceMaxVolume(Context)}.
-     *
-     * @param volume The volume to set
-     */
-    public static void setDeviceVolume(final Context context, final int volume) {
-        final int streamType = getStreamType(context);
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(streamType, toValidVolume(context, volume), 0);
-    }
-
-    /**
-     * Gets the volume of the device stream.
-     *
-     * @return The volume to get
-     */
-    public static int getDeviceVolume(final Context context) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        return audioManager.getStreamVolume(getStreamType(context));
-    }
-
-    /**
-     * Gets the volume max of the device stream.
-     *
-     * @return The volume to get
-     */
-    public static int getDeviceMaxVolume(final Context context) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        return audioManager.getStreamMaxVolume(getStreamType(context));
-    }
-
-    /**
      * Gets the next Alarm that will ring from now.
      *
      * @return The next Alarm
@@ -503,65 +451,6 @@ public class AlarmManager {
     }
 
     /**
-     * Plays the default alarm sound.
-     *
-     * @param volume  The volume used for this sound
-     * @param looping If you want to play this sound infinitely.
-     * @return True if the sound is playing, false otherwise.
-     */
-    public static MediaPlayer playDefaultAlarmSound(final Context context, final int volume, final boolean looping) {
-        return playAlarmSound(context, volume, looping, Settings.System.DEFAULT_ALARM_ALERT_URI);
-    }
-
-    /**
-     * Plays the alarm sound specified by soundUri.
-     *
-     * @param volume   The volume used for this sound
-     * @param looping  If you want to play this sound infinitely.
-     * @param soundUri The Uri of the sound media.
-     * @return True if the sound is playing, false otherwise.
-     */
-    public static MediaPlayer playAlarmSound(final Context context, final int volume, final boolean looping, final Uri soundUri) {
-        final int streamType = getStreamType(context);
-
-        final MediaPlayer defaultAlarmSound = new MediaPlayer();
-        defaultAlarmSound.setAudioStreamType(streamType);
-
-        // Saving the current device stream volume so that this volume will be restored when the default alarm sound will be stopped.
-        saveDeviceVolume(context);
-
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(streamType, toValidVolume(context, volume), 0);
-        try {
-            defaultAlarmSound.setDataSource(context, soundUri);
-            defaultAlarmSound.setLooping(looping);
-            defaultAlarmSound.prepare();
-            defaultAlarmSound.start();
-
-            return defaultAlarmSound;
-        } catch (IOException e) {
-            e.printStackTrace();
-            defaultAlarmSound.release();
-
-            return null;
-        }
-    }
-
-    /**
-     * Stops the default alarm sound started with {@link #playDefaultAlarmSound(Context, int, boolean)}
-     * or with {@link #playAlarmSound(Context, int, boolean, Uri).
-     */
-    public static void stopDefaultAlarmSound(final Context context, final MediaPlayer mediaPlayer) {
-        if (mediaPlayer == null) {
-            return;
-        }
-
-        mediaPlayer.stop();
-        mediaPlayer.release();
-        restoreDeviceVolume(context);
-    }
-
-    /**
      * Sets the Alarm class to set.
      *
      * @param alarmClass The class to set
@@ -571,7 +460,7 @@ public class AlarmManager {
     }
 
     /**
-     * Gets the Alarm class set in {@link #initialize(Context, Intent, int, Class)}.
+     * Gets the Alarm class set in {@link #initialize(Context, Intent, Class)}.
      *
      * @return The class set
      */
@@ -705,43 +594,6 @@ public class AlarmManager {
         date.set(year, month, day, hours, minutes, 0);
 
         return date;
-    }
-
-    /**
-     * Saves the current volume of the device stream.
-     */
-    private static void saveDeviceVolume(final Context context) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        PrefsUtils.setInteger(context, KEY_DEVICE_VOLUME, audioManager.getStreamVolume(getStreamType(context)));
-    }
-
-    /**
-     * Restores the volume of the device stream previously saved by {@link #saveDeviceVolume(Context)}.
-     */
-    private static void restoreDeviceVolume(final Context context) {
-        final int deviceVolume = PrefsUtils.getInteger(context, KEY_DEVICE_VOLUME, 0);
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(getStreamType(context), toValidVolume(context, deviceVolume), 0);
-    }
-
-    /**
-     * Returns the volume in a valid value.
-     * If the volume is between 0 and {@link #getDeviceMaxVolume(Context)}, the volume will not be modified.
-     *
-     * @param volume The volume
-     * @return The new valid volume
-     */
-    private static int toValidVolume(final Context context, int volume) {
-        final int maxVolume = getDeviceMaxVolume(context);
-
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        if (volume < 0) {
-            volume = audioManager.getStreamVolume(getStreamType(context));
-        } else if (volume > maxVolume) {
-            volume = maxVolume;
-        }
-
-        return volume;
     }
 
 }

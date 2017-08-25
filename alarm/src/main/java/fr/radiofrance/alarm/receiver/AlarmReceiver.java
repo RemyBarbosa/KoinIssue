@@ -61,7 +61,6 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
 
         final Intent alarmIntent = alarm.getIntent();
         if (alarmIntent != null) {
-            AlarmManager.setDeviceVolume(context, alarm.getVolume());
             alarmIntent.putExtra(AlarmManager.INTENT_ALARM_ID, alarmId);
             alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(alarmIntent);
