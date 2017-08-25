@@ -55,6 +55,17 @@ public class DemoAlarmActivity extends AlarmActivity<DemoAlarm> {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // For demo only we stop local player because have no possibility to stop it after
+        if (player != null) {
+            player.stop();
+            player.release();
+            player = null;
+        }
+    }
+
+    @Override
     protected int getThemeColor(final DemoAlarm alarm) {
         return ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary);
     }

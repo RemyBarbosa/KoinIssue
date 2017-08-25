@@ -124,7 +124,10 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        onAlarmShouldStop(alarm);
+        if (defaultRingMediaPlayer != null) {
+            AlarmManager.stopDefaultAlarmSound(this, defaultRingMediaPlayer);
+            defaultRingMediaPlayer = null;
+        }
         unregisterReceiver(timeTickBroadcastReceiver);
         super.onDestroy();
     }
