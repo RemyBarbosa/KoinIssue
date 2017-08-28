@@ -54,6 +54,10 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
     private DefaultRingMediaPlayer defaultRingMediaPlayer;
     private TimeTickBroadcastReceiver timeTickBroadcastReceiver;
 
+    private View stopView;
+    private View snoozeView;
+    private View continueView;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,7 +80,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
 
         setContentView(getLayoutRes());
 
-        final View stopView = findViewById(R.id.alarm_stop_action_view);
+        stopView = findViewById(R.id.alarm_stop_action_view);
         if (stopView != null) {
             stopView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
@@ -86,7 +90,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
                 }
             });
         }
-        final View snoozeView = findViewById(R.id.alarm_snooze_action_view);
+        snoozeView = findViewById(R.id.alarm_snooze_action_view);
         if (snoozeView != null) {
             snoozeView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
@@ -96,7 +100,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
                 }
             });
         }
-        final View continueView = findViewById(R.id.alarm_continue_action_view);
+        continueView = findViewById(R.id.alarm_continue_action_view);
         if (continueView != null) {
             continueView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
                 @Override
@@ -202,12 +206,23 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
             return;
         }
 
+        if (stopView != null) {
+            stopView.setOnClickListener(null);
+        }
+        if (snoozeView != null) {
+            snoozeView.setOnClickListener(null);
+        }
+        if (continueView != null) {
+            continueView.setOnClickListener(null);
+        }
+
         final View actionDoneLayout = findViewById(R.id.alarm_action_done_layout);
 
         final TextView actionDoneTextView = findViewById(R.id.alarm_action_done_textview);
         final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
 
         int revealColor = getThemeColor(alarm);
+        int backgroundEndColor = revealColor;
 
         switch (typeAction) {
             case Snooze:
@@ -225,7 +240,8 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
                 break;
             case Continue:
                 actionDoneTextView.setText(R.string.alarm_screen_continue_done_label);
-                revealColor = ContextCompat.getColor(getApplicationContext(), R.color.alarm_black);
+                revealColor = ContextCompat.getColor(getApplicationContext(), R.color.alarm_continue_reveal);
+                backgroundEndColor = ContextCompat.getColor(getApplicationContext(), R.color.alarm_black);
                 break;
         }
 
@@ -237,12 +253,12 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
             return;
         }
 
-        revealWithAnimation(actionDoneLayout, actionView, revealColor);
+        revealWithAnimation(actionDoneLayout, actionView, revealColor, backgroundEndColor);
         finishWithDelay();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void revealWithAnimation(final View revealedLayout, final View actionView, @ColorInt final int revealColor) {
+    private void revealWithAnimation(final View revealedLayout, final View actionView, @ColorInt final int revealColor, @ColorInt final int backgroundEndColor) {
         final View revealView = findViewById(R.id.alarm_reveal_view);
         revealView.setBackgroundColor(revealColor);
 
@@ -262,6 +278,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
                 revealedLayout.setVisibility(View.VISIBLE);
                 revealView.animate().setDuration(REVEALED_TRANSITION_FADE_OUT_MS).alpha(0F);
                 actionView.animate().setDuration(REVEALED_TRANSITION_FADE_OUT_MS).alpha(0F);
+                revealedLayout.setBackgroundColor(backgroundEndColor);
             }
         });
 

@@ -32,7 +32,9 @@ public class DemoAlarmActivity extends AlarmActivity<DemoAlarm> {
             @Override
             public void run() {
                 try {
-                    DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, DeviceVolumeUtils.getValidVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, alarm));
+                    if (!BuildConfig.DEBUG) {
+                        DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, DeviceVolumeUtils.getValidVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, alarm));
+                    }
 
                     player = new MediaPlayer();
                     player.setDataSource(DemoAlarmActivity.this, Uri.parse("http://direct.fipradio.fr/live/fip-lofi.mp3"));
