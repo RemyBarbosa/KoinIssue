@@ -35,7 +35,6 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="227dp"
-        android:foreground="?attr/selectableItemBackgroundBorderless"
         android:orientation="vertical"
         android:padding="12dp">
 
@@ -141,8 +140,6 @@
         android:id="@+id/alarm_reveal_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
         android:background="@color/alarm_theme_color"
         android:visibility="invisible"/>
 

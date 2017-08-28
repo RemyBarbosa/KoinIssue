@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="alarm_screen_main_label">Réveil</string>
+    <string name="alarm_screen_main_label">Alarm</string>
 
     <string name="alarm_screen_stop_button">STOP</string>
     <string name="alarm_screen_snooze_button">SNOOZE</string>
-    <string name="alarm_screen_continue_button">CONTINUER À ÉCOUTER</string>
+    <string name="alarm_screen_continue_button">CONTINUE TO LISTEN</string>
 
-    <string name="alarm_screen_stop_done_label">Réveil arrété</string>
+    <string name="alarm_screen_stop_done_label">Alarm stopped</string>
     <string name="alarm_screen_snooze_done_label">%d minutes</string>
-    <string name="alarm_screen_snooze_done_less_label">Moins d\'une minute</string>
-    <string name="alarm_screen_continue_done_label">Bonne journée</string>
+    <string name="alarm_screen_snooze_done_less_label">Less than one minute</string>
+    <string name="alarm_screen_continue_done_label">Have a nice day</string>
 
-    <string name="alarm_screen_error_toast">Oups une erreur s\'est produite</string>
+    <string name="alarm_screen_error_toast">Oups an error has happened</string>
 
 </resources>

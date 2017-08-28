@@ -2,12 +2,12 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
         <shape android:shape="oval">
-            <solid android:color="@color/alarm_action_background"/>
+            <solid android:color="@color/alarm_ripple_background"/>
         </shape>
     </item>
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/alarm_ripple_background"/>
+            <solid android:color="@color/alarm_action_background"/>
         </shape>
     </item>
 </selector>
