@@ -8,3 +8,4 @@
 /.gradle
 /local.properties
 /gradlew.bat
+*.DS_Store
