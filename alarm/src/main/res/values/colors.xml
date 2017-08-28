@@ -9,6 +9,7 @@
 
     <color name="alarm_action_background">#19FFFFFF</color>
     <color name="alarm_continue_background">#26FFFFFF</color>
+    <color name="alarm_ripple_background">#c2ffffff</color>
 
     <color name="alarm_theme_color">@color/colorPrimary</color>
 

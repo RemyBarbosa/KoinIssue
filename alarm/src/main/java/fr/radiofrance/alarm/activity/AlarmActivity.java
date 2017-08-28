@@ -40,10 +40,6 @@ import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
-import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Continue;
-import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Snooze;
-import static fr.radiofrance.alarm.activity.AlarmActivity.TypeAction.Stop;
-
 public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
 
     private static final long FINISH_DELAYED_TIME_MS = 2500L;
@@ -86,7 +82,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionStop();
-                    reference.onActionDone(alarm, Stop, succeed, view);
+                    reference.onActionDone(alarm, TypeAction.Stop, succeed, view);
                 }
             });
         }
@@ -96,7 +92,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionSnooze();
-                    reference.onActionDone(alarm, Snooze, succeed, view);
+                    reference.onActionDone(alarm, TypeAction.Snooze, succeed, view);
                 }
             });
         }
@@ -106,7 +102,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
                 @Override
                 public void onClick(final AlarmActivity reference, final View view) {
                     final boolean succeed = reference.onActionContinue();
-                    reference.onActionDone(alarm, Continue, succeed, view);
+                    reference.onActionDone(alarm, TypeAction.Continue, succeed, view);
                 }
             });
         }
