@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/alarm_black"
     android:orientation="vertical"
-    tools:context=".activity.AlarmActivity">
+    tools:context=".activity.AlarmLaunchActivity">
 
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/alarm_main_label_textview"

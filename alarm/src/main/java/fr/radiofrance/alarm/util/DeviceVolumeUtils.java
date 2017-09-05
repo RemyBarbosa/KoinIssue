@@ -3,6 +3,7 @@ package fr.radiofrance.alarm.util;
 import android.content.Context;
 import android.media.AudioManager;
 
+import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
 import fr.radiofrance.alarm.model.Alarm;
 
 public abstract class DeviceVolumeUtils {
@@ -46,14 +47,14 @@ public abstract class DeviceVolumeUtils {
      * Saves the current volume of the device stream.
      */
     public static void saveDeviceVolume(final Context context, final int streamType) {
-        PrefsUtils.setInteger(context, KEY_DEVICE_VOLUME + streamType, getDeviceVolume(context, streamType));
+        new SharedPreferencesManager(context).storeInt(KEY_DEVICE_VOLUME + streamType, getDeviceVolume(context, streamType));
     }
 
     /**
      * Restores the volume of the device stream previously saved by {@link #saveDeviceVolume(Context, int)}.
      */
     public static void restoreDeviceVolume(final Context context, final int streamType) {
-        final int savedVolume = PrefsUtils.getInteger(context, KEY_DEVICE_VOLUME + streamType, 0);
+        final int savedVolume = new SharedPreferencesManager(context).getInt(KEY_DEVICE_VOLUME + streamType, 0);
         setDeviceVolume(context, streamType, getValidVolume(context, streamType, savedVolume));
     }
 

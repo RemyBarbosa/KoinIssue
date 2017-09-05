@@ -3,8 +3,8 @@
 
     <string name="alarm_screen_main_label">Réveil</string>
 
-    <string name="alarm_screen_stop_button">STOP</string>
-    <string name="alarm_screen_snooze_button">RAPPEL</string>
+    <string name="alarm_screen_stop_button">ARRÊTER</string>
+    <string name="alarm_screen_snooze_button">RÉPÉTER</string>
     <string name="alarm_screen_continue_button">CONTINUER À ÉCOUTER</string>
 
     <string name="alarm_screen_stop_done_label">Réveil arrété</string>

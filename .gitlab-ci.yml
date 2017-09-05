@@ -1,0 +1,68 @@
+image: registry.dnm.radiofrance.fr/android:26
+variables:
+  ANDROID_EMULATOR_SDK: "25"
+  ANDROID_EMULATOR_ABI: "armeabi-v7a"
+  ANDROID_EMULATOR_PLATFORM: "arm"
+  PROJECT_VERSION_PROPERTIES_PATH_FILE: "alarm/gradle.properties"
+  PROJECT_VERSION_PROPERTIES_VERSION_NAME_KEY: "projectVersionName"
+  PROJECT_RELEASE_NOTES_PATH_FILE: "alarm/RELEASE_NOTES.md"
+
+before_script:
+  - export VERSION_NAME=$(grep "^$PROJECT_VERSION_PROPERTIES_VERSION_NAME_KEY=" $PROJECT_VERSION_PROPERTIES_PATH_FILE | cut -d"=" -f2)
+
+stages:
+  - check
+  - test
+  - deploy
+  - version
+
+checkTagAvailable:
+  stage: check
+  script:
+      - echo "Check if tag $VERSION_NAME already exist"
+      - if [ ! $(git tag -l "$VERSION_NAME")]; then exit 0; else exit 1;fi
+
+checkVersionReleaseNotes:
+  stage: check
+  script:
+      - echo "Check if version $VERSION_NAME is present in release notes"
+      - grep -Fxq "## v$VERSION_NAME" $PROJECT_RELEASE_NOTES_PATH_FILE
+  only:
+      - develop
+      - master
+
+uploadOnNexus:
+  stage: deploy
+  script:
+      - ./gradlew :alarm:uploadArchives
+  only:
+      - master
+
+versionTag:
+  stage: version
+  script:
+      - git tag $VERSION_NAME
+      # TODO solve authentification problem
+      - git push origin $VERSION_NAME
+  only:
+      # TODO master
+      - disable_stage
+
+functionalTests:
+  stage: test
+  script:
+      - wget --quiet --output-document=android-wait-for-emulator https://raw.githubusercontent.com/travis-ci/travis-cookbooks/0f497eb71291b52a703143c5cd63a217c8766dc9/community-cookbooks/android-sdk/files/default/android-wait-for-emulator
+      - chmod +x android-wait-for-emulator
+      - apt-get update
+      - apt-get --quiet install --yes libqt5widgets5
+      - echo y | android --silent update sdk --no-ui --all --filter android-${ANDROID_EMULATOR_SDK}
+      - echo y | android --silent update sdk --no-ui --all --filter sys-img-${ANDROID_EMULATOR_ABI}-google_apis-${ANDROID_EMULATOR_SDK}
+      - echo no | android create avd -n test -t android-${ANDROID_EMULATOR_SDK} --abi google_apis/${ANDROID_EMULATOR_ABI}
+      - emulator64-${ANDROID_EMULATOR_PLATFORM} -avd test -no-window -no-audio -no-accel &
+      - ./android-wait-for-emulator
+      - adb shell input keyevent 82
+      - adb devices
+      - ./gradlew :alarm:connectedDebugAndroidTest
+      - adb emu kill
+  only:
+      - disable_stage

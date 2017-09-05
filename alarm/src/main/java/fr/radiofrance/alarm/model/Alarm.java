@@ -34,16 +34,7 @@ public class Alarm implements Parcelable {
     protected int snoozeDuration;
     protected String intentUri;
     protected boolean activated;
-
-    @Deprecated
-    public Alarm(String id) {
-        this.id = id;
-        this.hours = -1;
-        this.minutes = -1;
-        this.volume = -1;
-        this.snoozeDuration = -1;
-        this.activated = false;
-    }
+    protected int version;
 
     public Alarm() {
         this.id = UUID.randomUUID().toString();
@@ -52,6 +43,7 @@ public class Alarm implements Parcelable {
         this.volume = -1;
         this.snoozeDuration = -1;
         this.activated = false;
+        this.version = -1;
     }
 
     protected Alarm(final Parcel in) {
@@ -64,6 +56,7 @@ public class Alarm implements Parcelable {
         this.snoozeDuration = in.readInt();
         this.intentUri = in.readString();
         this.activated = in.readByte() == 1;
+        this.version = in.readInt();
     }
 
     @Override
@@ -81,6 +74,7 @@ public class Alarm implements Parcelable {
         dest.writeInt(this.snoozeDuration);
         dest.writeString(this.intentUri);
         dest.writeByte(this.activated ? (byte) 1 : (byte) 0);
+        dest.writeInt(this.version);
     }
 
     @Override
@@ -94,6 +88,7 @@ public class Alarm implements Parcelable {
                 ", snoozeDuration=" + snoozeDuration +
                 ", intentUri='" + intentUri + "'" +
                 ", isActivated='" + activated + "'" +
+                ", version=" + version +
                 '}';
     }
 
@@ -180,4 +175,11 @@ public class Alarm implements Parcelable {
         this.activated = activated;
     }
 
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(final int version) {
+        this.version = version;
+    }
 }

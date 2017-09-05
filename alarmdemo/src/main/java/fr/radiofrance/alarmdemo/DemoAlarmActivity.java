@@ -1,73 +1,43 @@
 package fr.radiofrance.alarmdemo;
 
+import android.content.Context;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import fr.radiofrance.alarm.activity.AlarmActivity;
+import fr.radiofrance.alarm.activity.AlarmLaunchActivity;
+import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.model.DemoAlarm;
+import fr.radiofrance.alarmdemo.player.DemoPlayer;
 
-public class DemoAlarmActivity extends AlarmActivity<DemoAlarm> {
+public class DemoAlarmActivity extends AlarmLaunchActivity<DemoAlarm> {
 
     private static final String LOG_TAG = DemoAlarmActivity.class.getSimpleName();
 
-    private MediaPlayer player;
+    @Override
+    protected RfAlarmManager<DemoAlarm> getInstanceOfAlarmManager(final Context context) {
+        return new RfAlarmManager<>(context, DemoAlarm.class);
+    }
 
     @Override
     protected void onAlarmShouldStart(final DemoAlarm alarm, final boolean networkAvailable) {
         if (!networkAvailable) {
+            // If no network, let super class play default sound
             super.onAlarmShouldStart(alarm, networkAvailable);
             return;
         }
-        if (player != null) {
-            return;
+        if (!BuildConfig.DEBUG) {
+            DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, DeviceVolumeUtils.getValidVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, alarm));
         }
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    if (!BuildConfig.DEBUG) {
-                        DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, DeviceVolumeUtils.getValidVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, alarm));
-                    }
-
-                    player = new MediaPlayer();
-                    player.setDataSource(DemoAlarmActivity.this, Uri.parse("http://direct.fipradio.fr/live/fip-lofi.mp3"));
-                    player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                    player.prepare();
-                    player.start();
-                } catch (Exception e) {
-                    Log.w(LOG_TAG, "Error on MediaPlayer start: ", e);
-                }
-            }
-
-        }).start();
+        DemoPlayer.getInstance(getApplicationContext()).play();
     }
 
     @Override
     protected void onAlarmShouldStop(final DemoAlarm alarm) {
-        if (player != null) {
-            player.stop();
-            player.release();
-            player = null;
-        }
+        DemoPlayer.getInstance(getApplicationContext()).stop();
         super.onAlarmShouldStop(alarm);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // For demo only we stop local player because have no possibility to stop it after
-        if (player != null) {
-            player.stop();
-            player.release();
-            player = null;
-        }
     }
 
     @Override
@@ -77,7 +47,9 @@ public class DemoAlarmActivity extends AlarmActivity<DemoAlarm> {
 
     @Override
     protected void onActionDone(final DemoAlarm alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
-        super.onActionDone(alarm, typeAction, succeed, actionView);
+        // Force succeed true
+        // This is a demo app trick to see animation event when action failed (no alarmId when using "TEST SCREEN" option)
+        super.onActionDone(alarm, typeAction, true, actionView);
         if (typeAction == TypeAction.Continue) {
             final ImageView actionDoneImageView = findViewById(R.id.alarm_action_done_imageview);
             actionDoneImageView.setImageResource(R.drawable.alarm_continue_done_logo);

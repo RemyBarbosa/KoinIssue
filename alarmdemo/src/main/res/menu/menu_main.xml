@@ -6,7 +6,7 @@
     <item
         android:id="@+id/debug"
         android:title="Debug"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/clean_all"
@@ -17,5 +17,10 @@
         android:id="@+id/test_alarm_screen"
         android:title="Test screen"
         app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/stop_player"
+        android:title="Stop player"
+        app:showAsAction="ifRoom"/>
 
 </menu>

@@ -8,14 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.ColorInt;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -35,13 +36,20 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import fr.radiofrance.alarm.R;
-import fr.radiofrance.alarm.manager.AlarmManager;
+import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
+import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.util.AlarmIntentUtils;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
+import fr.radiofrance.alarm.util.NetworkUtils;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
-public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
+public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActivity {
 
+    protected abstract RfAlarmManager<T> getInstanceOfAlarmManager(Context context);
+
+    private static final int CHECK_NETWORK_RETRY_COUNT = 6;
+    private static final long CHECK_NETWORK_RETRY_DELAY_MS = 500L;
     private static final long FINISH_DELAYED_TIME_MS = 2500L;
     private static final long REVEALED_TRANSITION_DURATION_MS = 600L;
     private static final long REVEALED_TRANSITION_FADE_OUT_MS = 300L;
@@ -50,9 +58,13 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         Stop, Snooze, Continue
     }
 
+    private RfAlarmManager<T> alarmManager;
+    private ConfigurationDatastore configurationDatastore;
+
     private T alarm;
     private DefaultRingMediaPlayer defaultRingMediaPlayer;
     private TimeTickBroadcastReceiver timeTickBroadcastReceiver;
+    private CheckNetworkHandler checkNetworkHandler;
 
     private View stopView;
     private View snoozeView;
@@ -69,12 +81,40 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // Hide Navigation bar
+            final View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE);
+        }
+
+        alarmManager = getInstanceOfAlarmManager(getApplicationContext());
+        configurationDatastore = new ConfigurationDatastore(getApplicationContext());
+        checkNetworkHandler = new CheckNetworkHandler(this, CHECK_NETWORK_RETRY_COUNT, CHECK_NETWORK_RETRY_DELAY_MS);
+
         final Intent intent = getIntent();
         if (intent != null) {
             final Bundle extras = intent.getExtras();
             if (extras != null) {
-                final String alarmId = extras.getString(AlarmManager.INTENT_ALARM_ID);
-                alarm = AlarmManager.getAlarm(getApplicationContext(), alarmId);
+                final String alarmId = extras.getString(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID);
+                alarm = alarmManager.getAlarm(alarmId);
+
+                final int alarmHash = extras.getInt(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, -1);
+                if (alarmHash != -1) {
+                    if (alarmHash == configurationDatastore.getAlarmLastExecutedHash()) {
+                        final Intent appLaunchIntent = configurationDatastore.getAlarmAppLaunchIntent(null);
+                        if (appLaunchIntent != null) {
+                            startActivity(appLaunchIntent);
+                        }
+                        finish();
+                        return;
+                    }
+                    configurationDatastore.setAlarmLastExecutedHash(alarmHash);
+                }
             }
         }
 
@@ -82,30 +122,48 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
 
         stopView = findViewById(R.id.alarm_stop_action_view);
         if (stopView != null) {
-            stopView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
+            stopView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity<T>>(this) {
                 @Override
-                public void onClick(final AlarmActivity reference, final View view) {
-                    final boolean succeed = reference.onActionStop();
+                public void onClick(final AlarmLaunchActivity<T> reference, final View view) {
+                    boolean succeed = true;
+                    try {
+                        reference.onActionStop();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        succeed = false;
+                    }
                     reference.onActionDone(alarm, TypeAction.Stop, succeed, view);
                 }
             });
         }
         snoozeView = findViewById(R.id.alarm_snooze_action_view);
         if (snoozeView != null) {
-            snoozeView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
+            snoozeView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity<T>>(this) {
                 @Override
-                public void onClick(final AlarmActivity reference, final View view) {
-                    final boolean succeed = reference.onActionSnooze();
+                public void onClick(final AlarmLaunchActivity<T> reference, final View view) {
+                    boolean succeed = true;
+                    try {
+                        reference.onActionSnooze();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        succeed = false;
+                    }
                     reference.onActionDone(alarm, TypeAction.Snooze, succeed, view);
                 }
             });
         }
         continueView = findViewById(R.id.alarm_continue_action_view);
         if (continueView != null) {
-            continueView.setOnClickListener(new WeakRefOnClickListener<AlarmActivity>(this) {
+            continueView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity<T>>(this) {
                 @Override
-                public void onClick(final AlarmActivity reference, final View view) {
-                    final boolean succeed = reference.onActionContinue();
+                public void onClick(final AlarmLaunchActivity<T> reference, final View view) {
+                    boolean succeed = true;
+                    try {
+                        reference.onActionContinue();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        succeed = false;
+                    }
                     reference.onActionDone(alarm, TypeAction.Continue, succeed, view);
                 }
             });
@@ -115,7 +173,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         registerReceiver(timeTickBroadcastReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
         bindCurrentTime();
 
-        onAlarmShouldStart(alarm, isNetworkAvailable(getApplicationContext()));
+        checkNetworkHandler.check();
     }
 
     @Override
@@ -125,13 +183,13 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (defaultRingMediaPlayer != null) {
-            defaultRingMediaPlayer.stop();
-            defaultRingMediaPlayer = null;
-
-            DeviceVolumeUtils.restoreDeviceVolume(getApplicationContext(), AudioManager.STREAM_ALARM);
+        stopDefaultRingAlarm();
+        if (checkNetworkHandler != null) {
+            checkNetworkHandler.cancel();
         }
-        unregisterReceiver(timeTickBroadcastReceiver);
+        if (timeTickBroadcastReceiver != null) {
+            unregisterReceiver(timeTickBroadcastReceiver);
+        }
         super.onDestroy();
     }
 
@@ -145,64 +203,35 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         return ContextCompat.getColor(getApplicationContext(), R.color.alarm_theme_color);
     }
 
-    protected final boolean onActionStop() {
+    protected final void onActionStop() throws Exception {
         onAlarmShouldStop(alarm);
-        if (alarm == null) {
-            return true;
-        }
-        alarm.setActivated(false);
-        return AlarmManager.updateAlarm(getApplicationContext(), alarm);
+        alarmManager.onAlarmIsConsumed(alarm);
     }
 
-    protected final boolean onActionSnooze() {
-        if (alarm == null) {
-            // Its a security, just do nothing on snooze if we are not able to reprogram a new alarm
-            return false;
-        }
+    protected final void onActionSnooze() throws Exception {
         onAlarmShouldStop(alarm);
-        return AlarmManager.snoozeAlarm(getApplicationContext(), alarm.getId());
+        alarmManager.onAlarmIsSnoozed(alarm);
     }
 
-    protected final boolean onActionContinue() {
-        if (defaultRingMediaPlayer != null) {
-            // Security check to not let default ring go on
-            defaultRingMediaPlayer.stop();
-            defaultRingMediaPlayer = null;
-
-            DeviceVolumeUtils.restoreDeviceVolume(getApplicationContext(), AudioManager.STREAM_ALARM);
-        }
-        return true;
+    protected final void onActionContinue() throws Exception {
+        stopDefaultRingAlarm();
+        alarmManager.onAlarmIsConsumed(alarm);
     }
 
+    // Keep attributes for subClass override
     protected void onAlarmShouldStart(final T alarm, final boolean networkAvailable) {
-        if (defaultRingMediaPlayer != null) {
-            return;
-        }
-        final int streamType = AudioManager.STREAM_ALARM;
-        final int volume = alarm != null ? alarm.getVolume() : DeviceVolumeUtils.getDeviceMaxVolume(getApplicationContext(), AudioManager.STREAM_MUSIC);
-        // Because is set with a default STREAM_MUSIC volume, we should convert it to STREAM_ALARM volume
-        final int convertedVolume = DeviceVolumeUtils.convertDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, streamType, volume);
-
-        DeviceVolumeUtils.saveDeviceVolume(getApplicationContext(), streamType);
-        DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), streamType, convertedVolume);
-
-        defaultRingMediaPlayer = new DefaultRingMediaPlayer(getApplicationContext(), streamType);
-        defaultRingMediaPlayer.start();
+        startDefaultRingAlarm();
     }
 
+    // Keep attributes for subClass override
     protected void onAlarmShouldStop(final T alarm) {
-        if (defaultRingMediaPlayer == null) {
-            return;
-        }
-        defaultRingMediaPlayer.stop();
-        defaultRingMediaPlayer = null;
-
-        DeviceVolumeUtils.restoreDeviceVolume(getApplicationContext(), AudioManager.STREAM_ALARM);
+        stopDefaultRingAlarm();
     }
 
     protected void onActionDone(final T alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
         if (!succeed) {
             Toast.makeText(getApplicationContext(), R.string.alarm_screen_error_toast, Toast.LENGTH_SHORT).show();
+            finishWithDelay();
             return;
         }
 
@@ -257,6 +286,36 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         finishWithDelay();
     }
 
+    private void onNetworkChecked(@NonNull final NetworkInfo.State networkState) {
+        onAlarmShouldStart(alarm, networkState == NetworkInfo.State.CONNECTED);
+    }
+
+    private void startDefaultRingAlarm() {
+        if (defaultRingMediaPlayer != null) {
+            return;
+        }
+        final int streamType = AudioManager.STREAM_ALARM;
+        final int volume = alarm != null ? alarm.getVolume() : DeviceVolumeUtils.getDeviceMaxVolume(getApplicationContext(), AudioManager.STREAM_MUSIC);
+        // Because is set with a default STREAM_MUSIC volume, we should convert it to STREAM_ALARM volume
+        final int convertedVolume = DeviceVolumeUtils.convertDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, streamType, volume);
+
+        DeviceVolumeUtils.saveDeviceVolume(getApplicationContext(), streamType);
+        DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), streamType, convertedVolume);
+
+        defaultRingMediaPlayer = new DefaultRingMediaPlayer(getApplicationContext(), streamType);
+        defaultRingMediaPlayer.start();
+    }
+
+    private void stopDefaultRingAlarm() {
+        if (defaultRingMediaPlayer == null) {
+            return;
+        }
+        defaultRingMediaPlayer.stop();
+        defaultRingMediaPlayer = null;
+
+        DeviceVolumeUtils.restoreDeviceVolume(getApplicationContext(), AudioManager.STREAM_ALARM);
+    }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void revealWithAnimation(final View revealedLayout, final View actionView, @ColorInt final int revealColor, @ColorInt final int backgroundEndColor) {
         final View revealView = findViewById(R.id.alarm_reveal_view);
@@ -291,7 +350,7 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                AlarmActivity.this.finish();
+                AlarmLaunchActivity.this.finish();
             }
         }, FINISH_DELAYED_TIME_MS);
     }
@@ -306,40 +365,64 @@ public abstract class AlarmActivity<T extends Alarm> extends AppCompatActivity {
         }
     }
 
-    /**
-     * Test internet connection
-     *
-     * @param context
-     * @return TRUE if connection exists, else FALSE.
-     */
-    private boolean isNetworkAvailable(final Context context) {
-        final ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity == null) {
-            return false;
-        }
-
-        final NetworkInfo networkInfo = connectivity.getActiveNetworkInfo();
-        if (networkInfo == null || !networkInfo.isConnected()) {
-            return false;
-        }
-        return true;
-    }
-
     private static class TimeTickBroadcastReceiver extends BroadcastReceiver {
 
-        private final WeakReference<AlarmActivity> refActivity;
+        private final WeakReference<AlarmLaunchActivity> refActivity;
 
-        TimeTickBroadcastReceiver(final AlarmActivity activity) {
+        TimeTickBroadcastReceiver(final AlarmLaunchActivity activity) {
             this.refActivity = new WeakReference<>(activity);
         }
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            final AlarmActivity activity = refActivity.get();
+            final AlarmLaunchActivity activity = refActivity.get();
             if (activity == null) {
                 return;
             }
             activity.bindCurrentTime();
+        }
+    }
+
+    private static class CheckNetworkHandler extends Handler {
+
+        private static final int MESSAGE_WHAT = 0;
+
+        private final WeakReference<AlarmLaunchActivity> refActivity;
+        private final int retryCount;
+        private final long retryDelayMS;
+
+        CheckNetworkHandler(final AlarmLaunchActivity activity, final int retryCount, final long retryDelayMS) {
+            this.refActivity = new WeakReference<>(activity);
+            this.retryCount = retryCount;
+            this.retryDelayMS = retryDelayMS;
+        }
+
+        void check() {
+            sendMessage(obtainMessage(MESSAGE_WHAT, retryCount, 0));
+        }
+
+        void cancel() {
+            removeCallbacksAndMessages(null);
+        }
+
+        @Override
+        public void handleMessage(final Message msg) {
+            final AlarmLaunchActivity activity = refActivity.get();
+            if (activity == null) {
+                return;
+            }
+            final NetworkInfo.State networkState = NetworkUtils.getNetworkState(activity.getApplicationContext());
+            switch (networkState) {
+                case CONNECTED:
+                    activity.onNetworkChecked(networkState);
+                    return;
+                default:
+                    if (msg.arg1 == 0) {
+                        activity.onNetworkChecked(networkState);
+                        return;
+                    }
+                    sendMessageDelayed(obtainMessage(MESSAGE_WHAT, msg.arg1 - 1, 0), retryDelayMS);
+            }
         }
     }
 

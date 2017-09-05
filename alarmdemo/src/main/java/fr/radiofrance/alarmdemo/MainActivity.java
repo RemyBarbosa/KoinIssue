@@ -20,18 +20,19 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
-import fr.radiofrance.alarm.manager.AlarmManager;
+import fr.radiofrance.alarm.exception.RfAlarmException;
+import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
 import fr.radiofrance.alarmdemo.model.DemoAlarm;
+import fr.radiofrance.alarmdemo.player.DemoPlayer;
 import fr.radiofrance.alarmdemo.view.DividerItemDecoration;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private View addAlarmButton;
     private View addAlarmDialogView;
     private AlarmsAdapter alarmsAdapter;
+
+    private RfAlarmManager<DemoAlarm> alarmManager;
 
     private CheckBox monday;
     private CheckBox tuesday;
@@ -58,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        alarmManager = new RfAlarmManager<>(getApplicationContext(), DemoAlarm.class);
+
         findViews();
         initViews();
     }
@@ -65,8 +71,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        alarmsAdapter.setAlarms(AlarmManager.<DemoAlarm>getAllAlarms(this));
+        alarmsAdapter.setAlarms(alarmManager.getAllAlarms());
         updateNextAlarmMessage();
     }
 
@@ -78,17 +83,21 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        final int menuItemId = item.getItemId();
 
         switch (item.getItemId()) {
             case R.id.clean_all:
-                AlarmManager.removeAllAlarms(this);
+                try {
+                    alarmManager.removeAllAlarms();
+                } catch (RfAlarmException e) {
+                    showErrorMessage(e.getMessage());
+                    break;
+                }
                 alarmsAdapter.getAlarms().clear();
                 alarmsAdapter.notifyDataSetChanged();
                 updateNextAlarmMessage();
                 break;
             case R.id.debug:
-                final List<DemoAlarm> alarms = AlarmManager.getAllAlarms(this);
+                final List<DemoAlarm> alarms = alarmManager.getAllAlarms();
 
                 String debug = "";
                 for (final DemoAlarm alarm : alarms) {
@@ -108,6 +117,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.test_alarm_screen:
                 startActivity(new Intent(getApplicationContext(), DemoAlarmActivity.class));
                 break;
+            case R.id.stop_player:
+                DemoPlayer.getInstance(getApplicationContext()).stop();
+                break;
             default:
 
         }
@@ -116,21 +128,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findViews() {
-        nextAlarmMessageTextView = (TextView) findViewById(R.id.next_alarm_message);
-        alarmsRecyclerView = (RecyclerView) findViewById(R.id.alarms_recycler_view);
+        nextAlarmMessageTextView = findViewById(R.id.next_alarm_message);
+        alarmsRecyclerView = findViewById(R.id.alarms_recycler_view);
         addAlarmButton = findViewById(R.id.add_alarm_button);
 
         addAlarmDialogView = LayoutInflater.from(this).inflate(R.layout.activity_main_dialog, null);
-        monday = (CheckBox) addAlarmDialogView.findViewById(R.id.monday);
-        tuesday = (CheckBox) addAlarmDialogView.findViewById(R.id.tuesday);
-        wednesday = (CheckBox) addAlarmDialogView.findViewById(R.id.wednesday);
-        thursday = (CheckBox) addAlarmDialogView.findViewById(R.id.thursday);
-        friday = (CheckBox) addAlarmDialogView.findViewById(R.id.friday);
-        saturday = (CheckBox) addAlarmDialogView.findViewById(R.id.saturday);
-        sunday = (CheckBox) addAlarmDialogView.findViewById(R.id.sunday);
-        hours = (EditText) addAlarmDialogView.findViewById(R.id.hours);
-        minutes = (EditText) addAlarmDialogView.findViewById(R.id.minutes);
-        volume = (SeekBar) addAlarmDialogView.findViewById(R.id.volume);
+        monday = addAlarmDialogView.findViewById(R.id.monday);
+        tuesday = addAlarmDialogView.findViewById(R.id.tuesday);
+        wednesday = addAlarmDialogView.findViewById(R.id.wednesday);
+        thursday = addAlarmDialogView.findViewById(R.id.thursday);
+        friday = addAlarmDialogView.findViewById(R.id.friday);
+        saturday = addAlarmDialogView.findViewById(R.id.saturday);
+        sunday = addAlarmDialogView.findViewById(R.id.sunday);
+        hours = addAlarmDialogView.findViewById(R.id.hours);
+        minutes = addAlarmDialogView.findViewById(R.id.minutes);
+        volume = addAlarmDialogView.findViewById(R.id.volume);
     }
 
     private void initViews() {
@@ -143,12 +155,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAlarmLongClick(DemoAlarm alarm, int position) {
-                if (AlarmManager.removeAlarm(MainActivity.this, alarm.getId())) {
-                    alarmsAdapter.removeAlarm(alarm);
-                    updateNextAlarmMessage();
-                } else {
-                    Toast.makeText(MainActivity.this, "Error when removing the alarm", Toast.LENGTH_SHORT).show();
+                try {
+                    alarmManager.removeAlarm(alarm.getId());
+                } catch (RfAlarmException e) {
+                    showErrorMessage(e.getMessage());
+                    return;
                 }
+                alarmsAdapter.removeAlarm(alarm);
+                updateNextAlarmMessage();
             }
 
             @Override
@@ -156,13 +170,14 @@ public class MainActivity extends AppCompatActivity {
                 if (alarm == null) {
                     return;
                 }
-
                 alarm.setActivated(isActivated);
-                if (AlarmManager.updateAlarm(MainActivity.this, alarm)) {
-                    updateNextAlarmMessage();
-                } else {
-                    Toast.makeText(MainActivity.this, "Error when updating the alarm", Toast.LENGTH_SHORT).show();
+                try {
+                    alarmManager.updateAlarm(alarm);
+                } catch (RfAlarmException e) {
+                    showErrorMessage(e.getMessage());
+                    return;
                 }
+                updateNextAlarmMessage();
             }
 
         });
@@ -259,16 +274,17 @@ public class MainActivity extends AppCompatActivity {
         alarm.setVolume(volume.getProgress());
         alarm.setActivated(true);
         alarm.setCustomField("custom field");
-        alarm.setIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        alarm.setIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class));
 
         alarmsAdapter.addAlarm(alarm);
 
-        if (AlarmManager.addAlarm(this, alarm)) {
-            updateNextAlarmMessage();
-        } else {
-            Toast.makeText(this, "Error when adding the alarm", Toast.LENGTH_SHORT).show();
+        try {
+            alarmManager.addAlarm(alarm);
+        } catch (RfAlarmException e) {
+            showErrorMessage(e.getMessage());
+            return;
         }
+        updateNextAlarmMessage();
     }
 
     private void updateAlarm(@NonNull final DemoAlarm alarm, final int alarmPosition) {
@@ -292,21 +308,30 @@ public class MainActivity extends AppCompatActivity {
 
         alarmsAdapter.notifyItemChanged(alarmPosition);
 
-        if (AlarmManager.updateAlarm(this, alarm)) {
-            updateNextAlarmMessage();
-        } else {
-            Toast.makeText(this, "Error when updating the alarm", Toast.LENGTH_SHORT).show();
+        try {
+            alarmManager.updateAlarm(alarm);
+        } catch (RfAlarmException e) {
+            showErrorMessage(e.getMessage());
+            return;
         }
+        updateNextAlarmMessage();
     }
 
     private void updateNextAlarmMessage() {
-        final Calendar nextAlarmDate = AlarmManager.getNextAlarmDate(this);
-        if (nextAlarmDate != null) {
-            nextAlarmMessageTextView.setText(DateUtils.getRelativeTimeSpanString(nextAlarmDate.getTimeInMillis(),
-                    Calendar.getInstance(TimeZone.getDefault()).getTimeInMillis(), 0));
-        } else {
+        final Calendar nextAlarmDate = alarmManager.getNextAlarmScheduleDate();
+        if (nextAlarmDate == null) {
             nextAlarmMessageTextView.setText(R.string.no_alarms);
+            return;
         }
+        nextAlarmMessageTextView.setText(DateUtils.getRelativeTimeSpanString(nextAlarmDate.getTimeInMillis(),
+                Calendar.getInstance(TimeZone.getDefault()).getTimeInMillis(), 0));
+    }
+
+    private void showErrorMessage(final String error) {
+        new AlertDialog.Builder(this)
+                .setTitle("Error")
+                .setMessage(error)
+                .show();
     }
 
 }

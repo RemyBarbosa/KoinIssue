@@ -30,8 +30,19 @@
             android:name="fr.radiofrance.alarmdemo.DemoAlarmActivity"
             android:launchMode="singleTask"
             android:screenOrientation="userPortrait"
-            android:theme="@style/AlarmActivityTheme"/>
+            android:theme="@style/AlarmLaunchActivityTheme"/>
 
+        <receiver
+            android:name="fr.radiofrance.alarm.receiver.RfAlarmReceiver"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- This Receiver should be add in manifest if you want to assure recovery of alarm created with previous version of the lib ( < 3.x.x) -->
         <receiver
             android:name="fr.radiofrance.alarm.receiver.AlarmReceiver"
             android:enabled="true"

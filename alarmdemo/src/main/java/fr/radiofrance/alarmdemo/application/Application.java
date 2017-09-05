@@ -1,11 +1,11 @@
 package fr.radiofrance.alarmdemo.application;
 
 import android.content.Intent;
-import android.media.AudioManager;
 
-import fr.radiofrance.alarm.manager.AlarmManager;
-import fr.radiofrance.alarmdemo.model.DemoAlarm;
+import fr.radiofrance.alarm.manager.RfAlarmManager;
+import fr.radiofrance.alarmdemo.DemoAlarmActivity;
 import fr.radiofrance.alarmdemo.MainActivity;
+import fr.radiofrance.alarmdemo.model.DemoAlarm;
 
 public class Application extends android.app.Application {
 
@@ -13,7 +13,9 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
 
-        AlarmManager.initialize(this, new Intent(this, MainActivity.class), DemoAlarm.class);
+        final RfAlarmManager<DemoAlarm> alarmManager = new RfAlarmManager<>(getApplicationContext(), DemoAlarm.class);
+        alarmManager.setConfigurationAlarmDefaultLaunchIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class));
+        alarmManager.setConfigurationAlarmAppLaunchIntent(new Intent(getApplicationContext(), MainActivity.class));
     }
 
 }
