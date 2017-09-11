@@ -1,3 +1,7 @@
+## v3.0.1
+
+- Fix alarm exact time, use ClockInfo.
+
 ## v3.0.0
 
 - New version of the lib, change architecture

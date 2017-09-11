@@ -21,6 +21,8 @@ public abstract class AlarmIntentUtils {
     public static final String LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE = "rf.alarm.extra.lauch.is.snooze";
     public static final int LAUNCH_PENDING_INTENT_REQUEST_CODE = 1778;
 
+    public static final int SHOW_EDIT_PENDING_INTENT_REQUEST_CODE = 1779;
+
 
     enum IntentType {
         ACTIVITY, SERVICE, BROADCAST, UNRECOGNIZED
@@ -28,6 +30,10 @@ public abstract class AlarmIntentUtils {
 
     public static PendingIntent getPendingIntent(@NonNull final Context context, @NonNull final Alarm alarm, final boolean isSnooze) {
         return buildPendingIntent(context, alarm, isSnooze, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    public static PendingIntent getActivityShowPendingIntent(@NonNull final Context context, final Intent showIntent) {
+        return PendingIntent.getActivity(context, SHOW_EDIT_PENDING_INTENT_REQUEST_CODE, showIntent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     public static boolean isPendingIntentAlive(@NonNull final Context context, @NonNull final Alarm alarm, final boolean isSnooze) {

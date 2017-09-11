@@ -77,6 +77,17 @@ public class RfAlarmManager<T extends Alarm> {
         configurationDatastore.setAlarmAppLaunchIntent(intent);
     }
 
+    /**
+     * Intent use to start app alarm edit screen from system clock infos
+     * @param intent
+     */
+    public void setConfigurationAlarmShowEditLaunchIntent(final Intent intent) {
+        if (intent == null) {
+            return;
+        }
+        configurationDatastore.setAlarmShowEditLaunchIntent(intent);
+    }
+
     public Intent getConfigurationAlarmDefaultLaunchIntent() {
         return configurationDatastore.getAlarmDefaultLaunchIntent(null);
     }
@@ -329,9 +340,10 @@ public class RfAlarmManager<T extends Alarm> {
 
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarm, isSnooze);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final PendingIntent alarmShowPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
+            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(timeInMillis, alarmShowPendingIntent), pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
         } else {
             alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
@@ -352,6 +364,10 @@ public class RfAlarmManager<T extends Alarm> {
             }
         }
         RfAlarmReceiver.disable(context);
+    }
+
+    private Intent getClockInfoShowEditIntent() {
+        return configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmAppLaunchIntent(null));
     }
 
 }
