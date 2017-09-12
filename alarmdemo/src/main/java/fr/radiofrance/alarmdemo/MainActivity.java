@@ -3,6 +3,7 @@ package fr.radiofrance.alarmdemo;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -20,6 +21,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -66,6 +68,14 @@ public class MainActivity extends AppCompatActivity {
 
         findViews();
         initViews();
+
+        checkDeeplink(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(final Intent intent) {
+        super.onNewIntent(intent);
+        checkDeeplink(intent);
     }
 
     @Override
@@ -332,6 +342,18 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Error")
                 .setMessage(error)
                 .show();
+    }
+
+    private void checkDeeplink(final Intent intent) {
+        if (intent == null) {
+            return;
+        }
+        final Uri data = intent.getData();
+        if (data == null) {
+            return;
+        }
+        final String host = data.getHost();
+        Toast.makeText(this, "Load from deeplink : " + host, Toast.LENGTH_LONG).show();
     }
 
 }

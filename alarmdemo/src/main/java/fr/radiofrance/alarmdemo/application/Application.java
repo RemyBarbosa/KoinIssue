@@ -1,6 +1,7 @@
 package fr.radiofrance.alarmdemo.application;
 
 import android.content.Intent;
+import android.net.Uri;
 
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarmdemo.DemoAlarmActivity;
@@ -16,6 +17,9 @@ public class Application extends android.app.Application {
         final RfAlarmManager<DemoAlarm> alarmManager = new RfAlarmManager<>(getApplicationContext(), DemoAlarm.class);
         alarmManager.setConfigurationAlarmDefaultLaunchIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class));
         alarmManager.setConfigurationAlarmAppLaunchIntent(new Intent(getApplicationContext(), MainActivity.class));
+
+        final Intent showEditLaunchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("alarmdemo://screen.alarm.edit"));
+        alarmManager.setConfigurationAlarmShowEditLaunchIntent(showEditLaunchIntent);
     }
 
 }
