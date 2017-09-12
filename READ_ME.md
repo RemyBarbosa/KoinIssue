@@ -1,13 +1,21 @@
-* AlARM LIBRARY
+# Alarm library #
 
-** DEBUG ADB COMMANDS :
+## Description ##
 
-*** Test deeplink :
+This is the common Android library used to create alarm in radiofrance Android applications.
+
+- It creates, removes and stores the alarms create by the user.
+- It schedules the alarms in the system to be fired on right time.
+- It provides a default AlarmLockScreen Activity, displaid on time, with an additional Snooze feature.
+
+## Debug adb commands ##
+
+### Test deeplink :###
 
 ``` > adb shell am start -a android.intent.action.VIEW -d "alarmdemo://screen.alarm.edit" fr.radiofrance.alarmdemo```
 
 
-*** Logs system alarms :
+### Logs system alarms :###
 
 ``` > adb shell dumpsys alarm```
 
@@ -17,7 +25,7 @@ or
 ``` > adb shell "dumpsys alarm | grep fr.radiofrance.alarmdemo"```
 
 
-*** Stack overflow thread on alarms
+### Stack overflow thread on alarms###
 
 https://stackoverflow.com/questions/28742884/how-to-read-adb-shell-dumpsys-alarm-output
 
