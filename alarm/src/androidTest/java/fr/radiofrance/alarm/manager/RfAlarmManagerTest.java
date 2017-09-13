@@ -40,6 +40,7 @@ public class RfAlarmManagerTest {
         try {
             alarmManager.removeAllAlarms();
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
@@ -49,6 +50,7 @@ public class RfAlarmManagerTest {
         try {
             alarmManager.removeAllAlarms();
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
@@ -87,6 +89,7 @@ public class RfAlarmManagerTest {
             assertNull(alarmManager.getNextAlarmScheduleDate());
 
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
@@ -114,6 +117,7 @@ public class RfAlarmManagerTest {
             assertEquals(alarmToAdd.getId(), alarmManager.getNextAlarm().getId());
 
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
@@ -140,6 +144,7 @@ public class RfAlarmManagerTest {
             assertNull(alarmManager.getNextAlarmScheduleDate());
 
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
@@ -187,6 +192,7 @@ public class RfAlarmManagerTest {
             assertNotNull(alarmManager.getNextAlarmScheduleDate());
 
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
@@ -232,6 +238,7 @@ public class RfAlarmManagerTest {
             assertNull(alarmManager.getNextAlarmScheduleDate());
 
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
@@ -277,6 +284,7 @@ public class RfAlarmManagerTest {
             assertEquals("ActionTwo", updatedAlarm.getIntent().getAction());
 
         } catch (RfAlarmException e) {
+            e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }

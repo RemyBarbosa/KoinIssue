@@ -24,9 +24,19 @@ or
 
 ``` > adb shell "dumpsys alarm | grep fr.radiofrance.alarmdemo"```
 
+### Android documentations on alarms###
 
-### Stack overflow thread on alarms###
+https://developer.android.com/training/scheduling/alarms.html
+
+https://developer.android.com/topic/performance/vitals/wakeup.html
+
+https://developer.android.com/reference/android/app/AlarmManager.html
+
+
+### Stackoverflow threads on alarms###
 
 https://stackoverflow.com/questions/28742884/how-to-read-adb-shell-dumpsys-alarm-output
 
 https://stackoverflow.com/questions/34074955/android-exact-alarm-is-always-3-minutes-off
+
+https://stackoverflow.com/questions/34699662/how-does-alarmmanager-alarmclockinfos-pendingintent-work

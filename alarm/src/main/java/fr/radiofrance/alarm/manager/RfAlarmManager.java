@@ -246,7 +246,7 @@ public class RfAlarmManager<T extends Alarm> {
     }
 
     public boolean isAlarmSchedule(final T alarm) {
-        return AlarmIntentUtils.isPendingIntentAlive(context, alarm, false);
+        return AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
     }
 
     public void onAlarmIsConsumed(final T alarm) throws RfAlarmException {
@@ -278,12 +278,12 @@ public class RfAlarmManager<T extends Alarm> {
         if (alarm == null) {
             return;
         }
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarm, false);
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
         if (pendingIntent == null) {
             return;
         }
         alarmManager.cancel(pendingIntent);
-        AlarmIntentUtils.cancelPendingIntent(context, alarm, false);
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
     }
 
     private void checkAlarmValidity(@NonNull final T alarm) {
@@ -338,7 +338,7 @@ public class RfAlarmManager<T extends Alarm> {
 
         final long timeInMillis = scheduleDate.getTimeInMillis();
 
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarm, isSnooze);
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             final PendingIntent alarmShowPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
@@ -367,7 +367,7 @@ public class RfAlarmManager<T extends Alarm> {
     }
 
     private Intent getClockInfoShowEditIntent() {
-        return configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmAppLaunchIntent(null));
+        return configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmAppLaunchIntent(new Intent(Intent.ACTION_VIEW)));
     }
 
 }

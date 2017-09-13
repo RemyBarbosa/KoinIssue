@@ -14,8 +14,7 @@ import fr.radiofrance.alarm.model.Alarm;
 
 public abstract class AlarmIntentUtils {
 
-    public static final String LAUNCH_PENDING_INTENT_ACTION_PREFIXE_SNOOZE = "rf.alarm.action.lauch.snooze.";
-    public static final String LAUNCH_PENDING_INTENT_ACTION_PREFIXE_ALARM = "rf.alarm.action.lauch.alarm.";
+    public static final String LAUNCH_PENDING_INTENT_ACTION = "ALARM_WAKEUP_RADIO";
     public static final String LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID = "rf.alarm.extra.lauch.alarm.id";
     public static final String LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH = "rf.alarm.extra.lauch.alarm.hash";
     public static final String LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE = "rf.alarm.extra.lauch.is.snooze";
@@ -28,62 +27,67 @@ public abstract class AlarmIntentUtils {
         ACTIVITY, SERVICE, BROADCAST, UNRECOGNIZED
     }
 
-    public static PendingIntent getPendingIntent(@NonNull final Context context, @NonNull final Alarm alarm, final boolean isSnooze) {
-        return buildPendingIntent(context, alarm, isSnooze, PendingIntent.FLAG_CANCEL_CURRENT);
-    }
-
     public static PendingIntent getActivityShowPendingIntent(@NonNull final Context context, final Intent showIntent) {
         return PendingIntent.getActivity(context, SHOW_EDIT_PENDING_INTENT_REQUEST_CODE, showIntent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
-    public static boolean isPendingIntentAlive(@NonNull final Context context, @NonNull final Alarm alarm, final boolean isSnooze) {
-        return AlarmIntentUtils.buildPendingIntent(context, alarm, isSnooze, PendingIntent.FLAG_NO_CREATE) != null;
+    public static Intent buildAlarmIntent(@NonNull final Alarm alarm, final boolean isSnooze) {
+        final Intent alarmLaunchIntent = alarm.getIntent();
+        if (alarmLaunchIntent == null) {
+            return null;
+        }
+        // Add Alarm extras to Intent
+        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID, alarm.getId());
+        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE, isSnooze);
+        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, buildLaunchIntentHash(alarm.getId(), isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm)));
+
+        return alarmLaunchIntent;
     }
 
-    public static void cancelPendingIntent(@NonNull final Context context, @NonNull final Alarm alarm, final boolean isSnooze) {
-        final PendingIntent pendingIntent = AlarmIntentUtils.buildPendingIntent(context, alarm, isSnooze, PendingIntent.FLAG_CANCEL_CURRENT);
+    public static PendingIntent getPendingIntent(@NonNull final Context context, Intent alarmIntent) {
+        if (alarmIntent == null) {
+            return null;
+        }
+        return buildPendingIntent(context, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    public static boolean isPendingIntentAlive(@NonNull final Context context, Intent alarmIntent) {
+        if (alarmIntent == null) {
+            return false;
+        }
+        return AlarmIntentUtils.buildPendingIntent(context, alarmIntent, PendingIntent.FLAG_NO_CREATE) != null;
+    }
+
+    public static void cancelPendingIntent(@NonNull final Context context, Intent alarmIntent) {
+        if (alarmIntent == null) {
+            return;
+        }
+        final PendingIntent pendingIntent = AlarmIntentUtils.buildPendingIntent(context, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         if (pendingIntent == null) {
             return;
         }
         pendingIntent.cancel();
     }
 
-    private static PendingIntent buildPendingIntent(@NonNull final Context context, @NonNull final Alarm alarm, final boolean isSnooze, final int flags) {
-        final Intent alarmLaunchIntent = alarm.getIntent();
-        if (alarmLaunchIntent == null) {
-            return null;
-        }
+    private static PendingIntent buildPendingIntent(@NonNull final Context context, @NonNull Intent alarmIntent, final int flags) {
+        final String action = context.getPackageName() + "." + LAUNCH_PENDING_INTENT_ACTION;
+        alarmIntent.setAction(action);
 
-        final String action = buildLaunchIntentAction(alarm, isSnooze);
-        alarmLaunchIntent.setAction(action);
-
-        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID, alarm.getId());
-        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE, isSnooze);
-        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, buildLaunchIntentHash(action, AlarmDateUtils.getAlarmNextScheduleDate(alarm)));
-
-        switch (getTypeOfIntent(alarmLaunchIntent)) {
+        switch (getTypeOfIntent(alarmIntent)) {
             case ACTIVITY:
-                alarmLaunchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                return PendingIntent.getActivity(context, LAUNCH_PENDING_INTENT_REQUEST_CODE, alarmLaunchIntent, flags);
+                alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                return PendingIntent.getActivity(context, LAUNCH_PENDING_INTENT_REQUEST_CODE, alarmIntent, flags);
             case BROADCAST:
-                return PendingIntent.getBroadcast(context, LAUNCH_PENDING_INTENT_REQUEST_CODE, alarmLaunchIntent, flags);
+                return PendingIntent.getBroadcast(context, LAUNCH_PENDING_INTENT_REQUEST_CODE, alarmIntent, flags);
             case SERVICE:
-                return PendingIntent.getService(context, LAUNCH_PENDING_INTENT_REQUEST_CODE, alarmLaunchIntent, flags);
+                return PendingIntent.getService(context, LAUNCH_PENDING_INTENT_REQUEST_CODE, alarmIntent, flags);
             default:
                 return null;
         }
     }
 
-    private static int buildLaunchIntentHash(@NonNull String action, @NonNull Calendar calendar) {
-        return (action + ":" + calendar.toString()).hashCode();
-    }
-
-    private static String buildLaunchIntentAction(@NonNull final Alarm alarm, final boolean isSnooze) {
-        if (isSnooze) {
-            return LAUNCH_PENDING_INTENT_ACTION_PREFIXE_SNOOZE + alarm.getId();
-        } else {
-            return LAUNCH_PENDING_INTENT_ACTION_PREFIXE_ALARM + alarm.getId();
-        }
+    private static int buildLaunchIntentHash(@NonNull String alarmId, boolean isSnooze, @NonNull Calendar calendar) {
+        return (alarmId + ":" + isSnooze + ":" + calendar.toString()).hashCode();
     }
 
     private static IntentType getTypeOfIntent(@NonNull final Intent intent) {
