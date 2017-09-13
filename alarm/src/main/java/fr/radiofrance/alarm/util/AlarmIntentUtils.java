@@ -14,14 +14,15 @@ import fr.radiofrance.alarm.model.Alarm;
 
 public abstract class AlarmIntentUtils {
 
-    public static final String LAUNCH_PENDING_INTENT_ACTION = "ALARM_WAKEUP_RADIO";
+    public static final int LAUNCH_PENDING_INTENT_REQUEST_CODE = 1778;
+    public static final int SHOW_EDIT_PENDING_INTENT_REQUEST_CODE = 1779;
+
+    public static final String LAUNCH_PENDING_INTENT_ACTION_WAKEUP = "ALARM_WAKEUP_RADIO";
+    public static final String LAUNCH_PENDING_INTENT_ACTION_SNOOZE = "ALARM_SNOOZE_RADIO";
+
     public static final String LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID = "rf.alarm.extra.lauch.alarm.id";
     public static final String LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH = "rf.alarm.extra.lauch.alarm.hash";
     public static final String LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE = "rf.alarm.extra.lauch.is.snooze";
-    public static final int LAUNCH_PENDING_INTENT_REQUEST_CODE = 1778;
-
-    public static final int SHOW_EDIT_PENDING_INTENT_REQUEST_CODE = 1779;
-
 
     enum IntentType {
         ACTIVITY, SERVICE, BROADCAST, UNRECOGNIZED
@@ -70,8 +71,11 @@ public abstract class AlarmIntentUtils {
     }
 
     private static PendingIntent buildPendingIntent(@NonNull final Context context, @NonNull Intent alarmIntent, final int flags) {
-        final String action = context.getPackageName() + "." + LAUNCH_PENDING_INTENT_ACTION;
-        alarmIntent.setAction(action);
+        if (alarmIntent.getBooleanExtra(LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE, false)) {
+            alarmIntent.setAction(context.getPackageName() + "." + LAUNCH_PENDING_INTENT_ACTION_SNOOZE);
+        } else {
+            alarmIntent.setAction(context.getPackageName() + "." + LAUNCH_PENDING_INTENT_ACTION_WAKEUP);
+        }
 
         switch (getTypeOfIntent(alarmIntent)) {
             case ACTIVITY:

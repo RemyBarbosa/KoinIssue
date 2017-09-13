@@ -1,10 +1,7 @@
 package fr.radiofrance.alarm.manager;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -15,7 +12,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.TimeZone;
 
 import fr.radiofrance.alarm.BuildConfig;
 import fr.radiofrance.alarm.datastore.AlarmDatastore;
@@ -23,8 +19,8 @@ import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
+import fr.radiofrance.alarm.scheduler.AlarmScheduler;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
-import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 
 public class RfAlarmManager<T extends Alarm> {
@@ -34,7 +30,7 @@ public class RfAlarmManager<T extends Alarm> {
     @NonNull
     private final Context context;
     @NonNull
-    private final AlarmManager alarmManager;
+    private final AlarmScheduler<T> alarmScheduler;
     @NonNull
     private final AlarmDatastore<T> alarmDatastore;
     @NonNull
@@ -48,9 +44,9 @@ public class RfAlarmManager<T extends Alarm> {
     // Use for tests
     protected RfAlarmManager(@NonNull final Context context, @NonNull final Class<T> type, final boolean bootReceiverDisable) {
         this.context = context;
-        this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        this.alarmDatastore = new AlarmDatastore<>(context, type);
         this.configurationDatastore = new ConfigurationDatastore(context);
+        this.alarmScheduler = new AlarmScheduler<>(context, configurationDatastore);
+        this.alarmDatastore = new AlarmDatastore<>(context, type);
         this.bootReceiverDisable = bootReceiverDisable;
     }
 
@@ -88,18 +84,9 @@ public class RfAlarmManager<T extends Alarm> {
         configurationDatastore.setAlarmShowEditLaunchIntent(intent);
     }
 
-    public Intent getConfigurationAlarmDefaultLaunchIntent() {
-        return configurationDatastore.getAlarmDefaultLaunchIntent(null);
-    }
-
     public void onDeviceReboot() {
         // The device has booted: we schedule all alarms that had been activated
-        final List<T> alarms = getAllAlarms();
-        for (final T alarm : alarms) {
-            if (alarm.isActivated()) {
-                scheduleAlarm(alarm, false);
-            }
-        }
+        alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
     }
 
     @Nullable
@@ -164,13 +151,14 @@ public class RfAlarmManager<T extends Alarm> {
                 throw new Exception("Error when saving alarm in datastore");
             }
 
-            scheduleAlarm(alarm, false);
+            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
+
+            configureAlarmBootReceiver();
 
         } catch (Exception e) {
             throw new RfAlarmException("Error when adding alarm: " + e.getMessage(), e);
         }
     }
-
 
     public void updateAlarm(@Nullable final T alarm) throws RfAlarmException {
         try {
@@ -184,9 +172,9 @@ public class RfAlarmManager<T extends Alarm> {
                 throw new Exception("Error when saving alarm in datastore");
             }
 
-            cancelAlarm(alarm);
+            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
 
-            scheduleAlarm(alarm, false);
+            configureAlarmBootReceiver();
 
         } catch (Exception e) {
             throw new RfAlarmException("Error when updating alarm: " + e.getMessage(), e);
@@ -200,12 +188,14 @@ public class RfAlarmManager<T extends Alarm> {
             }
             final Alarm alarm = getAlarm(alarmId);
             if (alarm != null) {
-                cancelAlarm(alarm);
+                alarmScheduler.unscheduleAlarmStandard(alarm);
             }
 
             if (!alarmDatastore.removeAlarm(alarmId)) {
                 throw new Exception("Error when removing alarm from datastore");
             }
+
+            configureAlarmBootReceiver();
 
         } catch (Exception e) {
             throw new RfAlarmException("Error when removing alarm: " + e.getMessage(), e);
@@ -246,7 +236,7 @@ public class RfAlarmManager<T extends Alarm> {
     }
 
     public boolean isAlarmSchedule(final T alarm) {
-        return AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
+        return alarmScheduler.isAlarmStandardSchedule(alarm);
     }
 
     public void onAlarmIsConsumed(final T alarm) throws RfAlarmException {
@@ -255,7 +245,7 @@ public class RfAlarmManager<T extends Alarm> {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
             checkForRecovery(alarm);
-            scheduleAlarm(alarm, false);
+            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm is consumed task: " + e.getMessage(), e);
         }
@@ -267,23 +257,15 @@ public class RfAlarmManager<T extends Alarm> {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
             checkForRecovery(alarm);
-            scheduleAlarm(alarm, false);
-            scheduleAlarm(alarm, true);
+            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
+            alarmScheduler.scheduleAlarmSnooze(alarm);
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm is snooze task: " + e.getMessage(), e);
         }
     }
 
-    private void cancelAlarm(final Alarm alarm) {
-        if (alarm == null) {
-            return;
-        }
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
-        if (pendingIntent == null) {
-            return;
-        }
-        alarmManager.cancel(pendingIntent);
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
+    private Intent getConfigurationAlarmDefaultLaunchIntent() {
+        return configurationDatastore.getAlarmDefaultLaunchIntent(null);
     }
 
     private void checkAlarmValidity(@NonNull final T alarm) {
@@ -316,58 +298,18 @@ public class RfAlarmManager<T extends Alarm> {
         }
     }
 
-    private void scheduleAlarm(final T alarm, final boolean isSnooze) {
-        if (alarm == null) {
-            return;
-        }
-        if (!alarm.isActivated()) {
-            return;
-        }
-
-        Calendar scheduleDate;
-        if (isSnooze) {
-            scheduleDate = Calendar.getInstance(TimeZone.getDefault());
-            scheduleDate.add(Calendar.MILLISECOND, alarm.getSnoozeDuration());
-
-        } else {
-            scheduleDate = AlarmDateUtils.getAlarmNextScheduleDate(alarm);
-            if (scheduleDate.getTimeInMillis() < System.currentTimeMillis()) {
-                return;
-            }
-        }
-
-        final long timeInMillis = scheduleDate.getTimeInMillis();
-
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            final PendingIntent alarmShowPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
-            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(timeInMillis, alarmShowPendingIntent), pendingIntent);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-        } else {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-        }
-
-        configureAlarmBootReceiver();
-    }
-
     private void configureAlarmBootReceiver() {
         if (bootReceiverDisable) {
             return;
         }
         for (final String alarmId : alarmDatastore.getAllAlarmIds()) {
             final T alarm = alarmDatastore.getAlarm(alarmId);
-            if (alarm != null && alarm.isActivated()) {
+            if (alarm != null && alarmScheduler.isAlarmStandardSchedule(alarm)) {
                 RfAlarmReceiver.enable(context);
                 return;
             }
         }
         RfAlarmReceiver.disable(context);
-    }
-
-    private Intent getClockInfoShowEditIntent() {
-        return configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmAppLaunchIntent(new Intent(Intent.ACTION_VIEW)));
     }
 
 }

@@ -136,6 +136,45 @@ public class AlarmIntentUtilsTest {
 
     }
 
+    @Test
+    public void getOnePendingIntent_isSameSnoozeAlarmIntentNotAlive() {
+        // Given
+        final AlarmTest alarm = new AlarmTest(new Intent(context, Activity.class));
+        final boolean isSnooze = true;
+
+        // When
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze);
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
+
+        // Then
+        assertNotNull(pendingIntent);
+        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze)));
+        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, !isSnooze)));
+
+        // Clean PendingIntents
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
+
+    }
+
+    @Test
+    public void getOnePendingIntent_isSameNotSnoozeAlarmIntentNotAlive() {
+        // Given
+        final AlarmTest alarm = new AlarmTest(new Intent(context, Activity.class));
+        final boolean isSnooze = false;
+
+        // When
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze);
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
+
+        // Then
+        assertNotNull(pendingIntent);
+        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze)));
+        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, !isSnooze)));
+
+        // Clean PendingIntents
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
+
+    }
 
     @Test
     public void cancelPendingIntent_isPendingIntentNotAlive() {

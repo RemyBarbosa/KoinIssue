@@ -12,13 +12,25 @@ import fr.radiofrance.alarm.model.Alarm;
 public abstract class AlarmDateUtils {
 
     /**
-     * Gets the next Alarm date for the specified Alarm.
+     * Gets the next Alarm date for the specified Alarm from now.
      *
      * @param alarm The Alarm to get its next ring date
      * @return The next Alarm date
      */
     @NonNull
     public static Calendar getAlarmNextScheduleDate(@NonNull final Alarm alarm) {
+        return getAlarmNextScheduleDateFrom(alarm, System.currentTimeMillis());
+    }
+
+    /**
+     * Gets the next Alarm date for the specified Alarm from specific time.
+     *
+     * @param alarm The Alarm to get its next ring date
+     * @param fromTimeInMillis
+     * @return The next Alarm date
+     */
+    @NonNull
+    public static Calendar getAlarmNextScheduleDateFrom(@NonNull final Alarm alarm, final long fromTimeInMillis) {
         final int hours = alarm.getHours();
         final int minutes = alarm.getMinutes();
 
@@ -30,6 +42,7 @@ public abstract class AlarmDateUtils {
         }
 
         final Calendar date = Calendar.getInstance(TimeZone.getDefault());
+        date.setTimeInMillis(fromTimeInMillis);
 
         boolean isNow = true;
         Calendar nextAlarmDate = null;
