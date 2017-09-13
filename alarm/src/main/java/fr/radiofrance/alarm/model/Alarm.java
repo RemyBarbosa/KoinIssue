@@ -12,6 +12,23 @@ import java.util.UUID;
 
 public class Alarm implements Parcelable {
 
+    // TODO
+    // Jump lib to version 4
+    //
+    // Alarm:
+    // make it final
+    // make it implement Comparable (echoes)
+    // remove implement Parcelable
+    // add standard fields for cutomization :
+    // string customValue
+    // int customFlags
+    //
+    // Add recovery module when read object from preferences
+    //
+    // Add notifications
+
+
+
     public static final Creator<Alarm> CREATOR = new Creator<Alarm>() {
 
         @Override

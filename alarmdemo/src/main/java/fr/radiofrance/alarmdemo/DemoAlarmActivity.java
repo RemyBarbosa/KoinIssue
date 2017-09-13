@@ -3,6 +3,7 @@ package fr.radiofrance.alarmdemo;
 import android.content.Context;
 import android.media.AudioManager;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -23,6 +24,8 @@ public class DemoAlarmActivity extends AlarmLaunchActivity<DemoAlarm> {
 
     @Override
     protected void onAlarmShouldStart(final DemoAlarm alarm, final boolean networkAvailable) {
+        Log.d(LOG_TAG, "onAlarmShouldStart: " + getIntent().getStringExtra("EXTRA_TEST"));
+
         if (!networkAvailable) {
             // If no network, let super class play default sound
             super.onAlarmShouldStart(alarm, networkAvailable);

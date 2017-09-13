@@ -283,8 +283,11 @@ public class MainActivity extends AppCompatActivity {
         alarm.setSnoozeDuration(10000);
         alarm.setVolume(volume.getProgress());
         alarm.setActivated(true);
-        alarm.setCustomField("custom field");
-        alarm.setIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class));
+        alarm.setCustomField("Custom field test content");
+
+        final Intent intent = new Intent(getApplicationContext(), DemoAlarmActivity.class);
+        intent.putExtra("EXTRA_TEST", "Extra test content");
+        alarm.setIntent(intent);
 
         alarmsAdapter.addAlarm(alarm);
 
