@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 
+import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
 
@@ -49,6 +50,7 @@ public class RfAlarmManagerTest {
     public void clear() {
         try {
             alarmManager.removeAllAlarms();
+            new SharedPreferencesManager(context).flush();
         } catch (RfAlarmException e) {
             e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
@@ -65,7 +67,7 @@ public class RfAlarmManagerTest {
         alarmToAdd.setVolume(4);
         alarmToAdd.setActivated(false);
         alarmToAdd.setSnoozeDuration(1000);
-        alarmToAdd.setIntent(new Intent(context, Activity.class).setAction("Action"));
+        alarmToAdd.setIntent(new Intent(context, TestActivity.class).setAction("Action"));
 
         try {
             // When
@@ -101,7 +103,7 @@ public class RfAlarmManagerTest {
         alarmToAdd.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.THURSDAY)));
         alarmToAdd.setHours(7);
         alarmToAdd.setMinutes(50);
-        alarmToAdd.setIntent(new Intent(context, Activity.class));
+        alarmToAdd.setIntent(new Intent(context, TestActivity.class));
         alarmToAdd.setActivated(true);
 
         try {
@@ -129,7 +131,7 @@ public class RfAlarmManagerTest {
         alarmToAdd.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.THURSDAY)));
         alarmToAdd.setHours(7);
         alarmToAdd.setMinutes(50);
-        alarmToAdd.setIntent(new Intent(context, Activity.class));
+        alarmToAdd.setIntent(new Intent(context, TestActivity.class));
         alarmToAdd.setActivated(true);
 
         try {
@@ -157,21 +159,21 @@ public class RfAlarmManagerTest {
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setActivated(true);
-        alarm.setIntent(new Intent(context, Activity.class));
+        alarm.setIntent(new Intent(context, TestActivity.class));
 
         final Alarm alarm2 = new Alarm();
         alarm2.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         alarm2.setHours(15);
         alarm2.setMinutes(12);
         alarm2.setActivated(true);
-        alarm2.setIntent(new Intent(context, Activity.class));
+        alarm2.setIntent(new Intent(context, TestActivity.class));
 
         final Alarm alarm3 = new Alarm();
         alarm3.setDays(new ArrayList<>(Arrays.asList(Calendar.WEDNESDAY, Calendar.SATURDAY)));
         alarm3.setHours(23);
         alarm3.setMinutes(4);
         alarm3.setActivated(true);
-        alarm3.setIntent(new Intent(context, Activity.class));
+        alarm3.setIntent(new Intent(context, TestActivity.class));
 
         try {
             // When
@@ -206,21 +208,21 @@ public class RfAlarmManagerTest {
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setActivated(true);
-        alarm.setIntent(new Intent(context, Activity.class));
+        alarm.setIntent(new Intent(context, TestActivity.class));
 
         final Alarm alarm2 = new Alarm();
         alarm2.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         alarm2.setHours(15);
         alarm2.setMinutes(12);
         alarm2.setActivated(true);
-        alarm2.setIntent(new Intent(context, Activity.class));
+        alarm2.setIntent(new Intent(context, TestActivity.class));
 
         final Alarm alarm3 = new Alarm();
         alarm3.setDays(new ArrayList<>(Arrays.asList(Calendar.WEDNESDAY, Calendar.SATURDAY)));
         alarm3.setHours(23);
         alarm3.setMinutes(4);
         alarm3.setActivated(true);
-        alarm3.setIntent(new Intent(context, Activity.class));
+        alarm3.setIntent(new Intent(context, TestActivity.class));
 
         try {
             // When
@@ -254,7 +256,7 @@ public class RfAlarmManagerTest {
         alarm.setVolume(3);
         alarm.setSnoozeDuration(100);
         alarm.setActivated(true);
-        alarm.setIntent(new Intent(context, Activity.class).setAction("ActionOne"));
+        alarm.setIntent(new Intent(context, TestActivity.class).setAction("ActionOne"));
 
         try {
             // When
@@ -265,7 +267,7 @@ public class RfAlarmManagerTest {
             alarm.setVolume(4);
             alarm.setActivated(false);
             alarm.setSnoozeDuration(1000);
-            alarm.setIntent(new Intent(context, Activity.class).setAction("ActionTwo"));
+            alarm.setIntent(new Intent(context, TestActivity.class).setAction("ActionTwo"));
             alarmManager.updateAlarm(alarm);
 
             // Then
@@ -288,5 +290,7 @@ public class RfAlarmManagerTest {
             assertTrue("Exception: " + e.getMessage(), false);
         }
     }
+
+    public static class TestActivity extends Activity {}
 
 }

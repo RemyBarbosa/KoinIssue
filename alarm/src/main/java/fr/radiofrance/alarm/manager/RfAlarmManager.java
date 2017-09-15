@@ -341,7 +341,7 @@ public class RfAlarmManager {
          * @return
          */
         public Builder bootReceiverDisable(boolean disabled) {
-            this.bootReceiverDisable = bootReceiverDisable;
+            this.bootReceiverDisable = disabled;
             return this;
         }
 

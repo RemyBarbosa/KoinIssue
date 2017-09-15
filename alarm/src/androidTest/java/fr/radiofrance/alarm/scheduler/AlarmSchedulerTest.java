@@ -166,11 +166,11 @@ public class AlarmSchedulerTest {
     }
 
     private static Alarm getAlarmTest(final Context context, boolean actived) {
-        return getAlarmTest(new Intent(context, Activity.class), actived, 8, 45);
+        return getAlarmTest(new Intent(context, TestActivity.class), actived, 8, 45);
     }
 
     private static Alarm getAlarmTest(final Context context, boolean actived, int hours, int minutes) {
-        return getAlarmTest(new Intent(context, Activity.class), actived, hours, minutes);
+        return getAlarmTest(new Intent(context, TestActivity.class), actived, hours, minutes);
     }
 
     private static Alarm getAlarmTest(final Intent alarmIntent, boolean actived, int hours, int minutes) {
@@ -184,5 +184,7 @@ public class AlarmSchedulerTest {
         alarm.setIntent(alarmIntent);
         return alarm;
     }
+
+    public static class TestActivity extends Activity {}
 
 }

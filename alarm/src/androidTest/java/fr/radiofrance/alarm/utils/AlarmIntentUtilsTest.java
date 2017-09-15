@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.IBinder;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 
+import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
@@ -41,6 +43,7 @@ public class AlarmIntentUtilsTest {
 
     @After
     public void clear() {
+        new SharedPreferencesManager(context).flush();
     }
 
     @Test
@@ -97,8 +100,8 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isOtherDifferentAlarmIntentNotAlive() {
         // Given
-        final Alarm alarmA = getAlarmTest(new Intent(context, Activity.class));
-        final Alarm alarmB = getAlarmTest(new Intent(context, Service.class));
+        final Alarm alarmA = getAlarmTest(new Intent(context, TestActivity.class));
+        final Alarm alarmB = getAlarmTest(new Intent(context, TestService.class));
         final boolean isSnooze = false;
 
         // When
@@ -118,8 +121,8 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isOtherDifferentAlarmIntentIsAlsoAlive() {
         // Given
-        final Alarm alarmA = getAlarmTest(new Intent(context, Activity.class));
-        final Alarm alarmB = getAlarmTest(new Intent(context, Activity.class));
+        final Alarm alarmA = getAlarmTest(new Intent(context, TestActivity.class));
+        final Alarm alarmB = getAlarmTest(new Intent(context, TestActivity.class));
         final boolean isSnooze = false;
 
         // When
@@ -139,7 +142,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isSameSnoozeAlarmIntentNotAlive() {
         // Given
-        final Alarm alarm = getAlarmTest(new Intent(context, Activity.class));
+        final Alarm alarm = getAlarmTest(new Intent(context, TestActivity.class));
         final boolean isSnooze = true;
 
         // When
@@ -159,7 +162,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isSameNotSnoozeAlarmIntentNotAlive() {
         // Given
-        final Alarm alarm = getAlarmTest(new Intent(context, Activity.class));
+        final Alarm alarm = getAlarmTest(new Intent(context, TestActivity.class));
         final boolean isSnooze = false;
 
         // When
@@ -192,7 +195,7 @@ public class AlarmIntentUtilsTest {
     }
 
     private static Alarm getAlarmTest(final Context context) {
-        return getAlarmTest(new Intent(context, Activity.class));
+        return getAlarmTest(new Intent(context, TestActivity.class));
     }
 
     private static Alarm getAlarmTest(final Intent alarmIntent) {
@@ -205,6 +208,14 @@ public class AlarmIntentUtilsTest {
         alarm.setSnoozeDuration(1000);
         alarm.setIntent(alarmIntent);
         return alarm;
+    }
+
+    public static class TestActivity extends Activity {}
+
+    public static class TestService extends Service {
+        public IBinder onBind(final Intent intent) {
+            return null;
+        }
     }
 
 }
