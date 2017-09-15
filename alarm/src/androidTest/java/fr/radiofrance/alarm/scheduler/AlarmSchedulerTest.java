@@ -18,6 +18,7 @@ import java.util.List;
 
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
+import fr.radiofrance.alarm.mock.DummyAlarmNotificationManager;
 import fr.radiofrance.alarm.model.Alarm;
 
 import static org.junit.Assert.assertFalse;
@@ -35,7 +36,7 @@ public class AlarmSchedulerTest {
     @Before
     public void setup() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context));
+        alarmScheduler = new AlarmScheduler(context, new DummyAlarmNotificationManager(context), new ConfigurationDatastore(context));
     }
 
     @After

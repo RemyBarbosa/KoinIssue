@@ -84,6 +84,10 @@ public final class Alarm implements Comparable {
         this.volume = volume;
     }
 
+    /**
+     * Get snoozeDuration in milliseconds
+     * @return snoozeDuration in milliseconds
+     */
     public int getSnoozeDuration() {
         return snoozeDuration;
     }

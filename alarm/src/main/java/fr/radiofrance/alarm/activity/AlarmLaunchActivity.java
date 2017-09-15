@@ -117,6 +117,12 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
             }
         }
 
+        try {
+            alarmManager.onAlarmIsConsumed(alarm);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         setContentView(getLayoutRes());
 
         stopView = findViewById(R.id.alarm_stop_action_view);
@@ -204,7 +210,6 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
     protected final void onActionStop() throws Exception {
         onAlarmShouldStop(alarm);
-        alarmManager.onAlarmIsConsumed(alarm);
     }
 
     protected final void onActionSnooze() throws Exception {
@@ -214,7 +219,6 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
     protected final void onActionContinue() throws Exception {
         stopDefaultRingAlarm();
-        alarmManager.onAlarmIsConsumed(alarm);
     }
 
     // Keep attributes for subClass override

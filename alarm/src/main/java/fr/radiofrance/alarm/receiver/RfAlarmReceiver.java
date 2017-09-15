@@ -15,7 +15,6 @@ public class RfAlarmReceiver extends BroadcastReceiver {
     //
     // Boot : Add recovery module when read object from preferences
     //
-    // Add notifications
 
 
     public static void enable(final Context context) {

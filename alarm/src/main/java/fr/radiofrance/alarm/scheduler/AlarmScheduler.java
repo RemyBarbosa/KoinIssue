@@ -14,6 +14,7 @@ import java.util.TimeZone;
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.SchedulerDatastore;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.notification.AlarmNotificationManager;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
@@ -27,12 +28,15 @@ public class AlarmScheduler {
     private final SchedulerDatastore schedulerDatastore;
     @NonNull
     private final AlarmManager alarmManager;
+    @NonNull
+    private final AlarmNotificationManager alarmNotificationManager;
 
-    public AlarmScheduler(@NonNull final Context context, final ConfigurationDatastore configurationDatastore) {
+    public AlarmScheduler(@NonNull final Context context, final AlarmNotificationManager alarmNotificationManager, final ConfigurationDatastore configurationDatastore) {
         this.context = context;
         this.configurationDatastore = configurationDatastore;
         this.schedulerDatastore = new SchedulerDatastore(context);
         this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        this.alarmNotificationManager = alarmNotificationManager;
     }
 
     public void scheduleNextAlarmStandard(final List<Alarm> alarms) {
@@ -88,6 +92,7 @@ public class AlarmScheduler {
         alarmManager.cancel(pendingIntent);
         AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
         schedulerDatastore.saveCurrentStandardAlarmId(null);
+        alarmNotificationManager.programNotification(null, null);
     }
 
     private void scheduleAlarm(final Alarm alarm, final boolean isSnooze) {
@@ -125,8 +130,11 @@ public class AlarmScheduler {
 
         if (isSnooze) {
             schedulerDatastore.saveCurrentSnoozeAlarmId(alarm.getId());
+            // TODO
+            //alarmNotificationManager.programNotification(getNextAlarm, alarm);
         } else {
             schedulerDatastore.saveCurrentStandardAlarmId(alarm.getId());
+            alarmNotificationManager.programNotification(alarm, null);
         }
     }
 

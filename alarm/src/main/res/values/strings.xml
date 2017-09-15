@@ -14,4 +14,8 @@
 
     <string name="alarm_screen_error_toast">Oups an error has happened</string>
 
+    <string name="alarm_notif_label_channel">Upcoming alarm</string>
+    <string name="alarm_notif_soon_label">Upcoming alarm</string>
+    <string name="alarm_notif_cancel_action">Dissmiss</string>
+
 </resources>

@@ -18,6 +18,7 @@ import fr.radiofrance.alarm.datastore.AlarmDatastore;
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.notification.AlarmNotificationManager;
 import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.scheduler.AlarmScheduler;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
@@ -25,18 +26,21 @@ import fr.radiofrance.alarm.util.AlarmDateUtils;
 
 public class RfAlarmManager {
 
-    private static final int DEFAULT_SNOOZE_DURATION = 600000;// 10 minutes
+    private static final int DEFAULT_SNOOZE_DURATION_MILLIS = 600000;// 10 minutes
 
     static volatile RfAlarmManager singleton = null;
 
     @NonNull
     private final Context context;
     @NonNull
+    private final AlarmNotificationManager alarmNotificationManager;
+    @NonNull
     private final AlarmScheduler alarmScheduler;
     @NonNull
     private final AlarmDatastore alarmDatastore;
     @NonNull
     private final ConfigurationDatastore configurationDatastore;
+
     private final boolean bootReceiverDisable;
 
     public static RfAlarmManager with(Context context) {
@@ -50,10 +54,11 @@ public class RfAlarmManager {
         return singleton;
     }
 
-    private RfAlarmManager(@NonNull final Context context, final boolean bootReceiverDisable) {
+    private RfAlarmManager(@NonNull final Context context, final AlarmNotificationManager alarmNotificationManager, final boolean bootReceiverDisable) {
         this.context = context;
         this.configurationDatastore = new ConfigurationDatastore(context);
-        this.alarmScheduler = new AlarmScheduler(context, configurationDatastore);
+        this.alarmNotificationManager = alarmNotificationManager;
+        this.alarmScheduler = new AlarmScheduler(context, alarmNotificationManager, configurationDatastore);
         this.alarmDatastore = new AlarmDatastore(context);
         this.bootReceiverDisable = bootReceiverDisable;
     }
@@ -252,6 +257,7 @@ public class RfAlarmManager {
 
     public void onAlarmIsConsumed(final Alarm alarm) throws RfAlarmException {
         try {
+            alarmNotificationManager.hideNotification();
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
@@ -267,8 +273,6 @@ public class RfAlarmManager {
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
-            checkForRecovery(alarm);
-            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
             alarmScheduler.scheduleAlarmSnooze(alarm);
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm is snooze task: " + e.getMessage(), e);
@@ -293,7 +297,7 @@ public class RfAlarmManager {
             throw new IllegalArgumentException("Alarm intent is incorrect");
         }
         if (alarm.getSnoozeDuration() <= 0) {
-            alarm.setSnoozeDuration(DEFAULT_SNOOZE_DURATION);
+            alarm.setSnoozeDuration(DEFAULT_SNOOZE_DURATION_MILLIS);
         }
         if (alarm.getIntent() == null) {
             alarm.setIntent(getConfigurationAlarmDefaultLaunchIntent());
@@ -327,12 +331,14 @@ public class RfAlarmManager {
 
         private final Context context;
         private boolean bootReceiverDisable = false;
+        private AlarmNotificationManager alarmNotificationManager;
 
         public Builder(Context context) {
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
             }
             this.context = context.getApplicationContext();
+            this.alarmNotificationManager = new AlarmNotificationManager(context);
         }
 
         /**
@@ -340,13 +346,23 @@ public class RfAlarmManager {
          * @param disabled
          * @return
          */
-        public Builder bootReceiverDisable(boolean disabled) {
+        public Builder bootReceiverDisable(final boolean disabled) {
             this.bootReceiverDisable = disabled;
             return this;
         }
 
+        /**
+         * Use for AndroidTestCase
+         * @param alarmNotificationManager
+         * @return
+         */
+        public Builder setAlarmNotificationManager(final AlarmNotificationManager alarmNotificationManager) {
+            this.alarmNotificationManager = alarmNotificationManager;
+            return this;
+        }
+
         public RfAlarmManager build() {
-            return new RfAlarmManager(context, bootReceiverDisable);
+            return new RfAlarmManager(context, alarmNotificationManager, bootReceiverDisable);
         }
 
     }

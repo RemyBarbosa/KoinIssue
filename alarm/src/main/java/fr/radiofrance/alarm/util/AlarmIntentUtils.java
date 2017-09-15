@@ -19,6 +19,7 @@ public abstract class AlarmIntentUtils {
 
     public static final String LAUNCH_PENDING_INTENT_ACTION_WAKEUP = "ALARM_WAKEUP_RADIO";
     public static final String LAUNCH_PENDING_INTENT_ACTION_SNOOZE = "ALARM_SNOOZE_RADIO";
+    public static final String LAUNCH_PENDING_INTENT_ACTION_SHOW_UPCOMING_ALARM_NOTIFICATION = "ACTION_SHOW_UPCOMING_ALARM_NOTIFICATION";
 
     public static final String LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID = "rf.alarm.extra.lauch.alarm.id";
     public static final String LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH = "rf.alarm.extra.lauch.alarm.hash";

@@ -17,6 +17,7 @@ import java.util.Calendar;
 
 import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
 import fr.radiofrance.alarm.exception.RfAlarmException;
+import fr.radiofrance.alarm.mock.DummyAlarmNotificationManager;
 import fr.radiofrance.alarm.model.Alarm;
 
 import static org.junit.Assert.assertEquals;
@@ -37,7 +38,10 @@ public class RfAlarmManagerTest {
     @Before
     public void setup() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        alarmManager = new RfAlarmManager.Builder(context).bootReceiverDisable(true).build();
+        alarmManager = new RfAlarmManager.Builder(context)
+                .bootReceiverDisable(true)
+                .setAlarmNotificationManager(new DummyAlarmNotificationManager(context))
+                .build();
         try {
             alarmManager.removeAllAlarms();
         } catch (RfAlarmException e) {
