@@ -32,7 +32,7 @@ public class DemoPlayer {
         this.context = context;
     }
 
-    public void play() {
+    public void play(final String uriString) {
         new Thread(new Runnable() {
 
             @Override
@@ -44,7 +44,7 @@ public class DemoPlayer {
                         player = null;
                     }
                     player = new MediaPlayer();
-                    player.setDataSource(context, Uri.parse("http://direct.fipradio.fr/live/fip-lofi.mp3"));
+                    player.setDataSource(context, Uri.parse(uriString));
                     player.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     player.prepare();
                     player.start();

@@ -7,10 +7,16 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import fr.radiofrance.alarm.manager.RfAlarmManager;
-import fr.radiofrance.alarm.model.Alarm;
 
 
 public class RfAlarmReceiver extends BroadcastReceiver {
+
+    // TODO
+    //
+    // Boot : Add recovery module when read object from preferences
+    //
+    // Add notifications
+
 
     public static void enable(final Context context) {
         setReceiverEnabledSetting(context, true);
@@ -34,6 +40,6 @@ public class RfAlarmReceiver extends BroadcastReceiver {
         if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             return;
         }
-        new RfAlarmManager<>(context, Alarm.class).onDeviceReboot();
+        RfAlarmManager.with(context).onDeviceReboot();
     }
 }

@@ -1,8 +1,6 @@
 package fr.radiofrance.alarm.model;
 
 import android.content.Intent;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import java.net.URISyntaxException;
@@ -10,48 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Alarm implements Parcelable {
+public final class Alarm implements Comparable {
 
-    // TODO
-    // Jump lib to version 4
-    //
-    // Alarm:
-    // make it final
-    // make it implement Comparable (echoes)
-    // remove implement Parcelable
-    // add standard fields for cutomization :
-    // string customValue
-    // int customFlags
-    //
-    // Add recovery module when read object from preferences
-    //
-    // Add notifications
-
-
-
-    public static final Creator<Alarm> CREATOR = new Creator<Alarm>() {
-
-        @Override
-        public Alarm createFromParcel(Parcel source) {
-            return new Alarm(source);
-        }
-
-        @Override
-        public Alarm[] newArray(int size) {
-            return new Alarm[size];
-        }
-
-    };
-
-    protected String id;
-    protected List<Integer> days;
-    protected int hours;
-    protected int minutes;
-    protected int volume;
-    protected int snoozeDuration;
-    protected String intentUri;
-    protected boolean activated;
+    private String id;
+    private List<Integer> days;
+    private int hours;
+    private int minutes;
+    private int volume;
+    private int snoozeDuration;
+    private String intentUri;
+    private boolean activated;
     protected int version;
+    private String customValue;
+    private int customFlags;
 
     public Alarm() {
         this.id = UUID.randomUUID().toString();
@@ -61,52 +30,8 @@ public class Alarm implements Parcelable {
         this.snoozeDuration = -1;
         this.activated = false;
         this.version = -1;
-    }
-
-    protected Alarm(final Parcel in) {
-        this.id = in.readString();
-        this.days = new ArrayList<>();
-        in.readList(this.days, Integer.class.getClassLoader());
-        this.hours = in.readInt();
-        this.minutes = in.readInt();
-        this.volume = in.readInt();
-        this.snoozeDuration = in.readInt();
-        this.intentUri = in.readString();
-        this.activated = in.readByte() == 1;
-        this.version = in.readInt();
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(final Parcel dest, final int flags) {
-        dest.writeString(this.id);
-        dest.writeList(this.days);
-        dest.writeInt(this.hours);
-        dest.writeInt(this.minutes);
-        dest.writeInt(this.volume);
-        dest.writeInt(this.snoozeDuration);
-        dest.writeString(this.intentUri);
-        dest.writeByte(this.activated ? (byte) 1 : (byte) 0);
-        dest.writeInt(this.version);
-    }
-
-    @Override
-    public String toString() {
-        return "Alarm{" +
-                "id='" + id + "'" +
-                ", days=" + days +
-                ", hours=" + hours +
-                ", minutes=" + minutes +
-                ", volume=" + volume +
-                ", snoozeDuration=" + snoozeDuration +
-                ", intentUri='" + intentUri + "'" +
-                ", isActivated='" + activated + "'" +
-                ", version=" + version +
-                '}';
+        this.customValue = null;
+        this.customFlags = 0;
     }
 
     public String getId() {
@@ -198,5 +123,66 @@ public class Alarm implements Parcelable {
 
     public void setVersion(final int version) {
         this.version = version;
+    }
+
+    public String getCustomValue() {
+        return customValue;
+    }
+
+    public Alarm setCustomValue(final String customValue) {
+        this.customValue = customValue;
+        return this;
+    }
+
+    public int getCustomFlags() {
+        return customFlags;
+    }
+
+    public Alarm setCustomFlags(final int customFlags) {
+        this.customFlags = customFlags;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("Alarm{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", days=").append(days);
+        sb.append(", hours=").append(hours);
+        sb.append(", minutes=").append(minutes);
+        sb.append(", volume=").append(volume);
+        sb.append(", snoozeDuration=").append(snoozeDuration);
+        sb.append(", intentUri='").append(intentUri).append('\'');
+        sb.append(", activated=").append(activated);
+        sb.append(", version=").append(version);
+        sb.append(", customValue='").append(customValue).append('\'');
+        sb.append(", customFlags=").append(customFlags);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
+    public int compareTo(@NonNull final Object o) {
+        if (!(o instanceof Alarm)) {
+            return 0;
+        }
+
+        final Alarm other = (Alarm) o;
+        if (getHours() > other.getHours()) {
+            return 1;
+        }
+        if (getHours() == other.getHours()) {
+            if (getMinutes() > other.getMinutes()) {
+                return 1;
+            } else if (getMinutes() < other.getMinutes()) {
+                return -1;
+            }
+            return 0;
+        }
+        if (getHours() < other.getHours()) {
+            return -1;
+        }
+
+        return 0;
     }
 }

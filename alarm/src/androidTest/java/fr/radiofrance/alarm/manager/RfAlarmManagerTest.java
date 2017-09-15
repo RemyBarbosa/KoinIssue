@@ -31,12 +31,12 @@ import static org.junit.Assert.assertTrue;
 public class RfAlarmManagerTest {
 
     private Context context;
-    private RfAlarmManager<AlarmTest> alarmManager;
+    private RfAlarmManager alarmManager;
 
     @Before
     public void setup() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        alarmManager = new RfAlarmManager<>(context, AlarmTest.class, true);
+        alarmManager = new RfAlarmManager.Builder(context).bootReceiverDisable(true).build();
         try {
             alarmManager.removeAllAlarms();
         } catch (RfAlarmException e) {
@@ -58,7 +58,7 @@ public class RfAlarmManagerTest {
     @Test
     public void addAlarm_isAlarmAdded() {
         // Given
-        final AlarmTest alarmToAdd = new AlarmTest();
+        final Alarm alarmToAdd = new Alarm();
         alarmToAdd.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         alarmToAdd.setHours(8);
         alarmToAdd.setMinutes(45);
@@ -72,7 +72,7 @@ public class RfAlarmManagerTest {
             alarmManager.addAlarm(alarmToAdd);
 
             // Then
-            final AlarmTest alarm = alarmManager.getAlarm(alarmToAdd.getId());
+            final Alarm alarm = alarmManager.getAlarm(alarmToAdd.getId());
             assertNotNull(alarm);
             assertFalse(alarm.isActivated());
             assertEquals(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)), alarm.getDays());
@@ -97,7 +97,7 @@ public class RfAlarmManagerTest {
     @Test
     public void addAlarmActived_isAlarmActivated() {
         // Given
-        final AlarmTest alarmToAdd = new AlarmTest();
+        final Alarm alarmToAdd = new Alarm();
         alarmToAdd.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.THURSDAY)));
         alarmToAdd.setHours(7);
         alarmToAdd.setMinutes(50);
@@ -109,7 +109,7 @@ public class RfAlarmManagerTest {
             alarmManager.addAlarm(alarmToAdd);
 
             // Then
-            final AlarmTest alarm = alarmManager.getAlarm(alarmToAdd.getId());
+            final Alarm alarm = alarmManager.getAlarm(alarmToAdd.getId());
             assertNotNull(alarm);
             assertTrue(alarm.isActivated());
             assertTrue(alarmManager.isAlarmSchedule(alarm));
@@ -125,7 +125,7 @@ public class RfAlarmManagerTest {
     @Test
     public void removeAlarm_isAlarmRemoved() {
         // Given
-        final AlarmTest alarmToAdd = new AlarmTest();
+        final Alarm alarmToAdd = new Alarm();
         alarmToAdd.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.THURSDAY)));
         alarmToAdd.setHours(7);
         alarmToAdd.setMinutes(50);
@@ -152,21 +152,21 @@ public class RfAlarmManagerTest {
     @Test
     public void addAlarms_areAlarmsAdded() {
         // Given
-        final AlarmTest alarm = new AlarmTest();
+        final Alarm alarm = new Alarm();
         alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setActivated(true);
         alarm.setIntent(new Intent(context, Activity.class));
 
-        final AlarmTest alarm2 = new AlarmTest();
+        final Alarm alarm2 = new Alarm();
         alarm2.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         alarm2.setHours(15);
         alarm2.setMinutes(12);
         alarm2.setActivated(true);
         alarm2.setIntent(new Intent(context, Activity.class));
 
-        final AlarmTest alarm3 = new AlarmTest();
+        final Alarm alarm3 = new Alarm();
         alarm3.setDays(new ArrayList<>(Arrays.asList(Calendar.WEDNESDAY, Calendar.SATURDAY)));
         alarm3.setHours(23);
         alarm3.setMinutes(4);
@@ -201,21 +201,21 @@ public class RfAlarmManagerTest {
     @Test
     public void removeAlarms_areAlarmsRemoved() {
         // Given
-        final AlarmTest alarm = new AlarmTest();
+        final Alarm alarm = new Alarm();
         alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
         alarm.setActivated(true);
         alarm.setIntent(new Intent(context, Activity.class));
 
-        final AlarmTest alarm2 = new AlarmTest();
+        final Alarm alarm2 = new Alarm();
         alarm2.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
         alarm2.setHours(15);
         alarm2.setMinutes(12);
         alarm2.setActivated(true);
         alarm2.setIntent(new Intent(context, Activity.class));
 
-        final AlarmTest alarm3 = new AlarmTest();
+        final Alarm alarm3 = new Alarm();
         alarm3.setDays(new ArrayList<>(Arrays.asList(Calendar.WEDNESDAY, Calendar.SATURDAY)));
         alarm3.setHours(23);
         alarm3.setMinutes(4);
@@ -247,7 +247,7 @@ public class RfAlarmManagerTest {
     @Test
     public void updateAlarm_isAlarmUpdated() {
         // Given
-        final AlarmTest alarm = new AlarmTest();
+        final Alarm alarm = new Alarm();
         alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
         alarm.setHours(7);
         alarm.setMinutes(50);
@@ -269,7 +269,7 @@ public class RfAlarmManagerTest {
             alarmManager.updateAlarm(alarm);
 
             // Then
-            AlarmTest updatedAlarm = alarmManager.getAlarm(alarm.getId());
+            Alarm updatedAlarm = alarmManager.getAlarm(alarm.getId());
 
             // Then
             assertNotNull(updatedAlarm);
@@ -286,19 +286,6 @@ public class RfAlarmManagerTest {
         } catch (RfAlarmException e) {
             e.printStackTrace();
             assertTrue("Exception: " + e.getMessage(), false);
-        }
-    }
-
-    private static class AlarmTest extends Alarm {
-        public final String value;
-
-        public AlarmTest() {
-            this(null);
-        }
-
-        public AlarmTest(final String value) {
-            super();
-            this.value = value;
         }
     }
 

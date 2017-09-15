@@ -30,12 +30,12 @@ import static org.junit.Assert.assertTrue;
 public class AlarmSchedulerTest {
 
     private Context context;
-    private AlarmScheduler<AlarmTest> alarmScheduler;
+    private AlarmScheduler alarmScheduler;
 
     @Before
     public void setup() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        alarmScheduler = new AlarmScheduler<>(context, new ConfigurationDatastore(context));
+        alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context));
     }
 
     @After
@@ -55,7 +55,7 @@ public class AlarmSchedulerTest {
     @Test
     public void scheduleAlarmSnooze_isAlarmStandardReturnFalse() {
         // Given
-        final AlarmTest alarm = new AlarmTest(context);
+        final Alarm alarm = getAlarmTest(context);
 
         // When
         alarmScheduler.scheduleAlarmSnooze(alarm);
@@ -68,8 +68,8 @@ public class AlarmSchedulerTest {
     public void scheduleNextAlarmStandard_oneAlarmActived() {
         // Given
         final boolean actived = true;
-        final AlarmTest alarm = new AlarmTest(context, actived);
-        final List<AlarmTest> alarms = new ArrayList<>();
+        final Alarm alarm = getAlarmTest(context, actived);
+        final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
 
         // When
@@ -83,8 +83,8 @@ public class AlarmSchedulerTest {
     public void scheduleNextAlarmStandard_oneAlarmUnactived() {
         // Given
         final boolean actived = false;
-        final AlarmTest alarm = new AlarmTest(context, actived);
-        final List<AlarmTest> alarms = new ArrayList<>();
+        final Alarm alarm = getAlarmTest(context, actived);
+        final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
 
         // When
@@ -98,8 +98,8 @@ public class AlarmSchedulerTest {
     public void scheduleNextAlarmStandard_oneAlarmActivedUnscheduled() {
         // Given
         final boolean actived = true;
-        final AlarmTest alarm = new AlarmTest(context, actived);
-        final List<AlarmTest> alarms = new ArrayList<>();
+        final Alarm alarm = getAlarmTest(context, actived);
+        final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
 
         // When
@@ -113,9 +113,9 @@ public class AlarmSchedulerTest {
     @Test
     public void scheduleNextAlarmStandard_twoFollowingAlarmsInOrder() {
         // Given
-        final AlarmTest alarm_0h00 = new AlarmTest(context, true, 0, 0);
-        final AlarmTest alarm_0h01 = new AlarmTest(context, true, 0, 1);
-        final List<AlarmTest> alarms = new ArrayList<>();
+        final Alarm alarm_0h00 = getAlarmTest(context, true, 0, 0);
+        final Alarm alarm_0h01 = getAlarmTest(context, true, 0, 1);
+        final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm_0h00);
         alarms.add(alarm_0h01);
 
@@ -130,9 +130,9 @@ public class AlarmSchedulerTest {
     @Test
     public void scheduleNextAlarmStandard_twoFollowingAlarmsNotInOrder() {
         // Given
-        final AlarmTest alarm_0h01 = new AlarmTest(context, true, 0, 1);
-        final AlarmTest alarm_0h00 = new AlarmTest(context, true, 0, 0);
-        final List<AlarmTest> alarms = new ArrayList<>();
+        final Alarm alarm_0h01 = getAlarmTest(context, true, 0, 1);
+        final Alarm alarm_0h00 = getAlarmTest(context, true, 0, 0);
+        final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm_0h01);
         alarms.add(alarm_0h00);
 
@@ -146,9 +146,9 @@ public class AlarmSchedulerTest {
 
     public void scheduleNextAlarmStandard_twoFollowingAlarmsInOrderFirstOneUnschedule() {
         // Given
-        final AlarmTest alarm_0h00 = new AlarmTest(context, true, 0, 0);
-        final AlarmTest alarm_0h01 = new AlarmTest(context, true, 0, 1);
-        final List<AlarmTest> alarms = new ArrayList<>();
+        final Alarm alarm_0h00 = getAlarmTest(context, true, 0, 0);
+        final Alarm alarm_0h01 = getAlarmTest(context, true, 0, 1);
+        final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm_0h00);
         alarms.add(alarm_0h01);
 
@@ -161,31 +161,28 @@ public class AlarmSchedulerTest {
         assertTrue(alarmScheduler.isAlarmStandardSchedule(alarm_0h01));
     }
 
+    private static Alarm getAlarmTest(final Context context) {
+        return getAlarmTest(context, true);
+    }
 
-    private static class AlarmTest extends Alarm {
+    private static Alarm getAlarmTest(final Context context, boolean actived) {
+        return getAlarmTest(new Intent(context, Activity.class), actived, 8, 45);
+    }
 
-        AlarmTest(final Context context) {
-            this(context, true);
-        }
+    private static Alarm getAlarmTest(final Context context, boolean actived, int hours, int minutes) {
+        return getAlarmTest(new Intent(context, Activity.class), actived, hours, minutes);
+    }
 
-        AlarmTest(final Context context, boolean actived) {
-            this(new Intent(context, Activity.class), actived, 8, 45);
-        }
-
-        AlarmTest(final Context context, boolean actived, int hours, int minutes) {
-            this(new Intent(context, Activity.class), actived, hours, minutes);
-        }
-
-        AlarmTest(final Intent alarmIntent, boolean actived, int hours, int minutes) {
-            setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
-            setHours(hours);
-            setMinutes(minutes);
-            setVolume(4);
-            setActivated(actived);
-            setSnoozeDuration(1000);
-            setIntent(alarmIntent);
-        }
-
+    private static Alarm getAlarmTest(final Intent alarmIntent, boolean actived, int hours, int minutes) {
+        final Alarm alarm = new Alarm();
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
+        alarm.setHours(hours);
+        alarm.setMinutes(minutes);
+        alarm.setVolume(4);
+        alarm.setActivated(actived);
+        alarm.setSnoozeDuration(1000);
+        alarm.setIntent(alarmIntent);
+        return alarm;
     }
 
 }

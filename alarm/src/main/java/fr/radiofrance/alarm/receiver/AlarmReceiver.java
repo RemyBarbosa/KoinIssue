@@ -24,8 +24,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         final String action = intent.getAction();
-        Log.d("AlarmReceiver", "onReceive: " + intent);
-        Log.d("AlarmReceiver", "action: " + action);
+        Log.v("AlarmReceiver", "onReceive action (deprecated): " + action);
         if (context == null || TextUtils.isEmpty(action)) {
             return;
         }
@@ -46,6 +45,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             alarmId = action.replace(KEY_SNOOZE, "");
         }
 
+        // TODO get from RfAlarmManager
         final Intent newLaunchIntent = new ConfigurationDatastore(context).getAlarmDefaultLaunchIntent(null);
         if (newLaunchIntent == null) {
             return;

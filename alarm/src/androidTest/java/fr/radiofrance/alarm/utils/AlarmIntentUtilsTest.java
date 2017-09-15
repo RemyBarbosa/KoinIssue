@@ -46,7 +46,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void buildAlarmIntent_getExtras() {
         // Given
-        final AlarmTest alarm = new AlarmTest(context);
+        final Alarm alarm = getAlarmTest(context);
         final boolean isSnooze = false;
 
         // When
@@ -63,7 +63,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getPendingIntent_isPendingIntentAlive() {
         // Given
-        final AlarmTest alarm = new AlarmTest(context);
+        final Alarm alarm = getAlarmTest(context);
         final boolean isSnooze = false;
 
         // When
@@ -83,7 +83,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getPendingIntent_isPendingIntentNotAlive() {
         // Given
-        final AlarmTest alarm = new AlarmTest(context);
+        final Alarm alarm = getAlarmTest(context);
         final boolean isSnooze = false;
 
         // When
@@ -97,8 +97,8 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isOtherDifferentAlarmIntentNotAlive() {
         // Given
-        final AlarmTest alarmA = new AlarmTest(new Intent(context, Activity.class));
-        final AlarmTest alarmB = new AlarmTest(new Intent(context, Service.class));
+        final Alarm alarmA = getAlarmTest(new Intent(context, Activity.class));
+        final Alarm alarmB = getAlarmTest(new Intent(context, Service.class));
         final boolean isSnooze = false;
 
         // When
@@ -118,8 +118,8 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isOtherDifferentAlarmIntentIsAlsoAlive() {
         // Given
-        final AlarmTest alarmA = new AlarmTest(new Intent(context, Activity.class));
-        final AlarmTest alarmB = new AlarmTest(new Intent(context, Activity.class));
+        final Alarm alarmA = getAlarmTest(new Intent(context, Activity.class));
+        final Alarm alarmB = getAlarmTest(new Intent(context, Activity.class));
         final boolean isSnooze = false;
 
         // When
@@ -139,7 +139,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isSameSnoozeAlarmIntentNotAlive() {
         // Given
-        final AlarmTest alarm = new AlarmTest(new Intent(context, Activity.class));
+        final Alarm alarm = getAlarmTest(new Intent(context, Activity.class));
         final boolean isSnooze = true;
 
         // When
@@ -159,7 +159,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void getOnePendingIntent_isSameNotSnoozeAlarmIntentNotAlive() {
         // Given
-        final AlarmTest alarm = new AlarmTest(new Intent(context, Activity.class));
+        final Alarm alarm = getAlarmTest(new Intent(context, Activity.class));
         final boolean isSnooze = false;
 
         // When
@@ -179,7 +179,7 @@ public class AlarmIntentUtilsTest {
     @Test
     public void cancelPendingIntent_isPendingIntentNotAlive() {
         // Given
-        final AlarmTest alarm = new AlarmTest(context);
+        final Alarm alarm = getAlarmTest(context);
         final boolean isSnooze = false;
 
         // When
@@ -191,22 +191,20 @@ public class AlarmIntentUtilsTest {
 
     }
 
-    private static class AlarmTest extends Alarm {
+    private static Alarm getAlarmTest(final Context context) {
+        return getAlarmTest(new Intent(context, Activity.class));
+    }
 
-        AlarmTest(final Context context) {
-            this(new Intent(context, Activity.class));
-        }
-
-        AlarmTest(final Intent alarmIntent) {
-            setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
-            setHours(8);
-            setMinutes(45);
-            setVolume(4);
-            setActivated(false);
-            setSnoozeDuration(1000);
-            setIntent(alarmIntent);
-        }
-
+    private static Alarm getAlarmTest(final Intent alarmIntent) {
+        final Alarm alarm = new Alarm();
+        alarm.setDays(new ArrayList<>(Arrays.asList(Calendar.TUESDAY, Calendar.FRIDAY)));
+        alarm.setHours(8);
+        alarm.setMinutes(45);
+        alarm.setVolume(4);
+        alarm.setActivated(false);
+        alarm.setSnoozeDuration(1000);
+        alarm.setIntent(alarmIntent);
+        return alarm;
     }
 
 }

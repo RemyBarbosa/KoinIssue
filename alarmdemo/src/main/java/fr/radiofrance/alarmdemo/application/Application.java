@@ -6,7 +6,6 @@ import android.net.Uri;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarmdemo.DemoAlarmActivity;
 import fr.radiofrance.alarmdemo.MainActivity;
-import fr.radiofrance.alarmdemo.model.DemoAlarm;
 
 public class Application extends android.app.Application {
 
@@ -14,12 +13,12 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
 
-        final RfAlarmManager<DemoAlarm> alarmManager = new RfAlarmManager<>(getApplicationContext(), DemoAlarm.class);
-        alarmManager.setConfigurationAlarmDefaultLaunchIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class));
-        alarmManager.setConfigurationAlarmAppLaunchIntent(new Intent(getApplicationContext(), MainActivity.class));
-
         final Intent showEditLaunchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("alarmdemo://screen.alarm.edit"));
-        alarmManager.setConfigurationAlarmShowEditLaunchIntent(showEditLaunchIntent);
+
+        RfAlarmManager.with(getApplicationContext())
+                .setConfigurationAlarmDefaultLaunchIntent(new Intent(getApplicationContext(), DemoAlarmActivity.class))
+                .setConfigurationAlarmAppLaunchIntent(new Intent(getApplicationContext(), MainActivity.class))
+                .setConfigurationAlarmShowEditLaunchIntent(showEditLaunchIntent);
     }
 
 }

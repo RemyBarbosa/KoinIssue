@@ -44,9 +44,7 @@ import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarm.util.NetworkUtils;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
-public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActivity {
-
-    protected abstract RfAlarmManager<T> getInstanceOfAlarmManager(Context context);
+public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
     private static final int CHECK_NETWORK_RETRY_COUNT = 6;
     private static final long CHECK_NETWORK_RETRY_DELAY_MS = 500L;
@@ -58,10 +56,10 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
         Stop, Snooze, Continue
     }
 
-    private RfAlarmManager<T> alarmManager;
+    private RfAlarmManager alarmManager;
     private ConfigurationDatastore configurationDatastore;
 
-    private T alarm;
+    private Alarm alarm;
     private DefaultRingMediaPlayer defaultRingMediaPlayer;
     private TimeTickBroadcastReceiver timeTickBroadcastReceiver;
     private CheckNetworkHandler checkNetworkHandler;
@@ -92,7 +90,7 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
                             | View.SYSTEM_UI_FLAG_IMMERSIVE);
         }
 
-        alarmManager = getInstanceOfAlarmManager(getApplicationContext());
+        alarmManager = RfAlarmManager.with(getApplicationContext());
         configurationDatastore = new ConfigurationDatastore(getApplicationContext());
         checkNetworkHandler = new CheckNetworkHandler(this, CHECK_NETWORK_RETRY_COUNT, CHECK_NETWORK_RETRY_DELAY_MS);
 
@@ -103,6 +101,7 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
                 final String alarmId = extras.getString(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID);
                 alarm = alarmManager.getAlarm(alarmId);
 
+                // TODO move this in RfAlarmManager
                 final int alarmHash = extras.getInt(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, -1);
                 if (alarmHash != -1) {
                     if (alarmHash == configurationDatastore.getAlarmLastExecutedHash()) {
@@ -122,9 +121,9 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
 
         stopView = findViewById(R.id.alarm_stop_action_view);
         if (stopView != null) {
-            stopView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity<T>>(this) {
+            stopView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity>(this) {
                 @Override
-                public void onClick(final AlarmLaunchActivity<T> reference, final View view) {
+                public void onClick(final AlarmLaunchActivity reference, final View view) {
                     boolean succeed = true;
                     try {
                         reference.onActionStop();
@@ -138,9 +137,9 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
         }
         snoozeView = findViewById(R.id.alarm_snooze_action_view);
         if (snoozeView != null) {
-            snoozeView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity<T>>(this) {
+            snoozeView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity>(this) {
                 @Override
-                public void onClick(final AlarmLaunchActivity<T> reference, final View view) {
+                public void onClick(final AlarmLaunchActivity reference, final View view) {
                     boolean succeed = true;
                     try {
                         reference.onActionSnooze();
@@ -154,9 +153,9 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
         }
         continueView = findViewById(R.id.alarm_continue_action_view);
         if (continueView != null) {
-            continueView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity<T>>(this) {
+            continueView.setOnClickListener(new WeakRefOnClickListener<AlarmLaunchActivity>(this) {
                 @Override
-                public void onClick(final AlarmLaunchActivity<T> reference, final View view) {
+                public void onClick(final AlarmLaunchActivity reference, final View view) {
                     boolean succeed = true;
                     try {
                         reference.onActionContinue();
@@ -199,7 +198,7 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
     }
 
     @ColorInt
-    protected int getThemeColor(final T alarm) {
+    protected int getThemeColor(final Alarm alarm) {
         return ContextCompat.getColor(getApplicationContext(), R.color.alarm_theme_color);
     }
 
@@ -219,16 +218,16 @@ public abstract class AlarmLaunchActivity<T extends Alarm> extends AppCompatActi
     }
 
     // Keep attributes for subClass override
-    protected void onAlarmShouldStart(final T alarm, final boolean networkAvailable) {
+    protected void onAlarmShouldStart(final Alarm alarm, final boolean networkAvailable) {
         startDefaultRingAlarm();
     }
 
     // Keep attributes for subClass override
-    protected void onAlarmShouldStop(final T alarm) {
+    protected void onAlarmShouldStop(final Alarm alarm) {
         stopDefaultRingAlarm();
     }
 
-    protected void onActionDone(final T alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
+    protected void onActionDone(final Alarm alarm, final TypeAction typeAction, final boolean succeed, final View actionView) {
         if (!succeed) {
             Toast.makeText(getApplicationContext(), R.string.alarm_screen_error_toast, Toast.LENGTH_SHORT).show();
             finishWithDelay();

@@ -17,7 +17,7 @@ import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
-public class AlarmScheduler<T extends Alarm> {
+public class AlarmScheduler {
 
     @NonNull
     private final Context context;
@@ -35,7 +35,7 @@ public class AlarmScheduler<T extends Alarm> {
         this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     }
 
-    public void scheduleNextAlarmStandard(final List<T> alarms) {
+    public void scheduleNextAlarmStandard(final List<Alarm> alarms) {
         if (alarms == null || alarms.isEmpty()) {
             return;
         }

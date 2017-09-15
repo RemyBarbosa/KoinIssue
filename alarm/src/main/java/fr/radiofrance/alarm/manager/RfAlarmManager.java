@@ -23,30 +23,38 @@ import fr.radiofrance.alarm.scheduler.AlarmScheduler;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
 
 
-public class RfAlarmManager<T extends Alarm> {
+public class RfAlarmManager {
 
     private static final int DEFAULT_SNOOZE_DURATION = 600000;// 10 minutes
+
+    static volatile RfAlarmManager singleton = null;
 
     @NonNull
     private final Context context;
     @NonNull
-    private final AlarmScheduler<T> alarmScheduler;
+    private final AlarmScheduler alarmScheduler;
     @NonNull
-    private final AlarmDatastore<T> alarmDatastore;
+    private final AlarmDatastore alarmDatastore;
     @NonNull
     private final ConfigurationDatastore configurationDatastore;
     private final boolean bootReceiverDisable;
 
-    public RfAlarmManager(@NonNull final Context context, @NonNull final Class<T> type) {
-        this(context, type, false);
+    public static RfAlarmManager with(Context context) {
+        if (singleton == null) {
+            synchronized (RfAlarmManager.class) {
+                if (singleton == null) {
+                    singleton = new Builder(context).build();
+                }
+            }
+        }
+        return singleton;
     }
 
-    // Use for tests
-    protected RfAlarmManager(@NonNull final Context context, @NonNull final Class<T> type, final boolean bootReceiverDisable) {
+    private RfAlarmManager(@NonNull final Context context, final boolean bootReceiverDisable) {
         this.context = context;
         this.configurationDatastore = new ConfigurationDatastore(context);
-        this.alarmScheduler = new AlarmScheduler<>(context, configurationDatastore);
-        this.alarmDatastore = new AlarmDatastore<>(context, type);
+        this.alarmScheduler = new AlarmScheduler(context, configurationDatastore);
+        this.alarmDatastore = new AlarmDatastore(context);
         this.bootReceiverDisable = bootReceiverDisable;
     }
 
@@ -55,33 +63,36 @@ public class RfAlarmManager<T extends Alarm> {
      * or for recovery of Alarm build with previous version of library
      * @param intent
      */
-    public void setConfigurationAlarmDefaultLaunchIntent(final Intent intent) {
+    public RfAlarmManager setConfigurationAlarmDefaultLaunchIntent(final Intent intent) {
         if (intent == null) {
-            return;
+            return this;
         }
         configurationDatastore.setAlarmDefaultLaunchIntent(intent);
+        return this;
     }
 
     /**
      * Intent use to start app when AlarmLockscreen is restore from system current app
      * @param intent
      */
-    public void setConfigurationAlarmAppLaunchIntent(final Intent intent) {
+    public RfAlarmManager setConfigurationAlarmAppLaunchIntent(final Intent intent) {
         if (intent == null) {
-            return;
+            return this;
         }
         configurationDatastore.setAlarmAppLaunchIntent(intent);
+        return this;
     }
 
     /**
      * Intent use to start app alarm edit screen from system clock infos
      * @param intent
      */
-    public void setConfigurationAlarmShowEditLaunchIntent(final Intent intent) {
+    public RfAlarmManager setConfigurationAlarmShowEditLaunchIntent(final Intent intent) {
         if (intent == null) {
-            return;
+            return this;
         }
         configurationDatastore.setAlarmShowEditLaunchIntent(intent);
+        return this;
     }
 
     public void onDeviceReboot() {
@@ -90,7 +101,7 @@ public class RfAlarmManager<T extends Alarm> {
     }
 
     @Nullable
-    public T getAlarm(final String alarmId) {
+    public Alarm getAlarm(final String alarmId) {
         if (TextUtils.isEmpty(alarmId)) {
             return null;
         }
@@ -98,27 +109,27 @@ public class RfAlarmManager<T extends Alarm> {
     }
 
     @NonNull
-    public List<T> getAllAlarms() {
+    public List<Alarm> getAllAlarms() {
         return getAllAlarms(false, null);
     }
 
     @NonNull
-    public List<T> getAllAlarms(final boolean activeOnly) {
+    public List<Alarm> getAllAlarms(final boolean activeOnly) {
         return getAllAlarms(activeOnly, null);
     }
 
     @NonNull
-    public List<T> getAllAlarms(final Comparator<T> sortComparator) {
+    public List<Alarm> getAllAlarms(final Comparator<Alarm> sortComparator) {
         return getAllAlarms(false, sortComparator);
     }
 
     @NonNull
-    public List<T> getAllAlarms(final boolean activeOnly, final Comparator<T> sortComparator) {
-        final List<T> alarms = new ArrayList<>();
+    public List<Alarm> getAllAlarms(final boolean activeOnly, final Comparator<Alarm> sortComparator) {
+        final List<Alarm> alarms = new ArrayList<>();
 
         final Set<String> alarmIds = alarmDatastore.getAllAlarmIds();
         for (final String alarmId : alarmIds) {
-            final T alarm = alarmDatastore.getAlarm(alarmId);
+            final Alarm alarm = alarmDatastore.getAlarm(alarmId);
             if (alarm == null) {
                 continue;
             }
@@ -138,7 +149,7 @@ public class RfAlarmManager<T extends Alarm> {
         return alarms;
     }
 
-    public void addAlarm(@Nullable final T alarm) throws RfAlarmException {
+    public void addAlarm(@Nullable final Alarm alarm) throws RfAlarmException {
         try {
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null");
@@ -160,7 +171,7 @@ public class RfAlarmManager<T extends Alarm> {
         }
     }
 
-    public void updateAlarm(@Nullable final T alarm) throws RfAlarmException {
+    public void updateAlarm(@Nullable final Alarm alarm) throws RfAlarmException {
         try {
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null");
@@ -203,7 +214,7 @@ public class RfAlarmManager<T extends Alarm> {
     }
 
     public void removeAllAlarms() throws RfAlarmException {
-        final List<T> allAlarms = getAllAlarms();
+        final List<Alarm> allAlarms = getAllAlarms();
         for (final Alarm alarm : allAlarms) {
             if (alarm == null) {
                 continue;
@@ -213,19 +224,19 @@ public class RfAlarmManager<T extends Alarm> {
     }
 
     public Calendar getNextAlarmScheduleDate() {
-        final T nextAlarm = getNextAlarm();
+        final Alarm nextAlarm = getNextAlarm();
         if (nextAlarm == null) {
             return null;
         }
         return AlarmDateUtils.getAlarmNextScheduleDate(nextAlarm);
     }
 
-    public T getNextAlarm() {
+    public Alarm getNextAlarm() {
         Calendar nextDate = null;
-        T nextAlarm = null;
+        Alarm nextAlarm = null;
 
-        final List<T> allActiveAlarms = getAllAlarms(true);
-        for (final T alarm : allActiveAlarms) {
+        final List<Alarm> allActiveAlarms = getAllAlarms(true);
+        for (final Alarm alarm : allActiveAlarms) {
             final Calendar date = AlarmDateUtils.getAlarmNextScheduleDate(alarm);
             if (nextDate == null || (date.before(nextDate))) {
                 nextDate = date;
@@ -235,11 +246,11 @@ public class RfAlarmManager<T extends Alarm> {
         return nextAlarm;
     }
 
-    public boolean isAlarmSchedule(final T alarm) {
+    public boolean isAlarmSchedule(final Alarm alarm) {
         return alarmScheduler.isAlarmStandardSchedule(alarm);
     }
 
-    public void onAlarmIsConsumed(final T alarm) throws RfAlarmException {
+    public void onAlarmIsConsumed(final Alarm alarm) throws RfAlarmException {
         try {
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null.");
@@ -251,7 +262,7 @@ public class RfAlarmManager<T extends Alarm> {
         }
     }
 
-    public void onAlarmIsSnoozed(final T alarm) throws RfAlarmException {
+    public void onAlarmIsSnoozed(final Alarm alarm) throws RfAlarmException {
         try {
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null.");
@@ -268,7 +279,7 @@ public class RfAlarmManager<T extends Alarm> {
         return configurationDatastore.getAlarmDefaultLaunchIntent(null);
     }
 
-    private void checkAlarmValidity(@NonNull final T alarm) {
+    private void checkAlarmValidity(@NonNull final Alarm alarm) {
         final int hours = alarm.getHours();
         final int minutes = alarm.getMinutes();
 
@@ -290,7 +301,7 @@ public class RfAlarmManager<T extends Alarm> {
         checkForRecovery(alarm);
     }
 
-    private void checkForRecovery(@NonNull final T alarm) {
+    private void checkForRecovery(@NonNull final Alarm alarm) {
         if (alarm.getVersion() < BuildConfig.LIBRARY_VERSION_CODE) {
             // Recovery action for alarm create on previous version of app
             alarm.setIntent(getConfigurationAlarmDefaultLaunchIntent());
@@ -303,13 +314,41 @@ public class RfAlarmManager<T extends Alarm> {
             return;
         }
         for (final String alarmId : alarmDatastore.getAllAlarmIds()) {
-            final T alarm = alarmDatastore.getAlarm(alarmId);
+            final Alarm alarm = alarmDatastore.getAlarm(alarmId);
             if (alarm != null && alarmScheduler.isAlarmStandardSchedule(alarm)) {
                 RfAlarmReceiver.enable(context);
                 return;
             }
         }
         RfAlarmReceiver.disable(context);
+    }
+
+    public static class Builder {
+
+        private final Context context;
+        private boolean bootReceiverDisable = false;
+
+        public Builder(Context context) {
+            if (context == null) {
+                throw new IllegalArgumentException("Context must not be null.");
+            }
+            this.context = context.getApplicationContext();
+        }
+
+        /**
+         * Use for AndroidTestCase
+         * @param disabled
+         * @return
+         */
+        public Builder bootReceiverDisable(boolean disabled) {
+            this.bootReceiverDisable = bootReceiverDisable;
+            return this;
+        }
+
+        public RfAlarmManager build() {
+            return new RfAlarmManager(context, bootReceiverDisable);
+        }
+
     }
 
 }

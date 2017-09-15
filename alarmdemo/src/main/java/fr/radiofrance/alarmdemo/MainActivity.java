@@ -30,10 +30,10 @@ import java.util.TimeZone;
 
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
+import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
-import fr.radiofrance.alarmdemo.model.DemoAlarm;
 import fr.radiofrance.alarmdemo.player.DemoPlayer;
 import fr.radiofrance.alarmdemo.view.DividerItemDecoration;
 
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private View addAlarmDialogView;
     private AlarmsAdapter alarmsAdapter;
 
-    private RfAlarmManager<DemoAlarm> alarmManager;
+    private RfAlarmManager alarmManager;
 
     private CheckBox monday;
     private CheckBox tuesday;
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        alarmManager = new RfAlarmManager<>(getApplicationContext(), DemoAlarm.class);
+        alarmManager = RfAlarmManager.with(getApplicationContext());
 
         findViews();
         initViews();
@@ -107,10 +107,10 @@ public class MainActivity extends AppCompatActivity {
                 updateNextAlarmMessage();
                 break;
             case R.id.debug:
-                final List<DemoAlarm> alarms = alarmManager.getAllAlarms();
+                final List<Alarm> alarms = alarmManager.getAllAlarms();
 
                 String debug = "";
-                for (final DemoAlarm alarm : alarms) {
+                for (final Alarm alarm : alarms) {
                     if (alarm != null) {
                         debug += alarm + "\n";
                     }
@@ -156,15 +156,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        alarmsAdapter = new AlarmsAdapter(this, new ArrayList<DemoAlarm>(), new OnAlarmActionListener() {
+        alarmsAdapter = new AlarmsAdapter(this, new ArrayList<Alarm>(), new OnAlarmActionListener() {
 
             @Override
-            public void onAlarmClick(DemoAlarm alarm, int position) {
+            public void onAlarmClick(Alarm alarm, int position) {
                 showUpdateAlarmDialog(alarm, position);
             }
 
             @Override
-            public void onAlarmLongClick(DemoAlarm alarm, int position) {
+            public void onAlarmLongClick(Alarm alarm, int position) {
                 try {
                     alarmManager.removeAlarm(alarm.getId());
                 } catch (RfAlarmException e) {
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAlarmActivated(DemoAlarm alarm, boolean isActivated, int position) {
+            public void onAlarmActivated(Alarm alarm, boolean isActivated, int position) {
                 if (alarm == null) {
                     return;
                 }
@@ -239,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void showUpdateAlarmDialog(@NonNull final DemoAlarm alarm, final int alarmPosition) {
+    private void showUpdateAlarmDialog(@NonNull final Alarm alarm, final int alarmPosition) {
         final ViewGroup parentView = (ViewGroup) addAlarmDialogView.getParent();
         if (parentView != null) {
             parentView.removeAllViews();
@@ -276,14 +276,14 @@ public class MainActivity extends AppCompatActivity {
         final int h = Integer.parseInt(hours.getText().toString());
         final int m = Integer.parseInt(minutes.getText().toString());
 
-        final DemoAlarm alarm = new DemoAlarm();
+        final Alarm alarm = new Alarm();
         alarm.setDays(days);
         alarm.setHours(h);
         alarm.setMinutes(m);
         alarm.setSnoozeDuration(10000);
         alarm.setVolume(volume.getProgress());
         alarm.setActivated(true);
-        alarm.setCustomField("Custom field test content");
+        alarm.setCustomValue("http://direct.fipradio.fr/live/fip-lofi.mp3");
 
         final Intent intent = new Intent(getApplicationContext(), DemoAlarmActivity.class);
         intent.putExtra("EXTRA_TEST", "Extra test content");
@@ -300,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
         updateNextAlarmMessage();
     }
 
-    private void updateAlarm(@NonNull final DemoAlarm alarm, final int alarmPosition) {
+    private void updateAlarm(@NonNull final Alarm alarm, final int alarmPosition) {
         final List<Integer> days = new ArrayList<>();
         if (monday.isChecked()) days.add(Calendar.MONDAY);
         if (tuesday.isChecked()) days.add(Calendar.TUESDAY);
