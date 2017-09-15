@@ -1,3 +1,7 @@
+## v4.0.0
+
+- Library alarm is no more a generic Alarm object library.
+
 ## v3.0.1
 
 - Fix alarm exact time, use ClockInfo.
