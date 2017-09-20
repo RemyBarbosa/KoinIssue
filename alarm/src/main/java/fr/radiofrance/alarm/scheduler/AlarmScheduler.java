@@ -107,6 +107,10 @@ public class AlarmScheduler {
         }
     }
 
+    public boolean hasAlarmScheluded() {
+        return schedulerDatastore.getCurrentStandard() != null || schedulerDatastore.getCurrentSnooze() != null;
+    }
+
     private void scheduleAlarm(final Alarm alarm, final boolean isSnooze) {
         if (alarm == null) {
             return;

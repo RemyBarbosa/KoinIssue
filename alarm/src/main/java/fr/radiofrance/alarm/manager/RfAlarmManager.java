@@ -348,13 +348,9 @@ public class RfAlarmManager {
         if (bootReceiverDisable) {
             return;
         }
-        // TODO add hasCurrentSnoozeAlarm
-        for (final String alarmId : alarmDatastore.getAllAlarmIds()) {
-            final Alarm alarm = alarmDatastore.getAlarm(alarmId);
-            if (alarm != null && alarmScheduler.isAlarmStandardSchedule(alarm)) {
-                RfAlarmReceiver.enable(context);
-                return;
-            }
+        if (alarmScheduler.hasAlarmScheluded()) {
+            RfAlarmReceiver.enable(context);
+            return;
         }
         RfAlarmReceiver.disable(context);
     }

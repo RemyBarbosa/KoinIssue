@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.model.ScheduleData;
@@ -48,39 +49,27 @@ public class AlarmSchedulerTest {
 
     @Test
     public void methods_nullParams() {
-        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
-            @Override
-            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
-                // Then
-                assertFalse("OnChange should not be fired", true);
-            }
-        });
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new OnScheduleChangeListener_NotExpected());
         alarmScheduler.scheduleNextAlarmStandard(null);
         alarmScheduler.scheduleAlarmSnooze(null);
         alarmScheduler.unscheduleAlarmStandard(null);
 
         assertFalse(alarmScheduler.isAlarmStandardSchedule(null));
+        assertFalse(alarmScheduler.hasAlarmScheluded());
     }
 
     @Test
     public void scheduleAlarmSnooze_isAlarmStandardReturnFalse() {
         // Given
         final Alarm alarm = getAlarmTest(context);
-        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
-            @Override
-            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
-                // Then
-                assertNull(standard);
-                assertNotNull(snooze);
-                assertEquals(alarm.getId(), snooze.alarmId);
-            }
-        });
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new OnScheduleChangeListener_SnoozeExpected(alarm.getId()));
 
         // When
         alarmScheduler.scheduleAlarmSnooze(alarm);
 
         // Then
         assertFalse(alarmScheduler.isAlarmStandardSchedule(alarm));
+        assertTrue(alarmScheduler.hasAlarmScheluded());
     }
 
     @Test
@@ -91,21 +80,14 @@ public class AlarmSchedulerTest {
         final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
 
-        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
-            @Override
-            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
-                // Then
-                assertNull(snooze);
-                assertNotNull(standard);
-                assertEquals(alarm.getId(), standard.alarmId);
-            }
-        });
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new OnScheduleChangeListener_StandardExpected(alarm.getId()));
 
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
 
         // Then
         assertTrue(alarmScheduler.isAlarmStandardSchedule(alarm));
+        assertTrue(alarmScheduler.hasAlarmScheluded());
     }
 
     @Test
@@ -116,20 +98,14 @@ public class AlarmSchedulerTest {
         final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
 
-        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
-            @Override
-            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
-                // Then
-                assertNull(snooze);
-                assertNull(standard);
-            }
-        });
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new OnScheduleChangeListener_EmptyExpected());
 
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
 
         // Then
         assertFalse(alarmScheduler.isAlarmStandardSchedule(alarm));
+        assertFalse(alarmScheduler.hasAlarmScheluded());
     }
 
     @Test
@@ -163,6 +139,7 @@ public class AlarmSchedulerTest {
 
         // Then
         assertFalse(alarmScheduler.isAlarmStandardSchedule(alarm));
+        assertFalse(alarmScheduler.hasAlarmScheluded());
     }
 
     @Test
@@ -174,15 +151,7 @@ public class AlarmSchedulerTest {
         alarms.add(alarm_0h00);
         alarms.add(alarm_0h01);
 
-        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
-            @Override
-            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
-                // Then
-                assertNull(snooze);
-                assertNotNull(standard);
-                assertEquals(alarm_0h00.getId(), standard.alarmId);
-            }
-        });
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new OnScheduleChangeListener_StandardExpected(alarm_0h00.getId()));
 
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
@@ -190,6 +159,7 @@ public class AlarmSchedulerTest {
         // Then
         assertTrue(alarmScheduler.isAlarmStandardSchedule(alarm_0h00));
         assertFalse(alarmScheduler.isAlarmStandardSchedule(alarm_0h01));
+        assertTrue(alarmScheduler.hasAlarmScheluded());
     }
 
     @Test
@@ -201,15 +171,7 @@ public class AlarmSchedulerTest {
         alarms.add(alarm_0h01);
         alarms.add(alarm_0h00);
 
-        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
-            @Override
-            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
-                // Then
-                assertNull(snooze);
-                assertNotNull(standard);
-                assertEquals(alarm_0h00.getId(), standard.alarmId);
-            }
-        });
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new OnScheduleChangeListener_StandardExpected(alarm_0h00.getId()));
 
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
@@ -217,6 +179,7 @@ public class AlarmSchedulerTest {
         // Then
         assertTrue(alarmScheduler.isAlarmStandardSchedule(alarm_0h00));
         assertFalse(alarmScheduler.isAlarmStandardSchedule(alarm_0h01));
+        assertTrue(alarmScheduler.hasAlarmScheluded());
     }
 
     public void scheduleNextAlarmStandard_twoFollowingAlarmsInOrderFirstOneUnschedule() {
@@ -227,23 +190,7 @@ public class AlarmSchedulerTest {
         alarms.add(alarm_0h00);
         alarms.add(alarm_0h01);
 
-        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
-            boolean firstCall = true;
-            @Override
-            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
-                // Then
-                if (firstCall) {
-                    firstCall = false;
-                    assertNull(snooze);
-                    assertNotNull(standard);
-                    assertEquals(alarm_0h00.getId(), standard.alarmId);
-                    return;
-                }
-                assertNull(snooze);
-                assertNotNull(standard);
-                assertEquals(alarm_0h01.getId(), standard.alarmId);
-            }
-        });
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new OnScheduleChangeListener_StandardExpected(alarm_0h00.getId(), alarm_0h01.getId()));
 
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
@@ -252,6 +199,7 @@ public class AlarmSchedulerTest {
         // Then
         assertFalse(alarmScheduler.isAlarmStandardSchedule(alarm_0h00));
         assertTrue(alarmScheduler.isAlarmStandardSchedule(alarm_0h01));
+        assertTrue(alarmScheduler.hasAlarmScheluded());
     }
 
     private static Alarm getAlarmTest(final Context context) {
@@ -279,5 +227,64 @@ public class AlarmSchedulerTest {
     }
 
     public static class TestActivity extends Activity {}
+
+    static class OnScheduleChangeListener_StandardExpected implements AlarmScheduler.OnScheduleChangeListener {
+        private final CountDownLatch signal;
+        private final String[] alarmIds;
+
+        OnScheduleChangeListener_StandardExpected(final String... alarmIds) {
+            this.alarmIds = alarmIds;
+            this.signal = new CountDownLatch(alarmIds.length);
+        }
+
+        @Override
+        public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+            // Then
+            assertNull(snooze);
+            assertNotNull(standard);
+            assertEquals(alarmIds[(int)signal.getCount() - 1], standard.alarmId);
+            signal.countDown();
+        }
+    }
+
+    static class OnScheduleChangeListener_SnoozeExpected implements AlarmScheduler.OnScheduleChangeListener {
+        private final CountDownLatch signal;
+        private final String[] alarmIds;
+
+        OnScheduleChangeListener_SnoozeExpected(final String... alarmIds) {
+            this.alarmIds = alarmIds;
+            this.signal = new CountDownLatch(alarmIds.length);
+        }
+
+        @Override
+        public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+            // Then
+            assertNull(standard);
+            assertNotNull(snooze);
+            assertEquals(alarmIds[(int)signal.getCount() - 1], snooze.alarmId);
+            signal.countDown();
+        }
+    }
+
+    static class OnScheduleChangeListener_EmptyExpected implements AlarmScheduler.OnScheduleChangeListener {
+        private final CountDownLatch signal = new CountDownLatch(1);
+
+        @Override
+        public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+            // Then
+            assertNull(standard);
+            assertNull(snooze);
+            signal.countDown();
+        }
+    }
+
+    static class OnScheduleChangeListener_NotExpected implements AlarmScheduler.OnScheduleChangeListener {
+        @Override
+        public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+            // Then
+            assertFalse("OnChange should not be fired", true);
+        }
+
+    }
 
 }
