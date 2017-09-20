@@ -45,7 +45,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             alarmId = action.replace(KEY_SNOOZE, "");
         }
 
-        // TODO get from RfAlarmManager
+        // TODO recovery : getAlarmDefaultLaunchIntent from RfAlarmManager
         final Intent newLaunchIntent = new ConfigurationDatastore(context).getAlarmDefaultLaunchIntent(null);
         if (newLaunchIntent == null) {
             return;

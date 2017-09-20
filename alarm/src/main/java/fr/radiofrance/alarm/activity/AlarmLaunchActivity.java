@@ -101,7 +101,7 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
                 final String alarmId = extras.getString(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID);
                 alarm = alarmManager.getAlarm(alarmId);
 
-                // TODO move this in RfAlarmManager
+                // TODO onCreate : move check alarm hash in RfAlarmManager
                 final int alarmHash = extras.getInt(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, -1);
                 if (alarmHash != -1) {
                     if (alarmHash == configurationDatastore.getAlarmLastExecutedHash()) {

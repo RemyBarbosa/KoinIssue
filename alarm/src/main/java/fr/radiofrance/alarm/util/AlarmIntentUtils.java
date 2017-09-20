@@ -32,6 +32,7 @@ public abstract class AlarmIntentUtils {
         return PendingIntent.getActivity(context, SHOW_EDIT_PENDING_INTENT_REQUEST_CODE, showIntent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
+    // TODO buildAlarmIntent: create an AlarmIntentBuilder with optional method completeAlarmExtras()
     public static Intent buildAlarmIntent(@NonNull final Alarm alarm, final boolean isSnooze) {
         final Intent alarmLaunchIntent = alarm.getIntent();
         if (alarmLaunchIntent == null) {

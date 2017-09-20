@@ -11,7 +11,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.DateUtils;
-import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -67,7 +66,6 @@ public class AlarmNotificationManager {
     }
 
     public void programNotification(ScheduleData standardAlarmScheduled, ScheduleData snoozeAlarmScheduled) {
-        Log.d(LOG_TAG, "programNotification: ");
         cancelPendingIntent();
 
         if (snoozeAlarmScheduled == null || snoozeAlarmScheduled.scheduleTimeMillis < System.currentTimeMillis()) {
@@ -92,7 +90,6 @@ public class AlarmNotificationManager {
     }
 
     public void showNotification(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
-        Log.d(LOG_TAG, "showNotification: ");
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
         notificationBuilder.setContentTitle(context.getString(R.string.alarm_notif_soon_label))
                 .setSmallIcon(R.drawable.ic_alarm_notification)
@@ -105,7 +102,6 @@ public class AlarmNotificationManager {
     }
 
     public void hideNotification() {
-        Log.d(LOG_TAG, "hideNotification: ");
         notificationManager.cancel(NOTIFICATION_ID);
     }
 

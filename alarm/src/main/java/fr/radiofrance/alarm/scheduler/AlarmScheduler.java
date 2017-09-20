@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import java.util.Calendar;
 import java.util.List;
@@ -44,6 +45,14 @@ public class AlarmScheduler {
     }
 
     public void scheduleNextAlarmStandard(final List<Alarm> alarms) {
+        scheduleNextAlarmStandard(alarms, null, 0L, false);
+    }
+
+    public void scheduleNextAlarmStandard(final List<Alarm> alarms, final String canceledAlarmId, final long canceledAlarmTimeMillis, final boolean canceledAlarmIsSnooze) {
+        if (!TextUtils.isEmpty(canceledAlarmId) && canceledAlarmIsSnooze) {
+            // TODO scheduleNextAlarmStandard: deal with canceled alarm
+        }
+
         if (alarms == null || alarms.isEmpty()) {
             return;
         }
@@ -62,6 +71,7 @@ public class AlarmScheduler {
                 continue;
             }
 
+            // TODO scheduleNextAlarmStandard : deal with canceled alarm
             final Calendar date = AlarmDateUtils.getAlarmNextScheduleDate(alarm);
             if (nextDate == null || (date.before(nextDate))) {
                 nextDate = date;
@@ -94,11 +104,10 @@ public class AlarmScheduler {
         if (alarm == null) {
             return;
         }
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
-        if (pendingIntent == null) {
-            return;
-        }
-        alarmManager.cancel(pendingIntent);
+
+        unscheduleFromAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, false));
+        // TODO unscheduleAlarmStandard : unschedule snooze if needed
+
         AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
         schedulerDatastore.saveCurrentStandard(null);
 
@@ -133,16 +142,7 @@ public class AlarmScheduler {
 
         final long timeInMillis = scheduleDate.getTimeInMillis();
 
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            final PendingIntent alarmShowPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
-            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(timeInMillis, alarmShowPendingIntent), pendingIntent);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-        } else {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-        }
+        scheduleInAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze), timeInMillis);
 
         if (isSnooze) {
             schedulerDatastore.saveCurrentSnooze(new ScheduleData(alarm.getId(), timeInMillis));
@@ -152,6 +152,27 @@ public class AlarmScheduler {
         if (listener != null) {
             listener.onChange(schedulerDatastore.getCurrentStandard(), schedulerDatastore.getCurrentSnooze());
         }
+    }
+
+    private void scheduleInAlarmSystem(final Intent alarmIntent, final long atTimeInMillis) {
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final PendingIntent alarmShowPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
+            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(atTimeInMillis, alarmShowPendingIntent), pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, atTimeInMillis, pendingIntent);
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, atTimeInMillis, pendingIntent);
+        }
+    }
+
+    private void unscheduleFromAlarmSystem(final Intent alarmIntent) {
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
+        if (pendingIntent == null) {
+            return;
+        }
+        alarmManager.cancel(pendingIntent);
     }
 
     private Intent getClockInfoShowEditIntent() {

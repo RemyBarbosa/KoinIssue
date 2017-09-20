@@ -109,8 +109,7 @@ public class RfAlarmManager {
     public void onDeviceReboot() {
         // The device has booted: we schedule all alarms that had been activated
         alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
-        // TODO
-        // Boot : Add recovery module when read object from preferences
+        // TODO onDeviceReboot : Add recovery module when read object from preferences
     }
 
     @Nullable
@@ -293,7 +292,7 @@ public class RfAlarmManager {
                 throw new IllegalArgumentException("Alarm id could not be null or empty.");
             }
             alarmNotificationManager.hideNotification();
-            // TODO unshedule alarm and shedule next
+            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms(), alarmId, alarmTimeMillis, isSnooze);
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm notification is cancel task: " + e.getMessage(), e);
         }
