@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +25,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -38,6 +41,8 @@ import fr.radiofrance.alarmdemo.player.DemoPlayer;
 import fr.radiofrance.alarmdemo.view.DividerItemDecoration;
 
 public class MainActivity extends AppCompatActivity {
+
+    private RefreshNextAlarmMessageHandler refreshNextAlarmMessageHandler;
 
     private TextView nextAlarmMessageTextView;
     private RecyclerView alarmsRecyclerView;
@@ -62,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        refreshNextAlarmMessageHandler = new RefreshNextAlarmMessageHandler(this);
+
         setContentView(R.layout.activity_main);
 
         alarmManager = RfAlarmManager.with(getApplicationContext());
@@ -83,6 +90,13 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         alarmsAdapter.setAlarms(alarmManager.getAllAlarms());
         updateNextAlarmMessage();
+        refreshNextAlarmMessageHandler.start();
+    }
+
+    @Override
+    protected void onPause() {
+        refreshNextAlarmMessageHandler.stop();
+        super.onPause();
     }
 
     @Override
@@ -357,6 +371,32 @@ public class MainActivity extends AppCompatActivity {
         }
         final String host = data.getHost();
         Toast.makeText(this, "Load from deeplink : " + host, Toast.LENGTH_LONG).show();
+    }
+
+    private static class RefreshNextAlarmMessageHandler extends Handler {
+        private final WeakReference<MainActivity> activityRef;
+
+        RefreshNextAlarmMessageHandler(final MainActivity activity) {
+            this.activityRef = new WeakReference<>(activity);
+        }
+
+        void start() {
+            sendEmptyMessageDelayed(0, 1000L);
+        }
+
+        void stop() {
+            removeCallbacksAndMessages(null);
+        }
+
+        @Override
+        public void handleMessage(final Message msg) {
+            final MainActivity activity = activityRef.get();
+            if (activity == null) {
+                return;
+            }
+            activity.updateNextAlarmMessage();
+            sendEmptyMessageDelayed(0, 1000L);
+        }
     }
 
 }
