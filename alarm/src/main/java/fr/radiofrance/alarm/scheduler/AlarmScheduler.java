@@ -13,12 +13,16 @@ import java.util.TimeZone;
 
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.SchedulerDatastore;
+import fr.radiofrance.alarm.datastore.model.ScheduleData;
 import fr.radiofrance.alarm.model.Alarm;
-import fr.radiofrance.alarm.notification.AlarmNotificationManager;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 public class AlarmScheduler {
+
+    public interface OnScheduleChangeListener {
+        void onChange(ScheduleData standard, ScheduleData snooze);
+    }
 
     @NonNull
     private final Context context;
@@ -28,15 +32,15 @@ public class AlarmScheduler {
     private final SchedulerDatastore schedulerDatastore;
     @NonNull
     private final AlarmManager alarmManager;
-    @NonNull
-    private final AlarmNotificationManager alarmNotificationManager;
 
-    public AlarmScheduler(@NonNull final Context context, final AlarmNotificationManager alarmNotificationManager, final ConfigurationDatastore configurationDatastore) {
+    private final OnScheduleChangeListener listener;
+
+    public AlarmScheduler(@NonNull final Context context, @NonNull final ConfigurationDatastore configurationDatastore, final OnScheduleChangeListener listener) {
         this.context = context;
         this.configurationDatastore = configurationDatastore;
         this.schedulerDatastore = new SchedulerDatastore(context);
         this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        this.alarmNotificationManager = alarmNotificationManager;
+        this.listener = listener;
     }
 
     public void scheduleNextAlarmStandard(final List<Alarm> alarms) {
@@ -44,7 +48,8 @@ public class AlarmScheduler {
             return;
         }
 
-        final String currentStandardScheduledAlarmId = schedulerDatastore.getCurrentStandardAlarmId();
+        final ScheduleData currentScheduleData = schedulerDatastore.getCurrentStandard();
+        final String currentStandardScheduledAlarmId = currentScheduleData != null ? currentScheduleData.alarmId : null;
 
         Calendar nextDate = null;
         Alarm nextAlarm = null;
@@ -77,7 +82,11 @@ public class AlarmScheduler {
         if (alarm == null) {
             return false;
         }
-        final boolean isCurrentScheduled = alarm.getId().equals(schedulerDatastore.getCurrentStandardAlarmId());
+        final ScheduleData currentScheduleData = schedulerDatastore.getCurrentStandard();
+        if (currentScheduleData == null) {
+            return false;
+        }
+        final boolean isCurrentScheduled = alarm.getId().equals(currentScheduleData.alarmId);
         return isCurrentScheduled && AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
     }
 
@@ -91,8 +100,11 @@ public class AlarmScheduler {
         }
         alarmManager.cancel(pendingIntent);
         AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
-        schedulerDatastore.saveCurrentStandardAlarmId(null);
-        alarmNotificationManager.programNotification(null, null);
+        schedulerDatastore.saveCurrentStandard(null);
+
+        if (listener != null) {
+            listener.onChange(schedulerDatastore.getCurrentStandard(), schedulerDatastore.getCurrentSnooze());
+        }
     }
 
     private void scheduleAlarm(final Alarm alarm, final boolean isSnooze) {
@@ -129,12 +141,12 @@ public class AlarmScheduler {
         }
 
         if (isSnooze) {
-            schedulerDatastore.saveCurrentSnoozeAlarmId(alarm.getId());
-            // TODO
-            //alarmNotificationManager.programNotification(getNextAlarm, alarm);
+            schedulerDatastore.saveCurrentSnooze(new ScheduleData(alarm.getId(), timeInMillis));
         } else {
-            schedulerDatastore.saveCurrentStandardAlarmId(alarm.getId());
-            alarmNotificationManager.programNotification(alarm, null);
+            schedulerDatastore.saveCurrentStandard(new ScheduleData(alarm.getId(), timeInMillis));
+        }
+        if (listener != null) {
+            listener.onChange(schedulerDatastore.getCurrentStandard(), schedulerDatastore.getCurrentSnooze());
         }
     }
 

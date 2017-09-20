@@ -17,11 +17,14 @@ import java.util.Calendar;
 import java.util.List;
 
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
+import fr.radiofrance.alarm.datastore.model.ScheduleData;
 import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
-import fr.radiofrance.alarm.mock.DummyAlarmNotificationManager;
 import fr.radiofrance.alarm.model.Alarm;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -31,12 +34,11 @@ import static org.junit.Assert.assertTrue;
 public class AlarmSchedulerTest {
 
     private Context context;
-    private AlarmScheduler alarmScheduler;
 
     @Before
     public void setup() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        alarmScheduler = new AlarmScheduler(context, new DummyAlarmNotificationManager(context), new ConfigurationDatastore(context));
+        new SharedPreferencesManager(context).flush();
     }
 
     @After
@@ -46,6 +48,13 @@ public class AlarmSchedulerTest {
 
     @Test
     public void methods_nullParams() {
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                assertFalse("OnChange should not be fired", true);
+            }
+        });
         alarmScheduler.scheduleNextAlarmStandard(null);
         alarmScheduler.scheduleAlarmSnooze(null);
         alarmScheduler.unscheduleAlarmStandard(null);
@@ -57,6 +66,15 @@ public class AlarmSchedulerTest {
     public void scheduleAlarmSnooze_isAlarmStandardReturnFalse() {
         // Given
         final Alarm alarm = getAlarmTest(context);
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                assertNull(standard);
+                assertNotNull(snooze);
+                assertEquals(alarm.getId(), snooze.alarmId);
+            }
+        });
 
         // When
         alarmScheduler.scheduleAlarmSnooze(alarm);
@@ -73,6 +91,16 @@ public class AlarmSchedulerTest {
         final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
 
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                assertNull(snooze);
+                assertNotNull(standard);
+                assertEquals(alarm.getId(), standard.alarmId);
+            }
+        });
+
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
 
@@ -88,6 +116,15 @@ public class AlarmSchedulerTest {
         final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
 
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                assertNull(snooze);
+                assertNull(standard);
+            }
+        });
+
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
 
@@ -102,6 +139,23 @@ public class AlarmSchedulerTest {
         final Alarm alarm = getAlarmTest(context, actived);
         final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm);
+
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            boolean firstCall = true;
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                if (firstCall) {
+                    firstCall = false;
+                    assertNull(snooze);
+                    assertNotNull(standard);
+                    assertEquals(alarm.getId(), standard.alarmId);
+                    return;
+                }
+                assertNull(snooze);
+                assertNull(standard);
+            }
+        });
 
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
@@ -120,6 +174,16 @@ public class AlarmSchedulerTest {
         alarms.add(alarm_0h00);
         alarms.add(alarm_0h01);
 
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                assertNull(snooze);
+                assertNotNull(standard);
+                assertEquals(alarm_0h00.getId(), standard.alarmId);
+            }
+        });
+
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
 
@@ -137,6 +201,16 @@ public class AlarmSchedulerTest {
         alarms.add(alarm_0h01);
         alarms.add(alarm_0h00);
 
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                assertNull(snooze);
+                assertNotNull(standard);
+                assertEquals(alarm_0h00.getId(), standard.alarmId);
+            }
+        });
+
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);
 
@@ -152,6 +226,24 @@ public class AlarmSchedulerTest {
         final List<Alarm> alarms = new ArrayList<>();
         alarms.add(alarm_0h00);
         alarms.add(alarm_0h01);
+
+        final AlarmScheduler alarmScheduler = new AlarmScheduler(context, new ConfigurationDatastore(context), new AlarmScheduler.OnScheduleChangeListener() {
+            boolean firstCall = true;
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                // Then
+                if (firstCall) {
+                    firstCall = false;
+                    assertNull(snooze);
+                    assertNotNull(standard);
+                    assertEquals(alarm_0h00.getId(), standard.alarmId);
+                    return;
+                }
+                assertNull(snooze);
+                assertNotNull(standard);
+                assertEquals(alarm_0h01.getId(), standard.alarmId);
+            }
+        });
 
         // When
         alarmScheduler.scheduleNextAlarmStandard(alarms);

@@ -16,6 +16,7 @@ import java.util.Set;
 import fr.radiofrance.alarm.BuildConfig;
 import fr.radiofrance.alarm.datastore.AlarmDatastore;
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
+import fr.radiofrance.alarm.datastore.model.ScheduleData;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.notification.AlarmNotificationManager;
@@ -58,7 +59,12 @@ public class RfAlarmManager {
         this.context = context;
         this.configurationDatastore = new ConfigurationDatastore(context);
         this.alarmNotificationManager = alarmNotificationManager;
-        this.alarmScheduler = new AlarmScheduler(context, alarmNotificationManager, configurationDatastore);
+        this.alarmScheduler = new AlarmScheduler(context, configurationDatastore, new AlarmScheduler.OnScheduleChangeListener() {
+            @Override
+            public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                alarmNotificationManager.programNotification(standard, snooze);
+            }
+        });
         this.alarmDatastore = new AlarmDatastore(context);
         this.bootReceiverDisable = bootReceiverDisable;
     }
@@ -299,7 +305,6 @@ public class RfAlarmManager {
                 throw new IllegalArgumentException("Alarm id could not be null or empty.");
             }
             alarmNotificationManager.showNotification(alarmId, alarmTimeMillis, isSnooze);
-            // TODO
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm notification should show task: " + e.getMessage(), e);
         }

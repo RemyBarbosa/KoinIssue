@@ -19,9 +19,8 @@ import java.util.Date;
 import java.util.Locale;
 
 import fr.radiofrance.alarm.R;
-import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.datastore.model.ScheduleData;
 import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
-import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 public class AlarmNotificationManager {
@@ -40,7 +39,8 @@ public class AlarmNotificationManager {
 
     private static final int PENDING_INTENT_SHOW_REQUEST_CODE = 65827;
     private static final int PENDING_INTENT_CANCEL_REQUEST_CODE = 65828;
-    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = DateUtils.HOUR_IN_MILLIS;
+    //private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = DateUtils.HOUR_IN_MILLIS;
+    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = 10 * DateUtils.SECOND_IN_MILLIS;
 
     @NonNull
     private final Context context;
@@ -66,25 +66,27 @@ public class AlarmNotificationManager {
         }
     }
 
-    public void programNotification(final Alarm nextAlarm, final Alarm snoozedAlarm) {
+    public void programNotification(ScheduleData standardAlarmScheduled, ScheduleData snoozeAlarmScheduled) {
         Log.d(LOG_TAG, "programNotification: ");
         cancelPendingIntent();
 
-        if (nextAlarm == null && snoozedAlarm == null) {
-            // TODO cancel pending intent
+        if (snoozeAlarmScheduled == null || snoozeAlarmScheduled.scheduleTimeMillis < System.currentTimeMillis()) {
+            if (standardAlarmScheduled == null || standardAlarmScheduled.scheduleTimeMillis < System.currentTimeMillis()) {
+                return;
+            }
+            programNotification(standardAlarmScheduled.alarmId, standardAlarmScheduled.scheduleTimeMillis, false);
             return;
         }
 
-        if (snoozedAlarm == null) {
-            final long alarmScheduleDateMillis = AlarmDateUtils.getAlarmNextScheduleDate(nextAlarm).getTimeInMillis();
-            final long notificationShowTimeMillis = alarmScheduleDateMillis - NOTIFICATION_SHOW_TIME_BEFORE_MILLIS;
+        if (standardAlarmScheduled == null || standardAlarmScheduled.scheduleTimeMillis < System.currentTimeMillis()) {
+            programNotification(snoozeAlarmScheduled.alarmId, snoozeAlarmScheduled.scheduleTimeMillis, true);
+            return;
+        }
 
-            if (notificationShowTimeMillis < System.currentTimeMillis()) {
-                showNotification(nextAlarm.getId(), alarmScheduleDateMillis, false);
-                return;
-            }
-
-
+        if (standardAlarmScheduled.scheduleTimeMillis < snoozeAlarmScheduled.scheduleTimeMillis) {
+            programNotification(standardAlarmScheduled.alarmId, standardAlarmScheduled.scheduleTimeMillis, false);
+        } else {
+            programNotification(snoozeAlarmScheduled.alarmId, snoozeAlarmScheduled.scheduleTimeMillis, true);
         }
 
     }
@@ -93,7 +95,6 @@ public class AlarmNotificationManager {
         Log.d(LOG_TAG, "showNotification: ");
         final NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
         notificationBuilder.setContentTitle(context.getString(R.string.alarm_notif_soon_label))
-                // TODO make icon configurable
                 .setSmallIcon(R.drawable.ic_alarm_notification)
                 .setContentText(getNotificationDate(alarmTimeMillis))
                 .setOngoing(true)
@@ -106,6 +107,28 @@ public class AlarmNotificationManager {
     public void hideNotification() {
         Log.d(LOG_TAG, "hideNotification: ");
         notificationManager.cancel(NOTIFICATION_ID);
+    }
+
+    private void programNotification(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
+        if (alarmTimeMillis < System.currentTimeMillis()) {
+            return;
+        }
+        final long notificationShowTimeMillis = alarmTimeMillis - NOTIFICATION_SHOW_TIME_BEFORE_MILLIS;
+        if (notificationShowTimeMillis < System.currentTimeMillis()) {
+            // Show now
+            showNotification(alarmId, alarmTimeMillis, isSnooze);
+            return;
+        }
+
+        // Program notification at time
+        final PendingIntent pendingIntent = buildShowPendingIntent(alarmId, alarmTimeMillis, false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, notificationShowTimeMillis, pendingIntent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, notificationShowTimeMillis, pendingIntent);
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, notificationShowTimeMillis, pendingIntent);
+        }
     }
 
     private void cancelPendingIntent() {
