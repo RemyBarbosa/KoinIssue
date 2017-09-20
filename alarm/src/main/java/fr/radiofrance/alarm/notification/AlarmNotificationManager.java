@@ -22,6 +22,7 @@ import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
+import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 public class AlarmNotificationManager {
 
@@ -30,14 +31,16 @@ public class AlarmNotificationManager {
     private static final int NOTIFICATION_ID = 56735;
     private static final String NOTIFICATION_CHANNEL_ID = "rfalarm_notification_channel";
 
-    public static final String ACTION_SHOW_UPCOMING_ALARM_NOTIFICATION = "ACTION_SHOW_UPCOMING_ALARM_NOTIFICATION";
+    public static final String ACTION_ALARM_NOTIFICATION_SHOW_UPCOMING = "ACTION_ALARM_NOTIFICATION_SHOW_UPCOMING";
+    public static final String ACTION_ALARM_NOTIFICATION_CANCEL = "ACTION_ALARM_NOTIFICATION_CANCEL";
 
     public static final String EXTRA_ALARM_NOTIFICATION_ALARM_ID_KEY = "fr.radiofrance.alarm.EXTRA_ALARM_NOTIFICATION_ALARM_ID_KEY";
     public static final String EXTRA_ALARM_NOTIFICATION_TIME_MILLIS_KEY = "fr.radiofrance.alarm.EXTRA_ALARM_NOTIFICATION_TIME_MILLIS_KEY";
     public static final String EXTRA_ALARM_NOTIFICATION_IS_SNOOZE_KEY = "fr.radiofrance.alarm.EXTRA_ALARM_NOTIFICATION_IS_SNOOZE_KEY";
 
-    private static final int PENDING_INTENT_REQUEST_CODE = 65827;
-    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = 10 * DateUtils.MINUTE_IN_MILLIS;
+    private static final int PENDING_INTENT_SHOW_REQUEST_CODE = 65827;
+    private static final int PENDING_INTENT_CANCEL_REQUEST_CODE = 65828;
+    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = DateUtils.HOUR_IN_MILLIS;
 
     @NonNull
     private final Context context;
@@ -93,6 +96,8 @@ public class AlarmNotificationManager {
                 // TODO make icon configurable
                 .setSmallIcon(R.drawable.ic_alarm_notification)
                 .setContentText(getNotificationDate(alarmTimeMillis))
+                .setOngoing(true)
+                .addAction(R.drawable.ic_notif_cancel, context.getString(R.string.alarm_notif_cancel_action), buildActionCancelPendingIntent(alarmId, alarmTimeMillis, isSnooze))
                 .setShowWhen(false);
 
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
@@ -104,23 +109,31 @@ public class AlarmNotificationManager {
     }
 
     private void cancelPendingIntent() {
-        final PendingIntent pendingIntent = PendingIntent.getService(context, PENDING_INTENT_REQUEST_CODE, getIntent(), PendingIntent.FLAG_NO_CREATE);
+        final PendingIntent pendingIntent = PendingIntent.getService(context, PENDING_INTENT_SHOW_REQUEST_CODE, getIntent(ACTION_ALARM_NOTIFICATION_SHOW_UPCOMING), PendingIntent.FLAG_NO_CREATE);
         if (pendingIntent == null) {
             return;
         }
         pendingIntent.cancel();
     }
 
-    private PendingIntent buildPendingIntent(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
-        final Intent showNotificationIntent = getIntent();
+    private PendingIntent buildShowPendingIntent(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
+        final Intent showNotificationIntent = getIntent(ACTION_ALARM_NOTIFICATION_SHOW_UPCOMING);
         showNotificationIntent.putExtra(EXTRA_ALARM_NOTIFICATION_ALARM_ID_KEY, alarmId);
         showNotificationIntent.putExtra(EXTRA_ALARM_NOTIFICATION_TIME_MILLIS_KEY, alarmTimeMillis);
         showNotificationIntent.putExtra(EXTRA_ALARM_NOTIFICATION_IS_SNOOZE_KEY, isSnooze);
-        return PendingIntent.getService(context, PENDING_INTENT_REQUEST_CODE, showNotificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        return PendingIntent.getBroadcast(context, PENDING_INTENT_SHOW_REQUEST_CODE, showNotificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
-    private Intent getIntent() {
-        return new Intent(context, RfAlarmReceiver.class).setAction(context.getPackageName() + "." + ACTION_SHOW_UPCOMING_ALARM_NOTIFICATION);
+    private PendingIntent buildActionCancelPendingIntent(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
+        final Intent actionCancelIntent = getIntent(ACTION_ALARM_NOTIFICATION_CANCEL);
+        actionCancelIntent.putExtra(EXTRA_ALARM_NOTIFICATION_ALARM_ID_KEY, alarmId);
+        actionCancelIntent.putExtra(EXTRA_ALARM_NOTIFICATION_TIME_MILLIS_KEY, alarmTimeMillis);
+        actionCancelIntent.putExtra(EXTRA_ALARM_NOTIFICATION_IS_SNOOZE_KEY, isSnooze);
+        return PendingIntent.getBroadcast(context, PENDING_INTENT_CANCEL_REQUEST_CODE, actionCancelIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    private Intent getIntent(final String action) {
+        return new Intent(context, RfAlarmReceiver.class).setAction(AlarmIntentUtils.buildActionWithPackageName(context, action));
     }
 
     private String getNotificationDate(final long dateMillis) {

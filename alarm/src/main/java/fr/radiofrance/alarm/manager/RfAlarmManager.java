@@ -103,6 +103,8 @@ public class RfAlarmManager {
     public void onDeviceReboot() {
         // The device has booted: we schedule all alarms that had been activated
         alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
+        // TODO
+        // Boot : Add recovery module when read object from preferences
     }
 
     @Nullable
@@ -279,6 +281,30 @@ public class RfAlarmManager {
         }
     }
 
+    public void onAlarmNotificationIsCancel(final String alarmId, final long alarmTimeMillis, final boolean isSnooze) throws RfAlarmException {
+        try {
+            if (TextUtils.isEmpty(alarmId)) {
+                throw new IllegalArgumentException("Alarm id could not be null or empty.");
+            }
+            alarmNotificationManager.hideNotification();
+            // TODO unshedule alarm and shedule next
+        } catch (Exception e) {
+            throw new RfAlarmException("Error on Alarm notification is cancel task: " + e.getMessage(), e);
+        }
+    }
+
+    public void onAlarmNotificationShouldShow(final String alarmId, final long alarmTimeMillis, final boolean isSnooze) throws RfAlarmException {
+        try {
+            if (TextUtils.isEmpty(alarmId)) {
+                throw new IllegalArgumentException("Alarm id could not be null or empty.");
+            }
+            alarmNotificationManager.showNotification(alarmId, alarmTimeMillis, isSnooze);
+            // TODO
+        } catch (Exception e) {
+            throw new RfAlarmException("Error on Alarm notification should show task: " + e.getMessage(), e);
+        }
+    }
+
     private Intent getConfigurationAlarmDefaultLaunchIntent() {
         return configurationDatastore.getAlarmDefaultLaunchIntent(null);
     }
@@ -317,6 +343,7 @@ public class RfAlarmManager {
         if (bootReceiverDisable) {
             return;
         }
+        // TODO add hasCurrentSnoozeAlarm
         for (final String alarmId : alarmDatastore.getAllAlarmIds()) {
             final Alarm alarm = alarmDatastore.getAlarm(alarmId);
             if (alarm != null && alarmScheduler.isAlarmStandardSchedule(alarm)) {

@@ -15,7 +15,7 @@
 
     <string name="alarm_notif_label_channel">Réveil à venir</string>
     <string name="alarm_notif_soon_label">Alarme imminente</string>
-    <string name="alarm_notif_cancel_action">Quitter</string>
+    <string name="alarm_notif_cancel_action">Annuler</string>
 
 
 </resources>
