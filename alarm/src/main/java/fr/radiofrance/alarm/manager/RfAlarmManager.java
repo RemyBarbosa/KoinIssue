@@ -196,6 +196,10 @@ public class RfAlarmManager {
                 throw new Exception("Error when saving alarm in datastore");
             }
 
+            if (!alarm.isActivated() && alarmNotificationManager.isLastNotificationShown(alarm.getId())) {
+                alarmNotificationManager.hideNotification();
+            }
+
             alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
 
             configureAlarmBootReceiver();
@@ -319,7 +323,7 @@ public class RfAlarmManager {
         }
     }
 
-    public void onAlarmNotificationShouldShow(final String alarmId, final long alarmTimeMillis, final boolean isSnooze) throws RfAlarmException {
+    public void onAlarmNotificationShowBroadcastReceived(final String alarmId, final long alarmTimeMillis, final boolean isSnooze) throws RfAlarmException {
         try {
             if (TextUtils.isEmpty(alarmId)) {
                 throw new IllegalArgumentException("Alarm id could not be null or empty.");

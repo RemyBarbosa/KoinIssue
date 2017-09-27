@@ -48,6 +48,8 @@ public class AlarmNotificationManager {
     @NonNull
     private final NotificationManager notificationManager;
 
+    private String lastAlarmIdShown;
+
     public AlarmNotificationManager(@NonNull final Context context) {
         this.context = context;
         this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -98,11 +100,20 @@ public class AlarmNotificationManager {
                 .addAction(R.drawable.ic_notif_cancel, context.getString(R.string.alarm_notif_cancel_action), buildActionCancelPendingIntent(alarmId, alarmTimeMillis, isSnooze))
                 .setShowWhen(false);
 
+        lastAlarmIdShown = alarmId;
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
     public void hideNotification() {
         notificationManager.cancel(NOTIFICATION_ID);
+        lastAlarmIdShown = null;
+    }
+
+    public boolean isLastNotificationShown(final String alarmId) {
+        if (alarmId == null || lastAlarmIdShown == null) {
+            return false;
+        }
+        return alarmId.equals(lastAlarmIdShown);
     }
 
     private void programNotification(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
