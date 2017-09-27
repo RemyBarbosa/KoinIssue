@@ -19,7 +19,8 @@ public abstract class AlarmDateUtils {
      */
     @NonNull
     public static Calendar getAlarmNextScheduleDate(@NonNull final Alarm alarm) {
-        return getAlarmNextScheduleDateFrom(alarm, System.currentTimeMillis());
+        final long fromTimeInMillis = alarm.getFromTimeMs() > 0L ? alarm.getFromTimeMs() : System.currentTimeMillis();
+        return getAlarmNextScheduleDateFrom(alarm, fromTimeInMillis);
     }
 
     /**
@@ -30,7 +31,7 @@ public abstract class AlarmDateUtils {
      * @return The next Alarm date
      */
     @NonNull
-    public static Calendar getAlarmNextScheduleDateFrom(@NonNull final Alarm alarm, final long fromTimeInMillis) {
+    private static Calendar getAlarmNextScheduleDateFrom(@NonNull final Alarm alarm, final long fromTimeInMillis) {
         final int hours = alarm.getHours();
         final int minutes = alarm.getMinutes();
 

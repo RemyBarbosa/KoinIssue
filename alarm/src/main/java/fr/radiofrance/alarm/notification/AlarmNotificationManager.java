@@ -39,7 +39,7 @@ public class AlarmNotificationManager {
     private static final int PENDING_INTENT_SHOW_REQUEST_CODE = 65827;
     private static final int PENDING_INTENT_CANCEL_REQUEST_CODE = 65828;
     //private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = DateUtils.HOUR_IN_MILLIS;
-    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = 10 * DateUtils.SECOND_IN_MILLIS;
+    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = 30 * DateUtils.SECOND_IN_MILLIS;
 
     @NonNull
     private final Context context;

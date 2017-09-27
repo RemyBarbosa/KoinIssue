@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
 import java.util.Calendar;
 import java.util.List;
@@ -45,14 +44,6 @@ public class AlarmScheduler {
     }
 
     public void scheduleNextAlarmStandard(final List<Alarm> alarms) {
-        scheduleNextAlarmStandard(alarms, null, 0L, false);
-    }
-
-    public void scheduleNextAlarmStandard(final List<Alarm> alarms, final String canceledAlarmId, final long canceledAlarmTimeMillis, final boolean canceledAlarmIsSnooze) {
-        if (!TextUtils.isEmpty(canceledAlarmId) && canceledAlarmIsSnooze) {
-            // TODO scheduleNextAlarmStandard: deal with canceled alarm
-        }
-
         if (alarms == null || alarms.isEmpty()) {
             return;
         }
@@ -71,7 +62,6 @@ public class AlarmScheduler {
                 continue;
             }
 
-            // TODO scheduleNextAlarmStandard : deal with canceled alarm
             final Calendar date = AlarmDateUtils.getAlarmNextScheduleDate(alarm);
             if (nextDate == null || (date.before(nextDate))) {
                 nextDate = date;
@@ -100,16 +90,31 @@ public class AlarmScheduler {
         return isCurrentScheduled && AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
     }
 
+    public void unscheduleAlarmSnooze(final Alarm alarm) {
+        scheduleAlarm(alarm, true);
+
+        unscheduleFromAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, true));
+
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, true));
+        schedulerDatastore.saveCurrentSnooze(null);
+
+        if (listener != null) {
+            listener.onChange(schedulerDatastore.getCurrentStandard(), schedulerDatastore.getCurrentSnooze());
+        }
+    }
+
     public void unscheduleAlarmStandard(final Alarm alarm) {
         if (alarm == null) {
             return;
         }
 
         unscheduleFromAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, false));
-        // TODO unscheduleAlarmStandard : unschedule snooze if needed
+        unscheduleFromAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, true));
 
         AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, true));
         schedulerDatastore.saveCurrentStandard(null);
+        schedulerDatastore.saveCurrentSnooze(null);
 
         if (listener != null) {
             listener.onChange(schedulerDatastore.getCurrentStandard(), schedulerDatastore.getCurrentSnooze());

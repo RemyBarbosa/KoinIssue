@@ -36,7 +36,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import fr.radiofrance.alarm.R;
-import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
+import fr.radiofrance.alarm.exception.RfAlarmAlreadyExecutedException;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
@@ -57,7 +57,6 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
     }
 
     private RfAlarmManager alarmManager;
-    private ConfigurationDatastore configurationDatastore;
 
     private Alarm alarm;
     private DefaultRingMediaPlayer defaultRingMediaPlayer;
@@ -91,7 +90,6 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
         }
 
         alarmManager = RfAlarmManager.with(getApplicationContext());
-        configurationDatastore = new ConfigurationDatastore(getApplicationContext());
         checkNetworkHandler = new CheckNetworkHandler(this, CHECK_NETWORK_RETRY_COUNT, CHECK_NETWORK_RETRY_DELAY_MS);
 
         final Intent intent = getIntent();
@@ -100,19 +98,16 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
             if (extras != null) {
                 final String alarmId = extras.getString(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID);
                 alarm = alarmManager.getAlarm(alarmId);
-
-                // TODO onCreate : move check alarm hash in RfAlarmManager
-                final int alarmHash = extras.getInt(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, -1);
-                if (alarmHash != -1) {
-                    if (alarmHash == configurationDatastore.getAlarmLastExecutedHash()) {
-                        final Intent appLaunchIntent = configurationDatastore.getAlarmAppLaunchIntent(null);
-                        if (appLaunchIntent != null) {
-                            startActivity(appLaunchIntent);
-                        }
-                        finish();
-                        return;
+                try {
+                    final int alarmHash = extras.getInt(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, -1);
+                    alarmManager.onAlarmIsExecuted(alarmHash);
+                } catch (RfAlarmAlreadyExecutedException e) {
+                    // Activity can had been resume from background and already have execute this alarm
+                    if (e.appLaunchIntent != null) {
+                        startActivity(e.appLaunchIntent);
                     }
-                    configurationDatastore.setAlarmLastExecutedHash(alarmHash);
+                    finish();
+                    return;
                 }
             }
         }

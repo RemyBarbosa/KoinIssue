@@ -21,6 +21,7 @@ public final class Alarm implements Comparable {
     protected int version;
     private String customValue;
     private int customFlags;
+    private long fromTimeMs;
 
     public Alarm() {
         this.id = UUID.randomUUID().toString();
@@ -32,6 +33,7 @@ public final class Alarm implements Comparable {
         this.version = -1;
         this.customValue = null;
         this.customFlags = 0;
+        this.fromTimeMs = 0L;
     }
 
     public String getId() {
@@ -133,18 +135,24 @@ public final class Alarm implements Comparable {
         return customValue;
     }
 
-    public Alarm setCustomValue(final String customValue) {
+    public void setCustomValue(final String customValue) {
         this.customValue = customValue;
-        return this;
     }
 
     public int getCustomFlags() {
         return customFlags;
     }
 
-    public Alarm setCustomFlags(final int customFlags) {
+    public void setCustomFlags(final int customFlags) {
         this.customFlags = customFlags;
-        return this;
+    }
+
+    public long getFromTimeMs() {
+        return fromTimeMs;
+    }
+
+    public void setFromTimeMs(final long fromTimeMs) {
+        this.fromTimeMs = fromTimeMs;
     }
 
     @Override
@@ -161,6 +169,7 @@ public final class Alarm implements Comparable {
         sb.append(", version=").append(version);
         sb.append(", customValue='").append(customValue).append('\'');
         sb.append(", customFlags=").append(customFlags);
+        sb.append(", fromTimeMs=").append(fromTimeMs);
         sb.append('}');
         return sb.toString();
     }

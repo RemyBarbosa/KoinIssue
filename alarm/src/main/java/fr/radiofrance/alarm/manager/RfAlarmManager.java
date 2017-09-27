@@ -17,6 +17,7 @@ import fr.radiofrance.alarm.BuildConfig;
 import fr.radiofrance.alarm.datastore.AlarmDatastore;
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.model.ScheduleData;
+import fr.radiofrance.alarm.exception.RfAlarmAlreadyExecutedException;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.notification.AlarmNotificationManager;
@@ -168,7 +169,7 @@ public class RfAlarmManager {
             }
             alarm.setVersion(BuildConfig.LIBRARY_VERSION_CODE);
 
-            checkAlarmValidity(alarm);
+            checkAndSetAlarmParameters(alarm);
 
             if (!alarmDatastore.saveAlarm(alarm)) {
                 throw new Exception("Error when saving alarm in datastore");
@@ -189,7 +190,7 @@ public class RfAlarmManager {
                 throw new IllegalArgumentException("Alarm could not be null");
             }
 
-            checkAlarmValidity(alarm);
+            checkAndSetAlarmParameters(alarm);
 
             if (!alarmDatastore.saveAlarm(alarm)) {
                 throw new Exception("Error when saving alarm in datastore");
@@ -262,6 +263,15 @@ public class RfAlarmManager {
         return alarmScheduler.isAlarmStandardSchedule(alarm);
     }
 
+    public void onAlarmIsExecuted(final int alarmHash) throws RfAlarmAlreadyExecutedException {
+        if (alarmHash != -1) {
+            if (alarmHash == configurationDatastore.getAlarmLastExecutedHash()) {
+                throw new RfAlarmAlreadyExecutedException(configurationDatastore.getAlarmAppLaunchIntent(null));
+            }
+            configurationDatastore.setAlarmLastExecutedHash(alarmHash);
+        }
+    }
+
     public void onAlarmIsConsumed(final Alarm alarm) throws RfAlarmException {
         try {
             alarmNotificationManager.hideNotification();
@@ -292,7 +302,18 @@ public class RfAlarmManager {
                 throw new IllegalArgumentException("Alarm id could not be null or empty.");
             }
             alarmNotificationManager.hideNotification();
-            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms(), alarmId, alarmTimeMillis, isSnooze);
+
+            final Alarm alarm = getAlarm(alarmId);
+            if (alarm != null) {
+                alarm.setFromTimeMs(alarmTimeMillis + 1L);
+                alarmDatastore.saveAlarm(alarm);
+
+                if (isSnooze) {
+                    alarmScheduler.unscheduleAlarmSnooze(alarm);
+                }
+            }
+
+            alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm notification is cancel task: " + e.getMessage(), e);
         }
@@ -313,7 +334,7 @@ public class RfAlarmManager {
         return configurationDatastore.getAlarmDefaultLaunchIntent(null);
     }
 
-    private void checkAlarmValidity(@NonNull final Alarm alarm) {
+    private void checkAndSetAlarmParameters(@NonNull final Alarm alarm) {
         final int hours = alarm.getHours();
         final int minutes = alarm.getMinutes();
 
@@ -331,6 +352,10 @@ public class RfAlarmManager {
         }
         if (alarm.getIntent() == null) {
             alarm.setIntent(getConfigurationAlarmDefaultLaunchIntent());
+        }
+        if (!alarm.isActivated()) {
+            // Reset fromTimeMs because the last cancel action should be no more keep in memory
+            alarm.setFromTimeMs(0L);
         }
         checkForRecovery(alarm);
     }
