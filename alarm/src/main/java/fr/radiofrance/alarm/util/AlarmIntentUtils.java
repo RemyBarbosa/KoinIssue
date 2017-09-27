@@ -96,7 +96,7 @@ public abstract class AlarmIntentUtils {
     }
 
     private static int buildLaunchIntentHash(@NonNull String alarmId, boolean isSnooze, @NonNull Calendar calendar) {
-        return (alarmId + ":" + isSnooze + ":" + calendar.toString()).hashCode();
+        return (alarmId + ":" + isSnooze + ":" + calendar.getTimeInMillis()).hashCode();
     }
 
     private static IntentType getTypeOfIntent(@NonNull final Intent intent) {

@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -19,6 +21,8 @@ import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 public class AlarmScheduler {
+
+    private static final String LOG_TAG = AlarmScheduler.class.getSimpleName();
 
     public interface OnScheduleChangeListener {
         void onChange(ScheduleData standard, ScheduleData snooze);
@@ -160,7 +164,12 @@ public class AlarmScheduler {
     }
 
     private void scheduleInAlarmSystem(final Intent alarmIntent, final long atTimeInMillis) {
+        if (alarmIntent == null) {
+            return;
+        }
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
+        Log.v(LOG_TAG, "scheduleInAlarmSystem    : " + alarmIntent + " Extras: " + alarmIntent.getExtras() + " at " + new Date(atTimeInMillis));
+        Log.d(LOG_TAG, "scheduleInAlarmSystem: " + pendingIntent);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             final PendingIntent alarmShowPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
@@ -173,7 +182,12 @@ public class AlarmScheduler {
     }
 
     private void unscheduleFromAlarmSystem(final Intent alarmIntent) {
+        if (alarmIntent == null) {
+            return;
+        }
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
+        Log.v(LOG_TAG, "unscheduleFromAlarmSystem: " + alarmIntent + " Extras: " + alarmIntent.getExtras());
+        Log.d(LOG_TAG, "unscheduleFromAlarmSystem: " + pendingIntent);
         if (pendingIntent == null) {
             return;
         }

@@ -91,6 +91,7 @@ public abstract class AlarmDateUtils {
      */
     private static Calendar getCalendar(final int year, final int month, final int day, final int hours, final int minutes) {
         final Calendar date = Calendar.getInstance(TimeZone.getDefault());
+        date.setTimeInMillis(0L);
         date.set(year, month, day, hours, minutes, 0);
 
         return date;

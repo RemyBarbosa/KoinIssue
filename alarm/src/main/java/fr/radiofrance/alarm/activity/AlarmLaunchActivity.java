@@ -22,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
@@ -70,6 +71,8 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d("AlarmScheduler", "AlarmLaunchActivity onCreate: " + getIntent().getExtras().getString(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID));
 
         // Showing on lock screen
         final Window window = getWindow();
