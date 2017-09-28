@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -192,7 +193,9 @@ public class RfAlarmManager {
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null");
             }
-
+            if (alarmDatastore.getAlarm(alarm.getId()) == null) {
+                throw new IllegalArgumentException("Alarm could not be update, no alarm found with id: " + alarm.getId());
+            }
             checkAndSetAlarmParameters(alarm);
 
             if (!alarmDatastore.saveAlarm(alarm)) {
@@ -220,6 +223,10 @@ public class RfAlarmManager {
             final Alarm alarm = getAlarm(alarmId);
             if (alarm != null) {
                 alarmScheduler.unscheduleAlarmStandard(alarm);
+            }
+
+            if (alarmNotificationManager.isLastNotificationShown(alarmId)) {
+                alarmNotificationManager.hideNotification();
             }
 
             if (!alarmDatastore.removeAlarm(alarmId)) {
