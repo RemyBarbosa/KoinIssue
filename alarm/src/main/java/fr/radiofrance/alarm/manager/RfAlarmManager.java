@@ -300,7 +300,7 @@ public class RfAlarmManager {
         }
     }
 
-    public void onAlarmNotificationIsCancel(final String alarmId, final long alarmTimeMillis, final boolean isSnooze) throws RfAlarmException {
+    public void onAlarmNotificationCancelBroadcastReceived(final String alarmId, final long alarmTimeMillis, final boolean isSnooze) throws RfAlarmException {
         try {
             if (TextUtils.isEmpty(alarmId)) {
                 throw new IllegalArgumentException("Alarm id could not be null or empty.");

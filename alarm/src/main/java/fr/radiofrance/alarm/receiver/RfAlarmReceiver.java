@@ -68,7 +68,7 @@ public class RfAlarmReceiver extends BroadcastReceiver {
     private void onAlarmNotificationCancel(final Context context, final Intent intent) {
         try {
             RfAlarmManager.with(context)
-                    .onAlarmNotificationIsCancel(intent.getStringExtra(AlarmNotificationManager.EXTRA_ALARM_NOTIFICATION_ALARM_ID_KEY),
+                    .onAlarmNotificationCancelBroadcastReceived(intent.getStringExtra(AlarmNotificationManager.EXTRA_ALARM_NOTIFICATION_ALARM_ID_KEY),
                             intent.getLongExtra(AlarmNotificationManager.EXTRA_ALARM_NOTIFICATION_TIME_MILLIS_KEY, -1L),
                             intent.getBooleanExtra(AlarmNotificationManager.EXTRA_ALARM_NOTIFICATION_IS_SNOOZE_KEY, false));
         } catch (RfAlarmException e) {

@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
     private RefreshNextAlarmMessageHandler refreshNextAlarmMessageHandler;
 
+    private static final int SNOOZE_DURATION_MS = 120 * 1000; // 2 minutes
+
     private TextView nextAlarmMessageTextView;
     private RecyclerView alarmsRecyclerView;
     private View addAlarmButton;
@@ -294,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         alarm.setDays(days);
         alarm.setHours(h);
         alarm.setMinutes(m);
-        alarm.setSnoozeDuration(10000);
+        alarm.setSnoozeDuration(SNOOZE_DURATION_MS);
         alarm.setVolume(volume.getProgress());
         alarm.setActivated(true);
         alarm.setCustomValue("http://direct.fipradio.fr/live/fip-lofi.mp3");
@@ -330,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
         alarm.setDays(days);
         alarm.setHours(h);
         alarm.setMinutes(m);
-        alarm.setSnoozeDuration(10000);
+        alarm.setSnoozeDuration(SNOOZE_DURATION_MS);
         alarm.setVolume(volume.getProgress());
 
         alarmsAdapter.notifyItemChanged(alarmPosition);

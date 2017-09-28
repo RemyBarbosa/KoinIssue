@@ -38,8 +38,7 @@ public class AlarmNotificationManager {
 
     private static final int PENDING_INTENT_SHOW_REQUEST_CODE = 65827;
     private static final int PENDING_INTENT_CANCEL_REQUEST_CODE = 65828;
-    //private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = DateUtils.HOUR_IN_MILLIS;
-    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = 30 * DateUtils.SECOND_IN_MILLIS;
+    private static final long NOTIFICATION_SHOW_TIME_BEFORE_MILLIS = DateUtils.HOUR_IN_MILLIS;
 
     @NonNull
     private final Context context;
@@ -96,7 +95,6 @@ public class AlarmNotificationManager {
         notificationBuilder.setContentTitle(context.getString(R.string.alarm_notif_soon_label))
                 .setSmallIcon(R.drawable.ic_alarm_notification)
                 .setContentText(getNotificationDate(alarmTimeMillis))
-                .setOngoing(true)
                 .addAction(R.drawable.ic_notif_cancel, context.getString(R.string.alarm_notif_cancel_action), buildActionCancelPendingIntent(alarmId, alarmTimeMillis, isSnooze))
                 .setShowWhen(false);
 
