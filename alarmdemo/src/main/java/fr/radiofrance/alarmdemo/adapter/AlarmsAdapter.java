@@ -42,6 +42,7 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
             final Alarm alarm = alarms.get(holder.getAdapterPosition());
             holder.timeTextView.setText(context.getString(R.string.alarm_time, alarm.getHours(), alarm.getMinutes()));
             holder.daysTextView.setText(daysToString(alarm.getDays()));
+            holder.activateAlarmSwitch.setOnCheckedChangeListener(null);
             holder.activateAlarmSwitch.setChecked(alarm.isActivated());
             holder.activateAlarmSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
@@ -82,37 +83,12 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         return alarms.size();
     }
 
-    public List<Alarm> getAlarms() {
-        return alarms;
-    }
-
     public void setAlarms(final List<Alarm> alarms) {
-        if (alarms == null || alarms.isEmpty()) {
-            return;
-        }
-
         this.alarms.clear();
-        this.alarms.addAll(alarms);
+        if (alarms != null && !alarms.isEmpty()) {
+            this.alarms.addAll(alarms);
+        }
         this.notifyDataSetChanged();
-    }
-
-    public void addAlarm(final Alarm alarm) {
-        if (alarm == null) {
-            return;
-        }
-
-        alarms.add(alarm);
-        notifyItemInserted(alarms.size() - 1);
-    }
-
-    public void removeAlarm(final Alarm alarm) {
-        if (alarm == null || !alarms.contains(alarm)) {
-            return;
-        }
-
-        final int alarmPosition = alarms.indexOf(alarm);
-        alarms.remove(alarmPosition);
-        notifyItemRemoved(alarmPosition);
     }
 
     private String daysToString(final List<Integer> days) {
@@ -133,9 +109,9 @@ public class AlarmsAdapter extends RecyclerView.Adapter<AlarmsAdapter.ViewHolder
         ViewHolder(final View itemView) {
             super(itemView);
 
-            timeTextView = (TextView) itemView.findViewById(R.id.alarm_time);
-            daysTextView = (TextView) itemView.findViewById(R.id.alarm_days);
-            activateAlarmSwitch = (SwitchCompat) itemView.findViewById(R.id.alarm_activate);
+            timeTextView = itemView.findViewById(R.id.alarm_time);
+            daysTextView = itemView.findViewById(R.id.alarm_days);
+            activateAlarmSwitch = itemView.findViewById(R.id.alarm_activate);
         }
 
     }
