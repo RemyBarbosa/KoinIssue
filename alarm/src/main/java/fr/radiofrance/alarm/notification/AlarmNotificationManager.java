@@ -11,7 +11,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.DateUtils;
-import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -131,7 +130,6 @@ public class AlarmNotificationManager {
         // Program notification at time
         final PendingIntent pendingIntent = buildShowPendingIntent(alarmId, alarmTimeMillis, false);
 
-        Log.v("===", "scheduleInAlarmSystem: Notification at " + new Date(notificationShowTimeMillis));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, notificationShowTimeMillis, pendingIntent);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -142,10 +140,11 @@ public class AlarmNotificationManager {
     }
 
     private void cancelPendingIntent() {
-        final PendingIntent pendingIntent = PendingIntent.getService(context, PENDING_INTENT_SHOW_REQUEST_CODE, getIntent(ACTION_ALARM_NOTIFICATION_SHOW_UPCOMING), PendingIntent.FLAG_NO_CREATE);
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, PENDING_INTENT_SHOW_REQUEST_CODE, getIntent(ACTION_ALARM_NOTIFICATION_SHOW_UPCOMING), PendingIntent.FLAG_NO_CREATE);
         if (pendingIntent == null) {
             return;
         }
+        alarmManager.cancel(pendingIntent);
         pendingIntent.cancel();
     }
 

@@ -6,10 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -168,8 +166,6 @@ public class AlarmScheduler {
             return;
         }
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
-        Log.v(LOG_TAG, "scheduleInAlarmSystem    : " + alarmIntent + " Extras: " + alarmIntent.getExtras() + " at " + new Date(atTimeInMillis));
-        Log.d(LOG_TAG, "scheduleInAlarmSystem: " + pendingIntent);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             final PendingIntent alarmShowPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
@@ -185,9 +181,7 @@ public class AlarmScheduler {
         if (alarmIntent == null) {
             return;
         }
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
-        Log.v(LOG_TAG, "unscheduleFromAlarmSystem: " + alarmIntent + " Extras: " + alarmIntent.getExtras());
-        Log.d(LOG_TAG, "unscheduleFromAlarmSystem: " + pendingIntent);
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntentNoCreate(context, alarmIntent);
         if (pendingIntent == null) {
             return;
         }

@@ -53,6 +53,13 @@ public abstract class AlarmIntentUtils {
         return buildPendingIntent(context, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
+    public static PendingIntent getPendingIntentNoCreate(@NonNull final Context context, Intent alarmIntent) {
+        if (alarmIntent == null) {
+            return null;
+        }
+        return buildPendingIntent(context, alarmIntent, PendingIntent.FLAG_NO_CREATE);
+    }
+
     public static boolean isPendingIntentAlive(@NonNull final Context context, Intent alarmIntent) {
         if (alarmIntent == null) {
             return false;
@@ -64,7 +71,7 @@ public abstract class AlarmIntentUtils {
         if (alarmIntent == null) {
             return;
         }
-        final PendingIntent pendingIntent = AlarmIntentUtils.buildPendingIntent(context, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        final PendingIntent pendingIntent = AlarmIntentUtils.buildPendingIntent(context, alarmIntent, PendingIntent.FLAG_NO_CREATE);
         if (pendingIntent == null) {
             return;
         }
