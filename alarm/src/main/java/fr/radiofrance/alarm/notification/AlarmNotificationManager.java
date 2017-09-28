@@ -59,7 +59,7 @@ public class AlarmNotificationManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             final NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.alarm_notif_label_channel),
-                    NotificationManager.IMPORTANCE_DEFAULT);
+                    NotificationManager.IMPORTANCE_LOW);
             channel.enableVibration(false);
             channel.enableLights(false);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
