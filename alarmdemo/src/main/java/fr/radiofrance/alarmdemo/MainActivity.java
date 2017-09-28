@@ -34,6 +34,7 @@ import java.util.TimeZone;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.util.AlarmBatteryOptimizationUtils;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
@@ -184,6 +185,9 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 syncAlarmList();
+                if (isActivated) {
+                    AlarmBatteryOptimizationUtils.showBatteryOptimizationDialogIfNeeded(MainActivity.this, getString(R.string.app_name));
+                }
                 updateNextAlarmMessage();
             }
 
@@ -269,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 syncAlarmList();
                 updateNextAlarmMessage();
+                AlarmBatteryOptimizationUtils.showBatteryOptimizationDialogIfNeeded(MainActivity.this, getString(R.string.app_name));
             }
 
         });
@@ -339,6 +344,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 syncAlarmList();
                 updateNextAlarmMessage();
+                AlarmBatteryOptimizationUtils.showBatteryOptimizationDialogIfNeeded(MainActivity.this, getString(R.string.app_name));
             }
 
         });

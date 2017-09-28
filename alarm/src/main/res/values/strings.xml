@@ -18,4 +18,10 @@
     <string name="alarm_notif_soon_label">Upcoming alarm</string>
     <string name="alarm_notif_cancel_action">Dissmiss</string>
 
+    <string name="alarm_battery_optimization_dialog_title">Warning</string>
+    <string name="alarm_battery_optimization_dialog_message">Android system active by default battery optimization on apps. This could affect the punctuality of the alarm.\nTo be sure to not have this problem you can disable optimization for %1$s.</string>
+    <string name="alarm_battery_optimization_dialog_positive">Disable</string>
+    <string name="alarm_battery_optimization_dialog_negative">No thanks</string>
+
+
 </resources>
