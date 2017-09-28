@@ -93,11 +93,16 @@ public class AlarmScheduler {
     }
 
     public void unscheduleAlarmSnooze(final Alarm alarm) {
-        scheduleAlarm(alarm, true);
+        if (alarm == null) {
+            return;
+        }
 
-        unscheduleFromAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, true));
+        final Intent alarmSnoozeIntent = AlarmIntentUtils.buildAlarmIntent(alarm, true);
 
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, true));
+        unscheduleFromAlarmSystem(alarmSnoozeIntent);
+
+        AlarmIntentUtils.cancelPendingIntent(context, alarmSnoozeIntent);
+
         schedulerDatastore.saveCurrentSnooze(null);
 
         if (listener != null) {
@@ -110,11 +115,15 @@ public class AlarmScheduler {
             return;
         }
 
-        unscheduleFromAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, false));
-        unscheduleFromAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, true));
+        final Intent alarmStandardIntent = AlarmIntentUtils.buildAlarmIntent(alarm, false);
+        final Intent alarmSnoozeIntent = AlarmIntentUtils.buildAlarmIntent(alarm, true);
 
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, true));
+        unscheduleFromAlarmSystem(alarmStandardIntent);
+        unscheduleFromAlarmSystem(alarmSnoozeIntent);
+
+        AlarmIntentUtils.cancelPendingIntent(context, alarmStandardIntent);
+        AlarmIntentUtils.cancelPendingIntent(context, alarmSnoozeIntent);
+
         schedulerDatastore.saveCurrentStandard(null);
         schedulerDatastore.saveCurrentSnooze(null);
 

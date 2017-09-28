@@ -28,6 +28,8 @@ import fr.radiofrance.alarm.util.AlarmDateUtils;
 
 public class RfAlarmManager {
 
+    private static final String LOG_TAG = RfAlarmManager.class.getSimpleName();
+
     private static final int DEFAULT_SNOOZE_DURATION_MILLIS = 600000;// 10 minutes
 
     static volatile RfAlarmManager singleton = null;
@@ -63,6 +65,7 @@ public class RfAlarmManager {
         this.alarmScheduler = new AlarmScheduler(context, configurationDatastore, new AlarmScheduler.OnScheduleChangeListener() {
             @Override
             public void onChange(final ScheduleData standard, final ScheduleData snooze) {
+                //Log.v(LOG_TAG, "AlarmScheduler.OnScheduleChangeListener - standard: " + (standard != null ? standard.alarmId : null) + " - snooze: " + (snooze != null ? snooze.alarmId : null));
                 alarmNotificationManager.programNotification(standard, snooze);
             }
         });
