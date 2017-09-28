@@ -39,6 +39,9 @@ public class AlarmDatastore {
         if (TextUtils.isEmpty(alarmString)) {
             return null;
         }
+
+        // TODO add recovery action on alarm read
+
         return gson.fromJson(alarmString, Alarm.class);
     }
 

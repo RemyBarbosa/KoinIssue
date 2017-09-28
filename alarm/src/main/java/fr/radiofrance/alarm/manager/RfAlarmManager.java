@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -114,7 +113,6 @@ public class RfAlarmManager {
     public void onDeviceReboot() {
         // The device has booted: we schedule all alarms that had been activated
         alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
-        // TODO onDeviceReboot : Add recovery module when read object from preferences
     }
 
     @Nullable
