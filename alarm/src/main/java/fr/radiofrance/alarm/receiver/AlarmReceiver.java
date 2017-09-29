@@ -1,8 +1,5 @@
 package fr.radiofrance.alarm.receiver;
 
-import android.app.Activity;
-import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -10,8 +7,8 @@ import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.TextUtils;
 import android.util.Log;
 
-import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
-import fr.radiofrance.alarm.util.AlarmIntentUtils;
+import fr.radiofrance.alarm.exception.RfAlarmException;
+import fr.radiofrance.alarm.manager.RfAlarmManager;
 
 @Deprecated
 public class AlarmReceiver extends WakefulBroadcastReceiver {
@@ -44,33 +41,10 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         } else if (action.startsWith(KEY_SNOOZE)) {
             alarmId = action.replace(KEY_SNOOZE, "");
         }
-
-        // TODO recovery : getAlarmDefaultLaunchIntent from RfAlarmManager
-        final Intent newLaunchIntent = new ConfigurationDatastore(context).getAlarmDefaultLaunchIntent(null);
-        if (newLaunchIntent == null) {
-            return;
-        }
-        newLaunchIntent.putExtra(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID, alarmId);
-
-        if (newLaunchIntent.getComponent() != null) {
-            try {
-                final Class<?> act = Class.forName(newLaunchIntent.getComponent().getClassName());
-                if (Activity.class.isAssignableFrom(act)) {
-                    newLaunchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    context.startActivity(newLaunchIntent);
-                    return;
-                }
-                if (BroadcastReceiver.class.isAssignableFrom(act)) {
-                    context.sendBroadcast(newLaunchIntent);
-                    return;
-                }
-                if (Service.class.isAssignableFrom(act)) {
-                    context.startService(newLaunchIntent);
-                    return;
-                }
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+        try {
+            RfAlarmManager.with(context).onAlarmDeprecatedBroadcastReceived(alarmId);
+        } catch (RfAlarmException e) {
+            e.printStackTrace();
         }
     }
 

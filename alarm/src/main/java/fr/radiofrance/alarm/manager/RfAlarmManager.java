@@ -1,5 +1,8 @@
 package fr.radiofrance.alarm.manager;
 
+import android.app.Activity;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -25,6 +28,7 @@ import fr.radiofrance.alarm.notification.AlarmNotificationManager;
 import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.scheduler.AlarmScheduler;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
+import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 
 public class RfAlarmManager {
@@ -351,6 +355,35 @@ public class RfAlarmManager {
             alarmNotificationManager.showNotification(alarmId, alarmTimeMillis, isSnooze);
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm notification should show task: " + e.getMessage(), e);
+        }
+    }
+
+    public void onAlarmDeprecatedBroadcastReceived(final String alarmId) throws RfAlarmException {
+        try {
+            final Intent newLaunchIntent = configurationDatastore.getAlarmDefaultLaunchIntent(null);
+            if (newLaunchIntent == null) {
+                return;
+            }
+            newLaunchIntent.putExtra(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID, alarmId);
+            if (newLaunchIntent.getComponent() == null) {
+                return;
+            }
+            final Class<?> act = Class.forName(newLaunchIntent.getComponent().getClassName());
+            if (Activity.class.isAssignableFrom(act)) {
+                newLaunchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                context.startActivity(newLaunchIntent);
+                return;
+            }
+            if (BroadcastReceiver.class.isAssignableFrom(act)) {
+                context.sendBroadcast(newLaunchIntent);
+                return;
+            }
+            if (Service.class.isAssignableFrom(act)) {
+                context.startService(newLaunchIntent);
+                return;
+            }
+        } catch (Exception e) {
+            throw new RfAlarmException("Error on deprecated broadcast received: " + e.getMessage(), e);
         }
     }
 
