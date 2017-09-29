@@ -19,8 +19,13 @@
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/stop_player"
-        android:title="Stop player"
+        android:id="@+id/player_test"
+        android:title="Player Test"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/player_stop"
+        android:title="Player Stop"
         app:showAsAction="ifRoom"/>
 
 </menu>

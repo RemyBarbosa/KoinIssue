@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private RefreshNextAlarmMessageHandler refreshNextAlarmMessageHandler;
 
     private static final int SNOOZE_DURATION_MS = 120 * 1000; // 2 minutes
+    private static final String PLAYER_URI_TEST = "http://direct.fipradio.fr/live/fip-lofi.mp3";
 
     private TextView nextAlarmMessageTextView;
     private RecyclerView alarmsRecyclerView;
@@ -134,7 +135,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.test_alarm_screen:
                 startActivity(new Intent(getApplicationContext(), DemoAlarmActivity.class));
                 break;
-            case R.id.stop_player:
+            case R.id.player_test:
+                DemoPlayer.getInstance(getApplicationContext()).play(PLAYER_URI_TEST);
+                break;
+            case R.id.player_stop:
                 DemoPlayer.getInstance(getApplicationContext()).stop();
                 break;
             default:
@@ -258,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
                 alarm.setSnoozeDuration(SNOOZE_DURATION_MS);
                 alarm.setVolume(volume.getProgress());
                 alarm.setActivated(true);
-                alarm.setCustomValue("http://direct.fipradio.fr/live/fip-lofi.mp3");
+                alarm.setCustomValue(PLAYER_URI_TEST);
 
                 final Intent intent = new Intent(getApplicationContext(), DemoAlarmActivity.class);
                 intent.putExtra("EXTRA_TEST", "Extra test content");

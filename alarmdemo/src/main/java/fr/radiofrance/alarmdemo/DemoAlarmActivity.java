@@ -27,7 +27,11 @@ public class DemoAlarmActivity extends AlarmLaunchActivity {
         if (!BuildConfig.DEBUG) {
             DeviceVolumeUtils.setDeviceVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, DeviceVolumeUtils.getValidVolume(getApplicationContext(), AudioManager.STREAM_MUSIC, alarm));
         }
-        DemoPlayer.getInstance(getApplicationContext()).play(alarm.getCustomValue());
+        if (alarm != null) {
+            DemoPlayer.getInstance(getApplicationContext()).play(alarm.getCustomValue());
+        } else {
+            DemoPlayer.getInstance(getApplicationContext()).play("http://direct.fipradio.fr/live/fip-lofi.mp3");
+        }
     }
 
     @Override

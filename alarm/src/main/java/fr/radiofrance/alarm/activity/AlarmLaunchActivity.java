@@ -72,8 +72,6 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d("AlarmScheduler", "AlarmLaunchActivity onCreate: " + getIntent().getExtras().getString(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID));
-
         // Showing on lock screen
         final Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
