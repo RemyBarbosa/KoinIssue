@@ -1,7 +1,6 @@
 package fr.radiofrance.alarmdemo.player;
 
 import android.content.Context;
-import android.media.MediaPlayer;
 import android.net.Uri;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -26,8 +25,6 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
  */
 public class DemoPlayer {
 
-    private static final String LOG_TAG = DemoPlayer.class.getSimpleName();
-
 
     private static final int DEFAULT_PLAYER_CONNECT_TIMEOUT = 30000; // 30 seconds;
     private static final int DEFAULT_PLAYER_READ_TIMEOUT = 30000; // 30 seconds;
@@ -44,7 +41,6 @@ public class DemoPlayer {
     }
 
     private final Context context;
-    private MediaPlayer player;
     private ExoPlayer exoPlayer;
 
     private DemoPlayer(final Context context) {

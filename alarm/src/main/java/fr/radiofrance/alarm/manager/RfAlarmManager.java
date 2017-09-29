@@ -17,6 +17,7 @@ import fr.radiofrance.alarm.BuildConfig;
 import fr.radiofrance.alarm.datastore.AlarmDatastore;
 import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.model.ScheduleData;
+import fr.radiofrance.alarm.datastore.recovery.AlarmRecoveryModule;
 import fr.radiofrance.alarm.exception.RfAlarmAlreadyExecutedException;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
@@ -47,7 +48,10 @@ public class RfAlarmManager {
 
     private final boolean bootReceiverDisable;
 
-    public static RfAlarmManager with(Context context) {
+    public static RfAlarmManager with(final Context context) {
+        if (context == null) {
+            throw new IllegalArgumentException("Context cannot be null");
+        }
         if (singleton == null) {
             synchronized (RfAlarmManager.class) {
                 if (singleton == null) {
@@ -107,6 +111,15 @@ public class RfAlarmManager {
             return this;
         }
         configurationDatastore.setAlarmShowEditLaunchIntent(intent);
+        return this;
+    }
+
+    /**
+     * Add recovery module for update alarm build on previous version of library
+     * @param recoveryModule
+     */
+    public RfAlarmManager setRecoveryModule(final AlarmRecoveryModule recoveryModule) {
+        alarmDatastore.setRecoveryModule(recoveryModule);
         return this;
     }
 
@@ -290,7 +303,6 @@ public class RfAlarmManager {
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
-            checkForRecovery(alarm);
             alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm is consumed task: " + e.getMessage(), e);
@@ -368,15 +380,6 @@ public class RfAlarmManager {
         if (!alarm.isActivated()) {
             // Reset fromTimeMs because the last cancel action should be no more keep in memory
             alarm.setFromTimeMs(0L);
-        }
-        checkForRecovery(alarm);
-    }
-
-    private void checkForRecovery(@NonNull final Alarm alarm) {
-        if (alarm.getVersion() < BuildConfig.LIBRARY_VERSION_CODE) {
-            // Recovery action for alarm create on previous version of app
-            alarm.setIntent(getConfigurationAlarmDefaultLaunchIntent());
-            alarm.setVersion(BuildConfig.LIBRARY_VERSION_CODE);
         }
     }
 

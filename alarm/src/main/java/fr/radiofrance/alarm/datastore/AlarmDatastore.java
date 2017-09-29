@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
+import fr.radiofrance.alarm.datastore.recovery.AlarmRecoveryModule;
 import fr.radiofrance.alarm.model.Alarm;
 
 public class AlarmDatastore {
@@ -24,9 +25,15 @@ public class AlarmDatastore {
     @NonNull
     private final Gson gson;
 
+    private AlarmRecoveryModule recoveryModule;
+
     public AlarmDatastore(@NonNull final Context context) {
         this.preferencesManager = new SharedPreferencesManager(context);
         this.gson = new Gson();
+    }
+
+    public void setRecoveryModule(final AlarmRecoveryModule recoveryModule) {
+        this.recoveryModule = recoveryModule;
     }
 
     @Nullable
@@ -40,9 +47,19 @@ public class AlarmDatastore {
             return null;
         }
 
-        // TODO add recovery action on alarm read
-
-        return gson.fromJson(alarmString, Alarm.class);
+        final Alarm alarm = gson.fromJson(alarmString, Alarm.class);
+        if (alarm == null) {
+            return null;
+        }
+        if (recoveryModule == null) {
+            return alarm;
+        }
+        final Alarm alarmUpdated = recoveryModule.update(alarm, alarmString);
+        if (alarmUpdated == null) {
+            return alarm;
+        }
+        saveAlarm(alarmUpdated);
+        return alarmUpdated;
     }
 
     public boolean saveAlarm(@Nullable final Alarm alarm) {
