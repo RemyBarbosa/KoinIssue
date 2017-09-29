@@ -22,5 +22,6 @@ android {
 dependencies {
     compile 'com.android.support:design:26.0.1'
     compile 'com.android.support:gridlayout-v7:26.0.1'
+    compile 'com.google.android.exoplayer:exoplayer:r2.4.4'
     compile project(':alarm')
 }
