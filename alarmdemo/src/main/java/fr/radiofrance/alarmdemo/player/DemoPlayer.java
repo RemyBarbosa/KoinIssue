@@ -61,6 +61,13 @@ public class DemoPlayer {
         exoPlayer.setPlayWhenReady(true);
     }
 
+    public boolean isPlaying() {
+        if (exoPlayer == null) {
+            return false;
+        }
+        return exoPlayer.getPlaybackState() == ExoPlayer.STATE_READY && exoPlayer.getPlayWhenReady();
+    }
+
     public void stop() {
         if (exoPlayer == null) {
             return;

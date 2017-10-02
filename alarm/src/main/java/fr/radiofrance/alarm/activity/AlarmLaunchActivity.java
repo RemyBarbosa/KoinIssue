@@ -22,7 +22,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
@@ -49,6 +48,10 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
     private static final int CHECK_NETWORK_RETRY_COUNT = 6;
     private static final long CHECK_NETWORK_RETRY_DELAY_MS = 500L;
+
+    private static final int CHECK_WAKE_UP_RETRY_COUNT = 6;
+    private static final long CHECK_WAKE_UP_RETRY_DELAY_MS = 500L;
+
     private static final long FINISH_DELAYED_TIME_MS = 2500L;
     private static final long REVEALED_TRANSITION_DURATION_MS = 600L;
     private static final long REVEALED_TRANSITION_FADE_OUT_MS = 300L;
@@ -63,6 +66,7 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
     private DefaultRingMediaPlayer defaultRingMediaPlayer;
     private TimeTickBroadcastReceiver timeTickBroadcastReceiver;
     private CheckNetworkHandler checkNetworkHandler;
+    private CheckWakeUpHandler checkWakeUpHandler;
 
     private View stopView;
     private View snoozeView;
@@ -92,6 +96,7 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
         alarmManager = RfAlarmManager.with(getApplicationContext());
         checkNetworkHandler = new CheckNetworkHandler(this, CHECK_NETWORK_RETRY_COUNT, CHECK_NETWORK_RETRY_DELAY_MS);
+        checkWakeUpHandler = new CheckWakeUpHandler(this, CHECK_WAKE_UP_RETRY_COUNT, CHECK_WAKE_UP_RETRY_DELAY_MS);
 
         final Intent intent = getIntent();
         if (intent != null) {
@@ -188,6 +193,9 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
         if (checkNetworkHandler != null) {
             checkNetworkHandler.cancel();
         }
+        if (checkWakeUpHandler != null) {
+            checkWakeUpHandler.cancel();
+        }
         if (timeTickBroadcastReceiver != null) {
             unregisterReceiver(timeTickBroadcastReceiver);
         }
@@ -215,6 +223,13 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
     protected final void onActionContinue() throws Exception {
         stopDefaultRingAlarm();
+    }
+
+    protected boolean isWakeUpOk() {
+        if (defaultRingMediaPlayer == null) {
+            return false;
+        }
+        return defaultRingMediaPlayer.isPlaying();
     }
 
     // Keep attributes for subClass override
@@ -287,6 +302,7 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
     private void onNetworkChecked(@NonNull final NetworkInfo.State networkState) {
         onAlarmShouldStart(alarm, networkState == NetworkInfo.State.CONNECTED);
+        checkWakeUpHandler.check();
     }
 
     private void startDefaultRingAlarm() {
@@ -424,5 +440,46 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
             }
         }
     }
+
+    private static class CheckWakeUpHandler extends Handler {
+
+        private static final int MESSAGE_WHAT = 0;
+
+        private final WeakReference<AlarmLaunchActivity> refActivity;
+        private final int retryCount;
+        private final long retryDelayMS;
+
+        CheckWakeUpHandler(final AlarmLaunchActivity activity, final int retryCount, final long retryDelayMS) {
+            this.refActivity = new WeakReference<>(activity);
+            this.retryCount = retryCount;
+            this.retryDelayMS = retryDelayMS;
+        }
+
+        void check() {
+            sendMessage(obtainMessage(MESSAGE_WHAT, retryCount, 0));
+        }
+
+        void cancel() {
+            removeCallbacksAndMessages(null);
+        }
+
+        @Override
+        public void handleMessage(final Message msg) {
+            final AlarmLaunchActivity activity = refActivity.get();
+            if (activity == null) {
+                return;
+            }
+            if (activity.isWakeUpOk()) {
+                return;
+            }
+            if (msg.arg1 == 0) {
+                activity.startDefaultRingAlarm();
+                sendMessageDelayed(obtainMessage(MESSAGE_WHAT, retryCount, 0), retryDelayMS);
+                return;
+            }
+            sendMessageDelayed(obtainMessage(MESSAGE_WHAT, msg.arg1 - 1, 0), retryDelayMS);
+        }
+    }
+
 
 }

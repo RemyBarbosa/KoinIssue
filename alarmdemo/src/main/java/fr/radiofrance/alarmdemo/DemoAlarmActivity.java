@@ -35,6 +35,12 @@ public class DemoAlarmActivity extends AlarmLaunchActivity {
     }
 
     @Override
+    protected boolean isWakeUpOk() {
+        return DemoPlayer.getInstance(getApplicationContext()).isPlaying()
+                || super.isWakeUpOk();
+    }
+
+    @Override
     protected void onAlarmShouldStop(final Alarm alarm) {
         DemoPlayer.getInstance(getApplicationContext()).stop();
         super.onAlarmShouldStop(alarm);
