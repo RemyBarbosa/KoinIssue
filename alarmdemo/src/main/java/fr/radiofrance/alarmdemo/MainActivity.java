@@ -1,7 +1,10 @@
 package fr.radiofrance.alarmdemo;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,10 +33,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.util.AlarmBatteryOptimizationUtils;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
@@ -47,8 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
     private RefreshNextAlarmMessageHandler refreshNextAlarmMessageHandler;
 
-    private static final int SNOOZE_DURATION_MS = 120 * 1000; // 2 minutes
+    private static final int SNOOZE_DURATION_MS = (int) TimeUnit.MINUTES.toMillis(2); // 2 minutes
     private static final String PLAYER_URI_TEST = "http://direct.fipradio.fr/live/fip-lofi.mp3";
+
+    private AlarmNeedUiRefreshBroadcastReceiver alarmNeedUiRefreshBroadcastReceiver;
 
     private TextView nextAlarmMessageTextView;
     private RecyclerView alarmsRecyclerView;
@@ -66,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         alarmManager = RfAlarmManager.with(getApplicationContext());
+        alarmNeedUiRefreshBroadcastReceiver = new AlarmNeedUiRefreshBroadcastReceiver(this);
 
         findViews();
         initViews();
@@ -85,11 +93,13 @@ public class MainActivity extends AppCompatActivity {
         syncAlarmList();
         updateNextAlarmMessage();
         refreshNextAlarmMessageHandler.start();
+        registerReceiver(alarmNeedUiRefreshBroadcastReceiver, new IntentFilter(RfAlarmReceiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH));
     }
 
     @Override
     protected void onPause() {
         refreshNextAlarmMessageHandler.stop();
+        unregisterReceiver(alarmNeedUiRefreshBroadcastReceiver);
         super.onPause();
     }
 
@@ -101,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-
         switch (item.getItemId()) {
             case R.id.clean_all:
                 try {
@@ -390,18 +399,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class RefreshNextAlarmMessageHandler extends Handler {
+
         private final WeakReference<MainActivity> activityRef;
 
         RefreshNextAlarmMessageHandler(final MainActivity activity) {
             this.activityRef = new WeakReference<>(activity);
-        }
-
-        void start() {
-            sendEmptyMessageDelayed(0, 1000L);
-        }
-
-        void stop() {
-            removeCallbacksAndMessages(null);
         }
 
         @Override
@@ -413,6 +415,36 @@ public class MainActivity extends AppCompatActivity {
             activity.updateNextAlarmMessage();
             sendEmptyMessageDelayed(0, 1000L);
         }
+
+        void start() {
+            sendEmptyMessageDelayed(0, 1000L);
+        }
+
+        void stop() {
+            removeCallbacksAndMessages(null);
+        }
+
+    }
+
+    private static class AlarmNeedUiRefreshBroadcastReceiver extends BroadcastReceiver {
+
+        private final WeakReference<MainActivity> mainActivityRef;
+
+        AlarmNeedUiRefreshBroadcastReceiver(final MainActivity mainActivity) {
+            this.mainActivityRef = new WeakReference<>(mainActivity);
+        }
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final MainActivity mainActivity = mainActivityRef.get();
+            if (mainActivity == null) {
+                return;
+            }
+
+            mainActivity.syncAlarmList();
+            mainActivity.updateNextAlarmMessage();
+        }
+
     }
 
 }

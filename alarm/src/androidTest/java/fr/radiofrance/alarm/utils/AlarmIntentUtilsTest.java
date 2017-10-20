@@ -20,6 +20,7 @@ import java.util.Calendar;
 
 import fr.radiofrance.alarm.datastore.prefs.SharedPreferencesManager;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -53,7 +54,7 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = false;
 
         // When
-        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze);
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis());
 
         // Then
         assertNotNull(alarmIntent);
@@ -70,7 +71,7 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = false;
 
         // When
-        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze);
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis());
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
 
         // Then
@@ -90,7 +91,7 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = false;
 
         // When
-        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze);
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis());
 
         // Then
         assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, alarmIntent));
@@ -105,16 +106,16 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = false;
 
         // When
-        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze);
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmA).getTimeInMillis());
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
 
         // Then
         assertNotNull(pendingIntent);
-        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze)));
-        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmB, isSnooze)));
+        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmA).getTimeInMillis())));
+        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmB, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmB).getTimeInMillis())));
 
         // Clean PendingIntents
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze));
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmA).getTimeInMillis()));
 
     }
 
@@ -126,16 +127,16 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = false;
 
         // When
-        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze);
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmA).getTimeInMillis());
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
 
         // Then
         assertNotNull(pendingIntent);
-        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze)));
-        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmB, isSnooze)));
+        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmA).getTimeInMillis())));
+        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarmB, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmB).getTimeInMillis())));
 
         // Clean PendingIntents
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze));
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarmA, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarmA).getTimeInMillis()));
 
     }
 
@@ -146,16 +147,16 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = true;
 
         // When
-        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze);
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis());
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
 
         // Then
         assertNotNull(pendingIntent);
-        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze)));
-        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, !isSnooze)));
+        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis())));
+        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, !isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis())));
 
         // Clean PendingIntents
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis()));
 
     }
 
@@ -166,16 +167,16 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = false;
 
         // When
-        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze);
+        final Intent alarmIntent = AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis());
         final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, alarmIntent);
 
         // Then
         assertNotNull(pendingIntent);
-        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze)));
-        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, !isSnooze)));
+        assertTrue(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis())));
+        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, !isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis())));
 
         // Clean PendingIntents
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis()));
 
     }
 
@@ -186,11 +187,11 @@ public class AlarmIntentUtilsTest {
         final boolean isSnooze = false;
 
         // When
-        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
-        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze));
+        final PendingIntent pendingIntent = AlarmIntentUtils.getPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis()));
+        AlarmIntentUtils.cancelPendingIntent(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis()));
 
         // Then
-        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze)));
+        assertFalse(AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis())));
 
     }
 

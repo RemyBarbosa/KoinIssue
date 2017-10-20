@@ -89,7 +89,7 @@ public class AlarmScheduler {
             return false;
         }
         final boolean isCurrentScheduled = alarm.getId().equals(currentScheduleData.alarmId);
-        return isCurrentScheduled && AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, false));
+        return isCurrentScheduled && AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, false, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis()));
     }
 
     public void unscheduleAlarmSnooze(final Alarm alarm) {
@@ -97,7 +97,7 @@ public class AlarmScheduler {
             return;
         }
 
-        final Intent alarmSnoozeIntent = AlarmIntentUtils.buildAlarmIntent(alarm, true);
+        final Intent alarmSnoozeIntent = AlarmIntentUtils.buildAlarmIntent(alarm, true, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis());
 
         unscheduleFromAlarmSystem(alarmSnoozeIntent);
 
@@ -115,8 +115,9 @@ public class AlarmScheduler {
             return;
         }
 
-        final Intent alarmStandardIntent = AlarmIntentUtils.buildAlarmIntent(alarm, false);
-        final Intent alarmSnoozeIntent = AlarmIntentUtils.buildAlarmIntent(alarm, true);
+        final long alarmTimeInMillis = AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis();
+        final Intent alarmStandardIntent = AlarmIntentUtils.buildAlarmIntent(alarm, false, alarmTimeInMillis);
+        final Intent alarmSnoozeIntent = AlarmIntentUtils.buildAlarmIntent(alarm, true, alarmTimeInMillis);
 
         unscheduleFromAlarmSystem(alarmStandardIntent);
         unscheduleFromAlarmSystem(alarmSnoozeIntent);
@@ -140,7 +141,7 @@ public class AlarmScheduler {
         if (alarm == null) {
             return;
         }
-        if (!alarm.isActivated()) {
+        if (!alarm.isActivated() && !isSnooze) {
             return;
         }
 
@@ -158,7 +159,7 @@ public class AlarmScheduler {
 
         final long timeInMillis = scheduleDate.getTimeInMillis();
 
-        scheduleInAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze), timeInMillis);
+        scheduleInAlarmSystem(AlarmIntentUtils.buildAlarmIntent(alarm, isSnooze, timeInMillis), timeInMillis);
 
         if (isSnooze) {
             schedulerDatastore.saveCurrentSnooze(new ScheduleData(alarm.getId(), timeInMillis));

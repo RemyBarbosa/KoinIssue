@@ -15,11 +15,13 @@
 
     <string name="alarm_notif_label_channel">Réveil à venir</string>
     <string name="alarm_notif_soon_label">Alarme imminente</string>
-    <string name="alarm_notif_cancel_action">Annuler</string>
+    <string name="alarm_notif_cancel_action">Quitter</string>
 
     <string name="alarm_battery_optimization_dialog_title">Attention</string>
     <string name="alarm_battery_optimization_dialog_message">Le système Android active par défaut l\'optimisation de la batterie.\nCela peut affecter la ponctualité du réveil.\n\nPour être sur de ne pas avoir ce problème vous pouvez la désactiver pour %1$s en autorisant l\'éxecution en arrière plan (nous veillons à ce que nos applications n\'utilisent pas plus de batterie que nécessaire).</string>
     <string name="alarm_battery_optimization_dialog_positive">Désactiver</string>
     <string name="alarm_battery_optimization_dialog_negative">Non merci</string>
+
+    <string name="alarm_notif_date_format">EEE HH\':\'mm</string>
 
 </resources>

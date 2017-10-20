@@ -1,6 +1,7 @@
 ## v4.0.0
 
 - Library alarm is no more a generic Alarm object library.
+- Notifications for upcoming alarms have been added.
 
 ## v3.0.1
 

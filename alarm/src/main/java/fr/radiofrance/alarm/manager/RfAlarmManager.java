@@ -30,7 +30,6 @@ import fr.radiofrance.alarm.scheduler.AlarmScheduler;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
-
 public class RfAlarmManager {
 
     private static final String LOG_TAG = RfAlarmManager.class.getSimpleName();
@@ -66,7 +65,7 @@ public class RfAlarmManager {
         return singleton;
     }
 
-    private RfAlarmManager(@NonNull final Context context, final AlarmNotificationManager alarmNotificationManager, final boolean bootReceiverDisable) {
+    private RfAlarmManager(@NonNull final Context context, @NonNull final AlarmNotificationManager alarmNotificationManager, final boolean bootReceiverDisable) {
         this.context = context;
         this.configurationDatastore = new ConfigurationDatastore(context);
         this.alarmNotificationManager = alarmNotificationManager;
@@ -84,6 +83,7 @@ public class RfAlarmManager {
     /**
      * Intent use for Alarm with "intentUri" empty
      * or for recovery of Alarm build with previous version of library
+     *
      * @param intent
      */
     public RfAlarmManager setConfigurationAlarmDefaultLaunchIntent(final Intent intent) {
@@ -96,6 +96,7 @@ public class RfAlarmManager {
 
     /**
      * Intent use to start app when AlarmLockscreen is restore from system current app
+     *
      * @param intent
      */
     public RfAlarmManager setConfigurationAlarmAppLaunchIntent(final Intent intent) {
@@ -108,6 +109,7 @@ public class RfAlarmManager {
 
     /**
      * Intent use to start app alarm edit screen from system clock infos
+     *
      * @param intent
      */
     public RfAlarmManager setConfigurationAlarmShowEditLaunchIntent(final Intent intent) {
@@ -120,6 +122,7 @@ public class RfAlarmManager {
 
     /**
      * Add recovery module for update alarm build on previous version of library
+     *
      * @param recoveryModule
      */
     public RfAlarmManager setRecoveryModule(final AlarmRecoveryModule recoveryModule) {
@@ -217,7 +220,7 @@ public class RfAlarmManager {
                 throw new Exception("Error when saving alarm in datastore");
             }
 
-            if (!alarm.isActivated() && alarmNotificationManager.isLastNotificationShown(alarm.getId())) {
+            if (!alarm.isActivated() && alarmNotificationManager.isLastNotificationShown(alarm.getId()) && !isNextAlarmUpcoming()) {
                 alarmNotificationManager.hideNotification();
             }
 
@@ -230,7 +233,7 @@ public class RfAlarmManager {
         }
     }
 
-    public void removeAlarm(@Nullable  final String alarmId) throws RfAlarmException {
+    public void removeAlarm(@Nullable final String alarmId) throws RfAlarmException {
         try {
             if (alarmId == null) {
                 throw new IllegalArgumentException("AlarmId could not be null or empty");
@@ -240,7 +243,7 @@ public class RfAlarmManager {
                 alarmScheduler.unscheduleAlarmStandard(alarm);
             }
 
-            if (alarmNotificationManager.isLastNotificationShown(alarmId)) {
+            if (alarmNotificationManager.isLastNotificationShown(alarmId) && !isNextAlarmUpcoming()) {
                 alarmNotificationManager.hideNotification();
             }
 
@@ -303,7 +306,9 @@ public class RfAlarmManager {
 
     public void onAlarmIsConsumed(final Alarm alarm) throws RfAlarmException {
         try {
-            alarmNotificationManager.hideNotification();
+            if (!isNextAlarmUpcoming()) {
+                alarmNotificationManager.hideNotification();
+            }
             if (alarm == null) {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
@@ -329,16 +334,24 @@ public class RfAlarmManager {
             if (TextUtils.isEmpty(alarmId)) {
                 throw new IllegalArgumentException("Alarm id could not be null or empty.");
             }
-            alarmNotificationManager.hideNotification();
 
             final Alarm alarm = getAlarm(alarmId);
             if (alarm != null) {
-                alarm.setFromTimeMs(alarmTimeMillis + 1L);
+                if (!isSnooze && alarm.getDays().isEmpty()) {
+                    alarm.setActivated(false);
+                    alarm.setFromTimeMs(0L);
+                } else {
+                    alarm.setFromTimeMs(alarmTimeMillis + 1L);
+                }
                 alarmDatastore.saveAlarm(alarm);
 
                 if (isSnooze) {
                     alarmScheduler.unscheduleAlarmSnooze(alarm);
                 }
+            }
+
+            if (!isNextAlarmUpcoming(alarmId)) {
+                alarmNotificationManager.hideNotification();
             }
 
             alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
@@ -427,6 +440,24 @@ public class RfAlarmManager {
         RfAlarmReceiver.disable(context);
     }
 
+    private boolean isNextAlarmUpcoming() {
+        return isNextAlarmUpcoming(null);
+    }
+
+    private boolean isNextAlarmUpcoming(@Nullable final String filteredAlarmId) {
+        final List<Alarm> alarms = getAllAlarms(true);
+        for (final Alarm alarm : alarms) {
+            if (alarm.getId().equals(filteredAlarmId)) {
+                continue;
+            }
+
+            if (alarmNotificationManager.shouldShowNotificationNow(alarm.getFromTimeMs())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static class Builder {
 
         private final Context context;
@@ -443,6 +474,7 @@ public class RfAlarmManager {
 
         /**
          * Use for AndroidTestCase
+         *
          * @param disabled
          * @return
          */
@@ -453,6 +485,7 @@ public class RfAlarmManager {
 
         /**
          * Use for AndroidTestCase
+         *
          * @param alarmNotificationManager
          * @return
          */

@@ -22,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
@@ -37,14 +38,18 @@ import java.util.Locale;
 
 import fr.radiofrance.alarm.R;
 import fr.radiofrance.alarm.exception.RfAlarmAlreadyExecutedException;
+import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
+import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarm.util.NetworkUtils;
 import fr.radiofrance.alarm.util.WeakRefOnClickListener;
 
 public abstract class AlarmLaunchActivity extends AppCompatActivity {
+
+    private static final String LOG_TAG = AlarmLaunchActivity.class.getSimpleName();
 
     private static final int CHECK_NETWORK_RETRY_COUNT = 6;
     private static final long CHECK_NETWORK_RETRY_DELAY_MS = 500L;
@@ -115,11 +120,27 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
                     finish();
                     return;
                 }
+
+                final boolean isSnooze = intent.getAction() != null && AlarmIntentUtils.LAUNCH_PENDING_INTENT_ACTION_SNOOZE.equals(intent.getAction());
+                if (!isSnooze && alarm.getDays().isEmpty()) {
+                    // If the alarm is a wake up and oneshot alarm, we deactivate it
+                    alarm.setActivated(false);
+                    try {
+                        alarmManager.updateAlarm(alarm);
+                    } catch (RfAlarmException e) {
+                        Log.w(LOG_TAG, "Error when updating alarm: ", e);
+                        return;
+                    }
+                }
             }
         }
 
         try {
             alarmManager.onAlarmIsConsumed(alarm);
+
+            // Refresh UI
+            sendBroadcast(new Intent(RfAlarmReceiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH)
+                    .putExtra(RfAlarmReceiver.EXTRA_ALARM_ID_KEY, alarm.getId()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -480,6 +501,5 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
             sendMessageDelayed(obtainMessage(MESSAGE_WHAT, msg.arg1 - 1, 0), retryDelayMS);
         }
     }
-
 
 }

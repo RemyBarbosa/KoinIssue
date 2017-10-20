@@ -10,9 +10,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.format.DateUtils;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -52,7 +52,6 @@ public class AlarmNotificationManager {
     public AlarmNotificationManager(@NonNull final Context context) {
         this.context = context;
         this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        ;
         this.notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -95,6 +94,7 @@ public class AlarmNotificationManager {
         notificationBuilder.setContentTitle(context.getString(R.string.alarm_notif_soon_label))
                 .setSmallIcon(R.drawable.ic_alarm_notification)
                 .setContentText(getNotificationDate(alarmTimeMillis))
+                .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .addAction(R.drawable.ic_notif_cancel, context.getString(R.string.alarm_notif_cancel_action), buildActionCancelPendingIntent(alarmId, alarmTimeMillis, isSnooze))
                 .setShowWhen(false);
 
@@ -114,12 +114,16 @@ public class AlarmNotificationManager {
         return alarmId.equals(lastAlarmIdShown);
     }
 
+    public boolean shouldShowNotificationNow(final long alarmTimeMillis) {
+        final long notificationShowTimeMillis = alarmTimeMillis - NOTIFICATION_SHOW_TIME_BEFORE_MILLIS;
+        return notificationShowTimeMillis < System.currentTimeMillis();
+    }
+
     private void programNotification(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
         if (alarmTimeMillis < System.currentTimeMillis()) {
             return;
         }
-        final long notificationShowTimeMillis = alarmTimeMillis - NOTIFICATION_SHOW_TIME_BEFORE_MILLIS;
-        if (notificationShowTimeMillis < System.currentTimeMillis()) {
+        if (shouldShowNotificationNow(alarmTimeMillis)) {
             // Show now
             showNotification(alarmId, alarmTimeMillis, isSnooze);
             return;
@@ -127,6 +131,7 @@ public class AlarmNotificationManager {
 
         // Program notification at time
         final PendingIntent pendingIntent = buildShowPendingIntent(alarmId, alarmTimeMillis, false);
+        final long notificationShowTimeMillis = alarmTimeMillis - NOTIFICATION_SHOW_TIME_BEFORE_MILLIS;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, notificationShowTimeMillis, pendingIntent);
@@ -167,8 +172,6 @@ public class AlarmNotificationManager {
     }
 
     private String getNotificationDate(final long dateMillis) {
-        return new SimpleDateFormat("EEE", Locale.getDefault()).format(new Date(dateMillis))
-                + " "
-                + DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(new Date(dateMillis));
+        return new SimpleDateFormat(context.getString(R.string.alarm_notif_date_format), Locale.getDefault()).format(new Date(dateMillis));
     }
 }

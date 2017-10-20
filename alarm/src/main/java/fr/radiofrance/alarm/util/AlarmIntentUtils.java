@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
-import java.util.Calendar;
-
 import fr.radiofrance.alarm.model.Alarm;
 
 public abstract class AlarmIntentUtils {
@@ -33,7 +31,7 @@ public abstract class AlarmIntentUtils {
     }
 
     // TODO buildAlarmIntent: create an AlarmIntentBuilder with optional method completeAlarmExtras()
-    public static Intent buildAlarmIntent(@NonNull final Alarm alarm, final boolean isSnooze) {
+    public static Intent buildAlarmIntent(@NonNull final Alarm alarm, final boolean isSnooze, final long atTimeInMillis) {
         final Intent alarmLaunchIntent = alarm.getIntent();
         if (alarmLaunchIntent == null) {
             return null;
@@ -41,7 +39,7 @@ public abstract class AlarmIntentUtils {
         // Add Alarm extras to Intent
         alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID, alarm.getId());
         alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE, isSnooze);
-        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, buildLaunchIntentHash(alarm.getId(), isSnooze, AlarmDateUtils.getAlarmNextScheduleDate(alarm)));
+        alarmLaunchIntent.putExtra(LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH, buildLaunchIntentHash(alarm.getId(), isSnooze, atTimeInMillis));
 
         return alarmLaunchIntent;
     }
@@ -102,8 +100,8 @@ public abstract class AlarmIntentUtils {
         }
     }
 
-    private static int buildLaunchIntentHash(@NonNull String alarmId, boolean isSnooze, @NonNull Calendar calendar) {
-        return (alarmId + ":" + isSnooze + ":" + calendar.getTimeInMillis()).hashCode();
+    private static int buildLaunchIntentHash(@NonNull String alarmId, boolean isSnooze, final long atTimeInMillis) {
+        return (alarmId + ":" + isSnooze + ":" + atTimeInMillis).hashCode();
     }
 
     private static IntentType getTypeOfIntent(@NonNull final Intent intent) {
