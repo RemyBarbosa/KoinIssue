@@ -75,6 +75,8 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
     private View snoozeView;
     private View continueView;
 
+    private boolean isNotDefaultAlarmWakeUpOk = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -231,13 +233,6 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
         stopDefaultRingAlarm();
     }
 
-    protected boolean isWakeUpOk() {
-        if (defaultRingMediaPlayer == null) {
-            return false;
-        }
-        return defaultRingMediaPlayer.isPlaying();
-    }
-
     // Keep attributes for subClass override
     protected void onAlarmShouldStart(final Alarm alarm, final boolean networkAvailable) {
         startDefaultRingAlarm();
@@ -304,6 +299,21 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
 
         revealWithAnimation(actionDoneLayout, actionView, revealColor, backgroundEndColor);
         finishWithDelay();
+    }
+
+    protected void onNotDefaultAlarmWakeUpIsOk() {
+        isNotDefaultAlarmWakeUpOk = true;
+        stopDefaultRingAlarm();
+    }
+
+    private boolean isWakeUpOk() {
+        if (isNotDefaultAlarmWakeUpOk) {
+            return true;
+        }
+        if (defaultRingMediaPlayer == null) {
+            return false;
+        }
+        return defaultRingMediaPlayer.isPlaying();
     }
 
     private void onNetworkChecked(@NonNull final NetworkInfo.State networkState) {
