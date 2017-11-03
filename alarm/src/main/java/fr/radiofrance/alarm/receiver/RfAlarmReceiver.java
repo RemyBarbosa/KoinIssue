@@ -14,9 +14,6 @@ import fr.radiofrance.alarm.util.AlarmIntentUtils;
 
 public class RfAlarmReceiver extends BroadcastReceiver {
 
-    public static final String ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH = "fr.radiofrance.alarm.receiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH";
-    public static final String EXTRA_ALARM_ID_KEY = "fr.radiofrance.alarm.receiver.EXTRA_ALARM_ID_KEY";
-
     public static void enable(final Context context) {
         setReceiverEnabledSetting(context, true);
     }
@@ -77,9 +74,6 @@ public class RfAlarmReceiver extends BroadcastReceiver {
                     intent.getLongExtra(AlarmNotificationManager.EXTRA_ALARM_NOTIFICATION_TIME_MILLIS_KEY, -1L),
                     isSnooze);
 
-            if (!isSnooze) {
-                context.sendBroadcast(new Intent(ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH).putExtra(EXTRA_ALARM_ID_KEY, alarmId));
-            }
         } catch (RfAlarmException e) {
             e.printStackTrace();
         }

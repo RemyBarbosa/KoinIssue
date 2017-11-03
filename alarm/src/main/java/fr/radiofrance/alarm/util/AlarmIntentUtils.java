@@ -22,6 +22,9 @@ public abstract class AlarmIntentUtils {
     public static final String LAUNCH_PENDING_INTENT_EXTRA_ALARM_HASH = "rf.alarm.extra.lauch.alarm.hash";
     public static final String LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE = "rf.alarm.extra.lauch.is.snooze";
 
+    public static final String ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH = "fr.radiofrance.alarm.receiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH";
+    public static final String EXTRA_ALARM_ID_KEY = "fr.radiofrance.alarm.receiver.EXTRA_ALARM_ID_KEY";
+
     enum IntentType {
         ACTIVITY, SERVICE, BROADCAST, UNRECOGNIZED
     }

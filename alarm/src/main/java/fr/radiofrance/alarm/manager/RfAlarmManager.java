@@ -320,8 +320,8 @@ public class RfAlarmManager {
             alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
 
             // Send broadcast for UI who need refresh
-            context.sendBroadcast(new Intent(RfAlarmReceiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH)
-                    .putExtra(RfAlarmReceiver.EXTRA_ALARM_ID_KEY, alarm.getId()));
+            context.sendBroadcast(new Intent(AlarmIntentUtils.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH)
+                    .putExtra(AlarmIntentUtils.EXTRA_ALARM_ID_KEY, alarm.getId()));
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm is consumed task: " + e.getMessage(), e);
         }
@@ -364,6 +364,10 @@ public class RfAlarmManager {
             }
 
             alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
+
+            if (!isSnooze) {
+                context.sendBroadcast(new Intent(AlarmIntentUtils.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH).putExtra(AlarmIntentUtils.EXTRA_ALARM_ID_KEY, alarmId));
+            }
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm notification is cancel task: " + e.getMessage(), e);
         }
