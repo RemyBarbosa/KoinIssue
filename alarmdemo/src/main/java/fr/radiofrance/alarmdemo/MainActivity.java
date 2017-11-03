@@ -38,8 +38,8 @@ import java.util.concurrent.TimeUnit;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
-import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.util.AlarmBatteryOptimizationUtils;
+import fr.radiofrance.alarm.util.AlarmIntentUtils;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarmdemo.adapter.AlarmsAdapter;
 import fr.radiofrance.alarmdemo.listener.OnAlarmActionListener;
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         syncAlarmList();
         updateNextAlarmMessage();
         refreshNextAlarmMessageHandler.start();
-        registerReceiver(alarmNeedUiRefreshBroadcastReceiver, new IntentFilter(RfAlarmReceiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH));
+        registerReceiver(alarmNeedUiRefreshBroadcastReceiver, new IntentFilter(AlarmIntentUtils.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH));
     }
 
     @Override

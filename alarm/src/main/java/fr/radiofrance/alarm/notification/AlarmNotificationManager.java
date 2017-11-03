@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import fr.radiofrance.alarm.R;
+import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.model.ScheduleData;
 import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
@@ -47,6 +48,8 @@ public class AlarmNotificationManager {
     @NonNull
     private final NotificationManager notificationManager;
 
+    private ConfigurationDatastore configurationDatastore;
+
     private String lastAlarmIdShown;
 
     public AlarmNotificationManager(@NonNull final Context context) {
@@ -65,7 +68,11 @@ public class AlarmNotificationManager {
         }
     }
 
-    public void programNotification(ScheduleData standardAlarmScheduled, ScheduleData snoozeAlarmScheduled) {
+    public void setConfigurationDatastore(final ConfigurationDatastore configurationDatastore) {
+        this.configurationDatastore = configurationDatastore;
+    }
+
+    public void programNotification(final ScheduleData standardAlarmScheduled, final ScheduleData snoozeAlarmScheduled) {
         cancelPendingIntent();
 
         if (snoozeAlarmScheduled == null || snoozeAlarmScheduled.scheduleTimeMillis < System.currentTimeMillis()) {
@@ -98,6 +105,11 @@ public class AlarmNotificationManager {
                 .addAction(R.drawable.ic_notif_cancel, context.getString(R.string.alarm_notif_cancel_action), buildActionCancelPendingIntent(alarmId, alarmTimeMillis, isSnooze))
                 .setShowWhen(false);
 
+        final PendingIntent contentIntent = getContentIntent();
+        if (contentIntent != null) {
+            notificationBuilder.setContentIntent(contentIntent);
+        }
+
         lastAlarmIdShown = alarmId;
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
@@ -117,6 +129,17 @@ public class AlarmNotificationManager {
     public boolean shouldShowNotificationNow(final long alarmTimeMillis) {
         final long notificationShowTimeMillis = alarmTimeMillis - NOTIFICATION_SHOW_TIME_BEFORE_MILLIS;
         return notificationShowTimeMillis < System.currentTimeMillis();
+    }
+
+    private PendingIntent getContentIntent() {
+        if (configurationDatastore == null) {
+            return null;
+        }
+        final Intent intent = configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmDefaultLaunchIntent(null));
+        if (intent == null) {
+            return null;
+        }
+        return AlarmIntentUtils.getPendingIntent(context, intent);
     }
 
     private void programNotification(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {
