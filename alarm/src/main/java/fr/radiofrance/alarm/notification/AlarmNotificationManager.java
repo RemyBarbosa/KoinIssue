@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.format.DateUtils;
+import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -105,9 +106,10 @@ public class AlarmNotificationManager {
                 .addAction(R.drawable.ic_notif_cancel, context.getString(R.string.alarm_notif_cancel_action), buildActionCancelPendingIntent(alarmId, alarmTimeMillis, isSnooze))
                 .setShowWhen(false);
 
-        final PendingIntent contentIntent = getContentIntent();
-        if (contentIntent != null) {
-            notificationBuilder.setContentIntent(contentIntent);
+        final PendingIntent contentPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
+        Log.d(LOG_TAG, "showNotification: contentPendingIntent: " + contentPendingIntent);
+        if (contentPendingIntent != null) {
+            notificationBuilder.setContentIntent(contentPendingIntent);
         }
 
         lastAlarmIdShown = alarmId;
@@ -131,15 +133,8 @@ public class AlarmNotificationManager {
         return notificationShowTimeMillis < System.currentTimeMillis();
     }
 
-    private PendingIntent getContentIntent() {
-        if (configurationDatastore == null) {
-            return null;
-        }
-        final Intent intent = configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmDefaultLaunchIntent(null));
-        if (intent == null) {
-            return null;
-        }
-        return AlarmIntentUtils.getPendingIntent(context, intent);
+    private Intent getClockInfoShowEditIntent() {
+        return configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmAppLaunchIntent(new Intent(Intent.ACTION_VIEW)));
     }
 
     private void programNotification(@NonNull final String alarmId, final long alarmTimeMillis, final boolean isSnooze) {

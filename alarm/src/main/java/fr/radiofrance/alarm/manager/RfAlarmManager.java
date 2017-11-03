@@ -69,6 +69,7 @@ public class RfAlarmManager {
         this.context = context;
         this.configurationDatastore = new ConfigurationDatastore(context);
         this.alarmNotificationManager = alarmNotificationManager;
+        this.alarmNotificationManager.setConfigurationDatastore(configurationDatastore);
         this.alarmScheduler = new AlarmScheduler(context, configurationDatastore, new AlarmScheduler.OnScheduleChangeListener() {
             @Override
             public void onChange(final ScheduleData standard, final ScheduleData snooze) {
