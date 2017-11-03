@@ -304,8 +304,13 @@ public class RfAlarmManager {
         }
     }
 
-    public void onAlarmIsConsumed(final Alarm alarm) throws RfAlarmException {
+    public void onAlarmIsConsumed(final Alarm alarm, final boolean isSnooze) throws RfAlarmException {
         try {
+            if (!isSnooze && alarm.getDays().isEmpty()) {
+                // If the alarm is a wake up and oneshot alarm, we deactivate it
+                alarm.setActivated(false);
+                updateAlarm(alarm);
+            }
             if (!isNextAlarmUpcoming()) {
                 alarmNotificationManager.hideNotification();
             }
@@ -313,6 +318,10 @@ public class RfAlarmManager {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
             alarmScheduler.scheduleNextAlarmStandard(getAllAlarms());
+
+            // Send broadcast for UI who need refresh
+            context.sendBroadcast(new Intent(RfAlarmReceiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH)
+                    .putExtra(RfAlarmReceiver.EXTRA_ALARM_ID_KEY, alarm.getId()));
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm is consumed task: " + e.getMessage(), e);
         }

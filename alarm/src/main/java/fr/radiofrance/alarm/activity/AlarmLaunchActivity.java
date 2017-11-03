@@ -22,7 +22,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
@@ -41,7 +40,6 @@ import fr.radiofrance.alarm.exception.RfAlarmAlreadyExecutedException;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.manager.RfAlarmManager;
 import fr.radiofrance.alarm.model.Alarm;
-import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 import fr.radiofrance.alarm.util.DeviceVolumeUtils;
 import fr.radiofrance.alarm.util.NetworkUtils;
@@ -104,6 +102,7 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
         checkWakeUpHandler = new CheckWakeUpHandler(this, CHECK_WAKE_UP_RETRY_COUNT, CHECK_WAKE_UP_RETRY_DELAY_MS);
 
         final Intent intent = getIntent();
+        boolean isSnooze = false;
         if (intent != null) {
             final Bundle extras = intent.getExtras();
             if (extras != null) {
@@ -121,27 +120,13 @@ public abstract class AlarmLaunchActivity extends AppCompatActivity {
                     return;
                 }
 
-                final boolean isSnooze = intent.getAction() != null && AlarmIntentUtils.LAUNCH_PENDING_INTENT_ACTION_SNOOZE.equals(intent.getAction());
-                if (!isSnooze && alarm.getDays().isEmpty()) {
-                    // If the alarm is a wake up and oneshot alarm, we deactivate it
-                    alarm.setActivated(false);
-                    try {
-                        alarmManager.updateAlarm(alarm);
-                    } catch (RfAlarmException e) {
-                        Log.w(LOG_TAG, "Error when updating alarm: ", e);
-                        return;
-                    }
-                }
+                isSnooze = intent.getAction() != null && AlarmIntentUtils.LAUNCH_PENDING_INTENT_ACTION_SNOOZE.equals(intent.getAction());
             }
         }
 
         try {
-            alarmManager.onAlarmIsConsumed(alarm);
-
-            // Refresh UI
-            sendBroadcast(new Intent(RfAlarmReceiver.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH)
-                    .putExtra(RfAlarmReceiver.EXTRA_ALARM_ID_KEY, alarm.getId()));
-        } catch (Exception e) {
+            alarmManager.onAlarmIsConsumed(alarm, isSnooze);
+        } catch (RfAlarmException e) {
             e.printStackTrace();
         }
 
