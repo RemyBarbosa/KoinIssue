@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.format.DateUtils;
-import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -106,8 +105,7 @@ public class AlarmNotificationManager {
                 .addAction(R.drawable.ic_notif_cancel, context.getString(R.string.alarm_notif_cancel_action), buildActionCancelPendingIntent(alarmId, alarmTimeMillis, isSnooze))
                 .setShowWhen(false);
 
-        final PendingIntent contentPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getClockInfoShowEditIntent());
-        Log.d(LOG_TAG, "showNotification: contentPendingIntent: " + contentPendingIntent);
+        final PendingIntent contentPendingIntent = AlarmIntentUtils.getActivityShowPendingIntent(context, getContentPendingIntent());
         if (contentPendingIntent != null) {
             notificationBuilder.setContentIntent(contentPendingIntent);
         }
@@ -133,7 +131,7 @@ public class AlarmNotificationManager {
         return notificationShowTimeMillis < System.currentTimeMillis();
     }
 
-    private Intent getClockInfoShowEditIntent() {
+    private Intent getContentPendingIntent() {
         return configurationDatastore.getAlarmShowEditLaunchIntent(configurationDatastore.getAlarmAppLaunchIntent(new Intent(Intent.ACTION_VIEW)));
     }
 
