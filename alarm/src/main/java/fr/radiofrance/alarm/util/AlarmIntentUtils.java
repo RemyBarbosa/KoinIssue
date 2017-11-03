@@ -83,6 +83,10 @@ public abstract class AlarmIntentUtils {
         return context.getPackageName() + "." + action;
     }
 
+    public static Intent getOnAlarmNeedUiRefreshIntent(final String alarmId) {
+        return new Intent(AlarmIntentUtils.ACTION_BROADCAST_RECEIVER_ON_ALARM_NEED_UI_REFRESH).putExtra(AlarmIntentUtils.EXTRA_ALARM_ID_KEY, alarmId);
+    }
+
     private static PendingIntent buildPendingIntent(@NonNull final Context context, @NonNull Intent alarmIntent, final int flags) {
         if (alarmIntent.getBooleanExtra(LAUNCH_PENDING_INTENT_EXTRA_IS_SNOOZE, false)) {
             alarmIntent.setAction(buildActionWithPackageName(context, LAUNCH_PENDING_INTENT_ACTION_SNOOZE));
