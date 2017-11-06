@@ -146,7 +146,7 @@ public class AlarmNotificationManager {
         }
 
         // Program notification at time
-        final PendingIntent pendingIntent = buildShowPendingIntent(alarmId, alarmTimeMillis, false);
+        final PendingIntent pendingIntent = buildShowPendingIntent(alarmId, alarmTimeMillis, isSnooze);
         final long notificationShowTimeMillis = alarmTimeMillis - NOTIFICATION_SHOW_TIME_BEFORE_MILLIS;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -221,7 +221,7 @@ public class RfAlarmManager {
                 throw new Exception("Error when saving alarm in datastore");
             }
 
-            if (!alarm.isActivated() && alarmNotificationManager.isLastNotificationShown(alarm.getId()) && !isNextAlarmUpcoming()) {
+            if (alarmNotificationManager.isLastNotificationShown(alarm.getId()) && !isNextAlarmUpcoming()) {
                 alarmNotificationManager.hideNotification();
             }
 
@@ -333,6 +333,7 @@ public class RfAlarmManager {
                 throw new IllegalArgumentException("Alarm could not be null.");
             }
             alarmScheduler.scheduleAlarmSnooze(alarm);
+            configureAlarmBootReceiver();
         } catch (Exception e) {
             throw new RfAlarmException("Error on Alarm is snooze task: " + e.getMessage(), e);
         }
@@ -458,13 +459,14 @@ public class RfAlarmManager {
     }
 
     private boolean isNextAlarmUpcoming(@Nullable final String filteredAlarmId) {
-        final List<Alarm> alarms = getAllAlarms(true);
+        final List<Alarm> alarms = getAllAlarms();
         for (final Alarm alarm : alarms) {
             if (alarm.getId().equals(filteredAlarmId)) {
                 continue;
             }
 
-            if (alarmNotificationManager.shouldShowNotificationNow(alarm.getFromTimeMs())) {
+            final long timeInMillis = AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis();
+            if ((alarm.isActivated() || alarmScheduler.isAlarmSnoozeSchedule(alarm)) && alarmNotificationManager.shouldShowNotificationNow(timeInMillis)) {
                 return true;
             }
         }

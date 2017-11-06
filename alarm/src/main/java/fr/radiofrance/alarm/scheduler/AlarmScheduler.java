@@ -92,6 +92,18 @@ public class AlarmScheduler {
         return isCurrentScheduled && AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, false, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis()));
     }
 
+    public boolean isAlarmSnoozeSchedule(final Alarm alarm) {
+        if (alarm == null) {
+            return false;
+        }
+        final ScheduleData snoozeScheduleData = schedulerDatastore.getCurrentSnooze();
+        if (snoozeScheduleData == null) {
+            return false;
+        }
+        final boolean isSnoozeScheduled = alarm.getId().equals(snoozeScheduleData.alarmId);
+        return isSnoozeScheduled && AlarmIntentUtils.isPendingIntentAlive(context, AlarmIntentUtils.buildAlarmIntent(alarm, true, AlarmDateUtils.getAlarmNextScheduleDate(alarm).getTimeInMillis()));
+    }
+
     public void unscheduleAlarmSnooze(final Alarm alarm) {
         if (alarm == null) {
             return;
