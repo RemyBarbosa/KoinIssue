@@ -1,3 +1,8 @@
+## v4.0.1
+
+- Fixed bug when clicking on Dismiss for Snooze notification: did nothing
+- Fixed bad timestamp given to shouldShowNotificationNow() when updating alarm
+
 ## v4.0.0
 
 - Library alarm is no more a generic Alarm object library.
