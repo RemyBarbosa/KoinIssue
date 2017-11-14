@@ -22,6 +22,7 @@ import fr.radiofrance.alarm.datastore.ConfigurationDatastore;
 import fr.radiofrance.alarm.datastore.model.ScheduleData;
 import fr.radiofrance.alarm.datastore.recovery.AlarmRecoveryModule;
 import fr.radiofrance.alarm.exception.RfAlarmAlreadyExecutedException;
+import fr.radiofrance.alarm.exception.RfAlarmDefaultLaunchIntentNotFoundException;
 import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.notification.AlarmNotificationManager;
@@ -386,11 +387,11 @@ public class RfAlarmManager {
     }
 
     public void onAlarmDeprecatedBroadcastReceived(final String alarmId) throws RfAlarmException {
+        final Intent newLaunchIntent = configurationDatastore.getAlarmDefaultLaunchIntent(null);
+        if (newLaunchIntent == null) {
+            throw new RfAlarmDefaultLaunchIntentNotFoundException();
+        }
         try {
-            final Intent newLaunchIntent = configurationDatastore.getAlarmDefaultLaunchIntent(null);
-            if (newLaunchIntent == null) {
-                return;
-            }
             newLaunchIntent.putExtra(AlarmIntentUtils.LAUNCH_PENDING_INTENT_EXTRA_ALARM_ID, alarmId);
             if (newLaunchIntent.getComponent() == null) {
                 return;

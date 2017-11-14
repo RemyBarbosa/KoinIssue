@@ -1,3 +1,7 @@
+## v4.0.2
+
+- Fixed BroadcastReceiver for recovery, add delayed retry if default launch intent not already set
+
 ## v4.0.1
 
 - Fixed bug when clicking on Dismiss for Snooze notification: did nothing
