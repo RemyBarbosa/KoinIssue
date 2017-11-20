@@ -1,3 +1,7 @@
+## v4.0.3
+
+- Update BatteryOptimization popup labels
+
 ## v4.0.2
 
 - Fixed BroadcastReceiver for recovery, add delayed retry if default launch intent not already set

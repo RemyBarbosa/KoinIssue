@@ -18,10 +18,13 @@
     <string name="alarm_notif_soon_label">Alarme imminente</string>
     <string name="alarm_notif_cancel_action">Quitter</string>
 
-    <string name="alarm_battery_optimization_dialog_title">Attention</string>
-    <string name="alarm_battery_optimization_dialog_message">Le système Android active par défaut l\'optimisation de la batterie.\nCela peut affecter la ponctualité du réveil.\n\nPour être sur de ne pas avoir ce problème vous pouvez la désactiver pour %1$s en autorisant l\'éxecution en arrière plan (nous veillons à ce que nos applications n\'utilisent pas plus de batterie que nécessaire).</string>
-    <string name="alarm_battery_optimization_dialog_positive">Désactiver</string>
-    <string name="alarm_battery_optimization_dialog_negative">Non merci</string>
+    <string name="alarm_battery_optimization_direct_dialog_message">La \"mise en veille profonde\" semble être activée pour l\'application %1$s. Ce mode peut générer du retard lors du déclenchement de votre réveil. \nAfin d\'être sûrs que %1$s vous réveille à l\'heure, pensez à désactiver ce mode en acceptant cette modification dans la pop-up qui s\'affichera.</string>
+    <string name="alarm_battery_optimization_direct_dialog_positive">OK</string>
+    <string name="alarm_battery_optimization_direct_dialog_negative">Annuler</string>
+
+    <string name="alarm_battery_optimization_list_dialog_message">La \"mise en veille profonde\" semble être activée pour l\'application %1$s. Ce mode peut générer du retard lors du déclenchement de votre réveil. \nAfin d\'être sûrs que %1$s vous réveille à l\'heure, pensez à désactiver ce mode en décochant %1$s dans la liste suivante.</string>
+    <string name="alarm_battery_optimization_list_dialog_positive">Accéder à la liste</string>
+    <string name="alarm_battery_optimization_list_dialog_negative">Annuler</string>
 
     <string name="alarm_notif_date_format">EEE HH\':\'mm</string>
 

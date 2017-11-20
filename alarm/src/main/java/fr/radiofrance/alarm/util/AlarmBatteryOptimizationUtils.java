@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.support.annotation.StringRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 
@@ -28,29 +29,38 @@ public abstract class AlarmBatteryOptimizationUtils {
             return;
         }
         final PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        if (powerManager.isIgnoringBatteryOptimizations(context.getPackageName())) {
+        if (powerManager == null || powerManager.isIgnoringBatteryOptimizations(context.getPackageName())) {
             return;
         }
 
+        final boolean cantLinkToDirectBatteryOptimizationDialog = ContextCompat.checkSelfPermission(context, Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) == PackageManager.PERMISSION_DENIED;
+
+        if (cantLinkToDirectBatteryOptimizationDialog) {
+            showDialog(context,
+                    context.getString(R.string.alarm_battery_optimization_list_dialog_message, appName),
+                    R.string.alarm_battery_optimization_list_dialog_positive,
+                    R.string.alarm_battery_optimization_list_dialog_negative,
+                    new Intent().setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+            return;
+        }
+
+        showDialog(context,
+                context.getString(R.string.alarm_battery_optimization_direct_dialog_message, appName),
+                R.string.alarm_battery_optimization_direct_dialog_positive,
+                R.string.alarm_battery_optimization_direct_dialog_negative,
+                new Intent().setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).setData(Uri.parse("package:" + context.getPackageName())));
+    }
+
+    private static void showDialog(final Context context, final String message, @StringRes final int positiveTextId, @StringRes final int negativeTextId, final Intent intent) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.alarm_battery_optimization_dialog_title);
-        builder.setMessage(context.getString(R.string.alarm_battery_optimization_dialog_message, appName));
-        builder.setPositiveButton(R.string.alarm_battery_optimization_dialog_positive, new DialogInterface.OnClickListener() {
+        builder.setMessage(message);
+        builder.setPositiveButton(positiveTextId, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialogInterface, final int i) {
-                final Intent intent = new Intent();
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS) == PackageManager.PERMISSION_DENIED) {
-                    // Open the global settings screen
-                    intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-                } else {
-                    // Open the ignoring request dialog
-                    intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                    intent.setData(Uri.parse("package:" + context.getPackageName()));
-                }
                 context.startActivity(intent);
             }
         });
-        builder.setNegativeButton(R.string.alarm_battery_optimization_dialog_negative, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(negativeTextId, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialogInterface, final int i) {
                 dialogInterface.dismiss();
