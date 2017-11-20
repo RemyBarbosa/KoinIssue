@@ -18,12 +18,12 @@
     <string name="alarm_notif_soon_label">Upcoming alarm</string>
     <string name="alarm_notif_cancel_action">Dismiss</string>
 
-    <string name="alarm_battery_optimization_direct_dialog_message">The \"Hibernation mode\" seems to be activated for the %1$s application. This mode can cause a delay in the launch of your clock. \nIn order to be sure that %1$s wakes you up on time, remember to disable this mode by accepting this change in the pop-up that will be displayed afterwards.</string>
-    <string name="alarm_battery_optimization_direct_dialog_positive">OK</string>
+    <string name="alarm_battery_optimization_direct_dialog_message">The \"Hibernation mode\" seems to be activated for the %1$s application. This mode can delay your alarm going off. \nTo be sure that %1$s wakes you up on time, please disable this mode by accepting the change proposed in the next layer.</string>
+    <string name="alarm_battery_optimization_direct_dialog_positive">Go to layer</string>
     <string name="alarm_battery_optimization_direct_dialog_negative">Cancel</string>
 
-    <string name="alarm_battery_optimization_list_dialog_message">The \"Hibernation mode\" seems to be activated for the %1$s application. This mode can cause a delay in the launch of your clock. \nIn order to be sure that %1$s wakes you up on time, remember to disable this mode by unchecking %1$s in the list that will be displayed afterwards.</string>
-    <string name="alarm_battery_optimization_list_dialog_positive">Go to the list</string>
+    <string name="alarm_battery_optimization_list_dialog_message">The \"Hibernation mode\" seems to be activated for the %1$s application. This mode can delay your alarm going off. \nTo be sure that %1$s wakes you up on time, please disable this mode by unchecking %1$s in the list that will be displayed afterwards.</string>
+    <string name="alarm_battery_optimization_list_dialog_positive">Go to list</string>
     <string name="alarm_battery_optimization_list_dialog_negative">Cancel</string>
 
     <string name="alarm_notif_date_format">EEE hh\':\'mm a</string>
