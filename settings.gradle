@@ -1,1 +1,1 @@
-include ':alarmdemo', ':alarm'
+include ':alarm_v5', ':alarmdemo_v5'
