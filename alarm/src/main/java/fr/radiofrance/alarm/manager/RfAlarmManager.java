@@ -27,7 +27,7 @@ import fr.radiofrance.alarm.exception.RfAlarmException;
 import fr.radiofrance.alarm.model.Alarm;
 import fr.radiofrance.alarm.notification.AlarmNotificationManager;
 import fr.radiofrance.alarm.receiver.RfAlarmReceiver;
-import fr.radiofrance.alarm.scheduler.AlarmScheduler;
+import fr.radiofrance.alarm.schedule.AlarmScheduler;
 import fr.radiofrance.alarm.util.AlarmDateUtils;
 import fr.radiofrance.alarm.util.AlarmIntentUtils;
 

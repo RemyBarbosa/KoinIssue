@@ -1,4 +1,4 @@
-package fr.radiofrance.alarm.scheduler;
+package fr.radiofrance.alarm.schedule;
 
 import android.app.Activity;
 import android.content.Context;
