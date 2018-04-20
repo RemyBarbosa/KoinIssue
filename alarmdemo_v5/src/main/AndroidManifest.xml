@@ -12,10 +12,18 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name="fr.radiofrance.alarm.receiver.AlarmBroadcastReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="fr.radiofrance.alarm.ALARM_CLOCK_ACTION"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

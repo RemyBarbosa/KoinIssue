@@ -1,9 +1,12 @@
 package fr.radiofrance.alarm
 
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import fr.radiofrance.alarm.receiver.AlarmBroadcastReceiver
+import fr.radiofrance.alarm.schedule.AlarmScheduler
 import fr.radiofrance.alarm.utils.BatteryOptimizationUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
@@ -28,6 +31,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        main_program_alarm_in_ten_seconds_button.setOnClickListener {
+            alarmManager.tempTestScheduleAt(Calendar.getInstance().apply {
+                add(Calendar.SECOND, 10)
+            }.timeInMillis)
+        }
+
         main_program_alarm_in_one_minute_button.setOnClickListener {
             alarmManager.tempTestScheduleAt(Calendar.getInstance().apply {
                 add(Calendar.MINUTE, 1)
@@ -45,6 +54,11 @@ class MainActivity : AppCompatActivity() {
                 add(Calendar.HOUR, 2)
             }.timeInMillis)
         }
+
+        val filter = IntentFilter()
+        filter.addAction(AlarmScheduler.ALARM_CLOCK_ACTION)
+        val receiver = AlarmBroadcastReceiver()
+        registerReceiver(receiver, filter)
     }
 
     override fun onResume() {
