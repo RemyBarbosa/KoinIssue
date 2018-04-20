@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">alarm_v3</string>
+
+    <string name="alarm_battery_optimization_direct_dialog_message">The \"Hibernation mode\" seems to be activated for the %1$s application. This mode can delay your alarm going off. \nTo be sure that %1$s wakes you up on time, please disable this mode by accepting the change proposed in the next layer.</string>
+    <string name="alarm_battery_optimization_direct_dialog_positive">Go to layer</string>
+    <string name="alarm_battery_optimization_direct_dialog_negative">Cancel</string>
+
+    <string name="alarm_battery_optimization_list_dialog_message">The \"Hibernation mode\" seems to be activated for the %1$s application. This mode can delay your alarm going off. \nTo be sure that %1$s wakes you up on time, please disable this mode by unchecking %1$s in the list that will be displayed afterwards.</string>
+    <string name="alarm_battery_optimization_list_dialog_positive">Go to list</string>
+    <string name="alarm_battery_optimization_list_dialog_negative">Cancel</string>
+
+
 </resources>
