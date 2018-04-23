@@ -3,7 +3,7 @@ package fr.radiofrance.alarm.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
+import fr.radiofrance.alarm.activity.AlarmActivity
 import fr.radiofrance.alarm.schedule.AlarmScheduler
 
 class AlarmBroadcastReceiver: BroadcastReceiver() {
@@ -21,7 +21,9 @@ class AlarmBroadcastReceiver: BroadcastReceiver() {
     }
 
     private fun onAlarmClockReceive(context: Context, intent: Intent) {
-        Toast.makeText(context, "Action: ${intent.action}", Toast.LENGTH_LONG).show()
+        context.startActivity(AlarmActivity.newIntent(context,
+                intent.getLongExtra(AlarmScheduler.ALARM_CLOCK_AT_TIME_KEY, 0L),
+                intent.getBundleExtra(AlarmScheduler.ALARM_CLOCK_DATA_KEY)))
     }
 
 }
