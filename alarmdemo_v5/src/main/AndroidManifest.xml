@@ -18,7 +18,8 @@
 
         <receiver
             android:name="fr.radiofrance.alarm.receiver.AlarmBroadcastReceiver"
-            android:enabled="true">
+            android:enabled="true"
+            android:exported="false">
             <intent-filter>
                 <action android:name="fr.radiofrance.alarm.ALARM_CLOCK_ACTION"/>
             </intent-filter>

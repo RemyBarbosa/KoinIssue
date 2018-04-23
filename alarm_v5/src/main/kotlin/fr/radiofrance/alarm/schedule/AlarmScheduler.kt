@@ -45,6 +45,7 @@ class AlarmScheduler(private val context: Context) {
                     ALARM_CLOCK_RESQUEST_CODE,
                     Intent().apply {
                         action = ALARM_CLOCK_ACTION
+                        `package` = context.packageName
                         putExtra(ALARM_CLOCK_AT_TIME_KEY, atTimeInMillis)
                         putExtra(ALARM_CLOCK_DATA_KEY, data)
                     },
@@ -55,6 +56,7 @@ class AlarmScheduler(private val context: Context) {
                     ALARM_CLOCK_INFO_SHOW_RESQUEST_CODE,
                     Intent().apply {
                         action = ALARM_CLOCK_INFO_SHOW_ACTION
+                        `package` = context.packageName
                         putExtra(ALARM_CLOCK_INFO_SHOW_DATA_KEY, data)
                     },
                     PendingIntent.FLAG_ONE_SHOT)
