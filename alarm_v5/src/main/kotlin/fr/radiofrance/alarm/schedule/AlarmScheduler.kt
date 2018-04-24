@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import fr.radiofrance.alarm.activity.AlarmActivity
 
 class AlarmScheduler(private val context: Context) {
 
@@ -33,6 +34,10 @@ class AlarmScheduler(private val context: Context) {
     private fun scheduleInAlarmSystem(pendingIntent: PendingIntent, atTimeInMillis: Long, data: Bundle) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(atTimeInMillis, getAlarmClockInfoShowPendingIntent(data)), pendingIntent)
+            /*
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,  atTimeInMillis, pendingIntent)
+            }*/
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, atTimeInMillis, pendingIntent)
         } else {
@@ -40,6 +45,7 @@ class AlarmScheduler(private val context: Context) {
         }
     }
 
+    /*
     private fun getAlarmClockPendingIntent(atTimeInMillis: Long, data: Bundle) =
             PendingIntent.getBroadcast(context,
                     ALARM_CLOCK_RESQUEST_CODE,
@@ -49,6 +55,12 @@ class AlarmScheduler(private val context: Context) {
                         putExtra(ALARM_CLOCK_AT_TIME_KEY, atTimeInMillis)
                         putExtra(ALARM_CLOCK_DATA_KEY, data)
                     },
+                    PendingIntent.FLAG_CANCEL_CURRENT)
+                    */
+    private fun getAlarmClockPendingIntent(atTimeInMillis: Long, data: Bundle) =
+            PendingIntent.getActivity(context,
+                    ALARM_CLOCK_RESQUEST_CODE,
+                    AlarmActivity.newIntent(context, atTimeInMillis, data),
                     PendingIntent.FLAG_CANCEL_CURRENT)
 
     private fun getAlarmClockInfoShowPendingIntent(data: Bundle) =

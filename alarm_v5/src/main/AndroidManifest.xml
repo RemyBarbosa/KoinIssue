@@ -2,11 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="fr.radiofrance.alarm">
 
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application>
 
-        <activity android:name=".activity.AlarmActivity"/>
+        <activity
+            android:name=".activity.AlarmActivity"
+            android:screenOrientation="portrait"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"/>
 
         <receiver
             android:name=".receiver.AlarmBroadcastReceiver"

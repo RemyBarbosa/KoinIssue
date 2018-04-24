@@ -24,6 +24,18 @@ or
 
 ``` > adb shell "dumpsys alarm | grep fr.radiofrance.alarmdemo"```
 
+### Simulate doze mode on device :###
+
+``` > adb shell dumpsys battery unplug```
+      
+``` > adb shell dumpsys deviceidle force-idle ```
+
+revert with :
+
+``` > adb shell dumpsys battery reset```
+
+``` > adb shell dumpsys deviceidle disable```
+
 ### Android documentations on alarms###
 
 https://developer.android.com/training/scheduling/alarms.html
@@ -34,6 +46,8 @@ https://developer.android.com/reference/android/app/AlarmManager.html
 
 
 ### Stackoverflow threads on alarms###
+
+https://stackoverflow.com/questions/48008999/setalarmclock-fires-too-late-in-doze-mode
 
 https://stackoverflow.com/questions/28742884/how-to-read-adb-shell-dumpsys-alarm-output
 
