@@ -1,0 +1,7 @@
+<resources>
+    
+    <color name="test_succeed_background_color">#90fdc1</color>
+    <color name="test_failed_background_color">#fd9092</color>
+
+
+</resources>

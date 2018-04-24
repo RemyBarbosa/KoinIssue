@@ -13,7 +13,10 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.Handler
+import android.os.IBinder
+import android.os.Vibrator
 import android.support.v4.app.NotificationCompat
 import fr.radiofrance.alarm.R
 import fr.radiofrance.alarm.activity.AlarmActivity
@@ -80,9 +83,11 @@ class AlarmService : Service() {
 
     @SuppressLint("NewApi")
     override fun onCreate() {
+        /*
         val ht = HandlerThread("alarm_service")
         ht.start()
         mHandler = Handler(ht.looper)
+        */
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             with(getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager) {

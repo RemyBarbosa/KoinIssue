@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.PowerManager
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.text.format.DateUtils
 import android.util.Log
 import android.view.WindowManager
 import fr.radiofrance.alarm.R
@@ -17,23 +19,6 @@ import java.util.*
 
 class AlarmActivity : AppCompatActivity() {
 
-    companion object {
-
-        /*
-        private const val INTENT_EXTRA_AT_TIME_MILLIS_KEY = "extra_at_time_key"
-        private const val INTENT_EXTRA_DATA_KEY = "extra_data_key"
-        */
-
-        /*
-        fun newIntent(context: Context, atTimeMillis: Long, data: Bundle): Intent {
-            val intent = Intent(context, AlarmActivity::class.java)
-            intent.flags = Intent.FLAG_FROM_BACKGROUND or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-            intent.putExtra(INTENT_EXTRA_AT_TIME_MILLIS_KEY, atTimeMillis)
-            intent.putExtra(INTENT_EXTRA_DATA_KEY, data)
-            return intent
-        }
-        */
-    }
 
     //private val ringtone by lazy { RingtoneManager.getRingtone(applicationContext, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
 
@@ -78,6 +63,12 @@ class AlarmActivity : AppCompatActivity() {
         super.onResume()
         main_hour_textview.text = SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date())
         //ringtone.play()
+
+        if ((System.currentTimeMillis() - intent.getLongExtra(AlarmIntentUtils.ALARM_CLOCK_AT_TIME_KEY, 0L)) > 30 * DateUtils.SECOND_IN_MILLIS) {
+            main_constraintlayout.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.test_failed_background_color))
+        } else {
+            main_constraintlayout.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.test_succeed_background_color))
+        }
     }
 
     override fun onStop() {
@@ -98,7 +89,9 @@ class AlarmActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        wakeLock.release()
+        if (wakeLock.isHeld) {
+            wakeLock.release()
+        }
     }
 
     private fun stopAlarm() {
