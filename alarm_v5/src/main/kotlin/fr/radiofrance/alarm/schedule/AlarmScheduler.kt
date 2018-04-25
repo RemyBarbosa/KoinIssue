@@ -27,10 +27,6 @@ class AlarmScheduler(private val context: Context) {
     private fun scheduleInAlarmSystem(pendingIntent: PendingIntent, atTimeInMillis: Long, data: Bundle) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(atTimeInMillis, getAlarmClockInfoShowPendingIntent(data)), pendingIntent)
-            /*
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,  atTimeInMillis, pendingIntent)
-            }*/
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, atTimeInMillis, pendingIntent)
         } else {
@@ -48,13 +44,6 @@ class AlarmScheduler(private val context: Context) {
                         putExtra(AlarmIntentUtils.ALARM_CLOCK_DATA_KEY, data)
                     },
                     PendingIntent.FLAG_CANCEL_CURRENT)
-    /*
-    private fun getAlarmClockPendingIntent(atTimeInMillis: Long, data: Bundle) =
-            PendingIntent.getActivity(context,
-                    ALARM_CLOCK_RESQUEST_CODE,
-                    AlarmActivity.newIntent(context, atTimeInMillis, data),
-                    PendingIntent.FLAG_CANCEL_CURRENT)
-                    */
 
     private fun getAlarmClockInfoShowPendingIntent(data: Bundle) =
             PendingIntent.getBroadcast(context,

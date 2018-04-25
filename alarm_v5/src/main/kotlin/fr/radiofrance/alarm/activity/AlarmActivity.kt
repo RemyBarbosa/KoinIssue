@@ -2,6 +2,7 @@ package fr.radiofrance.alarm.activity
 
 import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
 import android.os.Bundle
 import android.os.PowerManager
 import android.support.v4.content.ContextCompat
@@ -19,9 +20,7 @@ import java.util.*
 
 class AlarmActivity : AppCompatActivity() {
 
-
-    //private val ringtone by lazy { RingtoneManager.getRingtone(applicationContext, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
-
+    private val ringtone by lazy { RingtoneManager.getRingtone(applicationContext, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
 
     private val wakeLock by lazy {
         with(getSystemService(Context.POWER_SERVICE) as PowerManager) {
@@ -49,20 +48,16 @@ class AlarmActivity : AppCompatActivity() {
         }
         */
 
-
         setContentView(R.layout.activity_alarm)
 
-
         main_expected_hour_textview.text = "Expected: ${SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date(intent.getLongExtra(AlarmIntentUtils.ALARM_CLOCK_AT_TIME_KEY, 0L)))}"
-
-        //ringtone.play()
     }
 
     override fun onResume() {
         Log.d("AlarmActivity", "onResume at : " + SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date()))
         super.onResume()
         main_hour_textview.text = SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date())
-        //ringtone.play()
+        ringtone.play()
 
         if ((System.currentTimeMillis() - intent.getLongExtra(AlarmIntentUtils.ALARM_CLOCK_AT_TIME_KEY, 0L)) > 30 * DateUtils.SECOND_IN_MILLIS) {
             main_constraintlayout.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.test_failed_background_color))
@@ -74,7 +69,7 @@ class AlarmActivity : AppCompatActivity() {
     override fun onStop() {
         Log.d("AlarmActivity", "onStop at : " + SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date()))
         super.onStop()
-        //ringtone.stop()
+        ringtone.stop()
     }
 
     override fun onUserLeaveHint() {

@@ -107,6 +107,7 @@ class AlarmService : Service() {
         startForeground(NOTIFICATION_ID,
                 NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_alarm_notification)
+                        // TODO set a good content text
                         .setContentText(getString(R.string.alarm_notif_label))
                         .build()
         )

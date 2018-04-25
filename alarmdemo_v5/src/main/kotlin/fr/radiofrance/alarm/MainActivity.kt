@@ -5,8 +5,6 @@ import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
-import android.view.View
-import fr.radiofrance.alarm.utils.BatteryOptimizationUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -22,14 +20,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         main_version_textview.text = "OS version :  ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})"
-        main_ignore_battery_optim_textview.text = "Ignore battery optimization :  ${BatteryOptimizationUtils.isIgnoringBatteryOptimizations(applicationContext)}"
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            main_ignore_battery_optim_button.visibility = View.VISIBLE
-            main_ignore_battery_optim_button.setOnClickListener {
-                BatteryOptimizationUtils.showBatteryOptimizationDialog(this, getString(R.string.app_name))
-            }
-        }
 
         main_program_alarm_in_ten_seconds_button.setOnClickListener {
             programAlarmAtTime(Calendar.getInstance().apply {
@@ -69,11 +59,6 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
 
-    }
-
-    override fun onResume() {
-        super.onResume()
-        main_ignore_battery_optim_textview.text = "Ignore battery optimization :  ${BatteryOptimizationUtils.isIgnoringBatteryOptimizations(applicationContext)}"
     }
 
     private fun programAlarmAtTime(timeMillis: Long) {

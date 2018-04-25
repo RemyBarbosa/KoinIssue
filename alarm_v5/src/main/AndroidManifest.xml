@@ -13,7 +13,7 @@
             android:screenOrientation="portrait"/>
 
         <receiver
-            android:name=".receiver.AlarmBroadcastReceiver"
+            android:name=".receiver.AlarmReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
