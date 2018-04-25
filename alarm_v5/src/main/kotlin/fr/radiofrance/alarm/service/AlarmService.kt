@@ -113,7 +113,7 @@ class AlarmService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        startPlayer()
+        //startPlayer()
         // Start the activity where you can stop alarm
         startActivity(Intent(Intent.ACTION_MAIN).apply {
             component = ComponentName(applicationContext, AlarmActivity::class.java!!)
@@ -131,7 +131,7 @@ class AlarmService : Service() {
     }
 
     override fun onDestroy() {
-        if (mPlayer!!.isPlaying) {
+        if (mPlayer != null && mPlayer!!.isPlaying) {
             mPlayer!!.stop()
             mPlayer!!.release()
             mPlayer = null
