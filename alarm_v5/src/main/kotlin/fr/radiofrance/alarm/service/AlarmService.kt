@@ -14,7 +14,7 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import fr.radiofrance.alarm.R
 import fr.radiofrance.alarm.activity.AlarmActivity
-import fr.radiofrance.alarm.schedule.AlarmIntentUtils
+import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 
 
 class AlarmService : Service() {
@@ -51,14 +51,13 @@ class AlarmService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        // Start the activity where you can stop alarm
         startActivity(Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName(applicationContext, AlarmActivity::class.java!!)
+            component = ComponentName(applicationContext, AlarmActivity::class.java)
             setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-            putExtra(AlarmIntentUtils.ALARM_CLOCK_AT_TIME_KEY, intent.getLongExtra(AlarmIntentUtils.ALARM_CLOCK_AT_TIME_KEY, 0L))
-            putExtra(AlarmIntentUtils.ALARM_CLOCK_DATA_KEY, intent.getBundleExtra(AlarmIntentUtils.ALARM_CLOCK_DATA_KEY))
+            putExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L))
+            putExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
         })
         return Service.START_STICKY
     }

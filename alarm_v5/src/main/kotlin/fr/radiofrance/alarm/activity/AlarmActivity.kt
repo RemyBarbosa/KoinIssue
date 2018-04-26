@@ -11,7 +11,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import android.view.WindowManager
 import fr.radiofrance.alarm.R
-import fr.radiofrance.alarm.schedule.AlarmIntentUtils
+import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 import fr.radiofrance.alarm.service.AlarmService
 import kotlinx.android.synthetic.main.activity_alarm.*
 import java.text.SimpleDateFormat
@@ -50,7 +50,7 @@ class AlarmActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_alarm)
 
-        main_expected_hour_textview.text = "Expected: ${SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date(intent.getLongExtra(AlarmIntentUtils.ALARM_CLOCK_AT_TIME_KEY, 0L)))}"
+        main_expected_hour_textview.text = "Expected: ${SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date(intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L)))}"
     }
 
     override fun onResume() {
@@ -59,7 +59,7 @@ class AlarmActivity : AppCompatActivity() {
         main_hour_textview.text = SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date())
         ringtone.play()
 
-        if ((System.currentTimeMillis() - intent.getLongExtra(AlarmIntentUtils.ALARM_CLOCK_AT_TIME_KEY, 0L)) > 30 * DateUtils.SECOND_IN_MILLIS) {
+        if ((System.currentTimeMillis() - intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L)) > 30 * DateUtils.SECOND_IN_MILLIS) {
             main_constraintlayout.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.test_failed_background_color))
         } else {
             main_constraintlayout.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.test_succeed_background_color))
