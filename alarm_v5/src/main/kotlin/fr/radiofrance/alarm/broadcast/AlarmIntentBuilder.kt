@@ -13,6 +13,7 @@ object AlarmIntentBuilder {
     const val ALARM_CLOCK_INFO_SHOW_ACTION = "fr.radiofrance.alarm.ALARM_CLOCK_INFO_SHOW_ACTION"
 
     const val ALARM_CALLBACK_ON_RANG_ACTION = "fr.radiofrance.alarm.ALARM_CALLBACK_ON_RANG_ACTION"
+    const val ALARM_CALLBACK_ON_RANG_CUSTOM_OK_ACTION = "fr.radiofrance.alarm.ALARM_CALLBACK_ON_RANG_CUSTOM_OK_ACTION"
 
 
     fun buildClockAction(context: Context, timeInMillis: Long, data: Bundle) = buildIntent(
@@ -31,6 +32,12 @@ object AlarmIntentBuilder {
     fun buildCallbackOnRangAction(context: Context, data: Bundle) = buildIntent(
             context = context,
             action = ALARM_CALLBACK_ON_RANG_ACTION,
+            data = data
+    )
+
+    fun buildCallbackOnRangCustomOkAction(context: Context, data: Bundle) = buildIntent(
+            context = context,
+            action = ALARM_CALLBACK_ON_RANG_CUSTOM_OK_ACTION,
             data = data
     )
 

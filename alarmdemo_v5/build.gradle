@@ -49,5 +49,7 @@ dependencies {
     implementation "com.android.support:design:$supportLibraryVersion"
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
 
+    implementation 'com.google.android.exoplayer:exoplayer:r2.4.4'
+
     implementation project(':alarm_v5')
 }

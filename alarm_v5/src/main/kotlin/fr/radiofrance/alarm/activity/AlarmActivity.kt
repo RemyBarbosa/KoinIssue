@@ -1,11 +1,14 @@
 package fr.radiofrance.alarm.activity
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.RingtoneManager
 import android.os.Bundle
 import android.os.PowerManager
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AppCompatActivity
 import android.text.format.DateUtils
 import android.util.Log
@@ -30,6 +33,17 @@ class AlarmActivity : AppCompatActivity() {
         }
     }
 
+    private val localBroadcastManager by lazy { LocalBroadcastManager.getInstance(this) }
+
+    private val alarmCustomBroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(contxt: Context?, intent: Intent?) {
+            Log.d("AlarmActivity", "onReceive : ${intent}")
+            intent?.action.takeIf { it == AlarmIntentBuilder.ALARM_CALLBACK_ON_RANG_CUSTOM_OK_ACTION }?.let {
+                ringtone.stop()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("AlarmActivity", "onCreate at : " + SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date()))
 
@@ -37,6 +51,8 @@ class AlarmActivity : AppCompatActivity() {
 
         wakeLock.acquire(60000L)
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+
+        localBroadcastManager.registerReceiver(alarmCustomBroadcastReceiver, IntentFilter(AlarmIntentBuilder.ALARM_CALLBACK_ON_RANG_CUSTOM_OK_ACTION))
 
         /*
         // fill status bar with a theme dark color on post-Lollipop devices
@@ -51,6 +67,9 @@ class AlarmActivity : AppCompatActivity() {
         setContentView(R.layout.activity_alarm)
 
         main_expected_hour_textview.text = "Expected: ${SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date(intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L)))}"
+
+        sendBroadcast(AlarmIntentBuilder.buildCallbackOnRangAction(applicationContext, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY)))
+
     }
 
     override fun onResume() {
@@ -84,6 +103,7 @@ class AlarmActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        localBroadcastManager.unregisterReceiver(alarmCustomBroadcastReceiver)
         if (wakeLock.isHeld) {
             wakeLock.release()
         }

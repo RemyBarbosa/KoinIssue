@@ -59,9 +59,6 @@ class AlarmService : Service() {
             putExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L))
             putExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
         })
-
-        sendBroadcast(AlarmIntentBuilder.buildCallbackOnRangAction(applicationContext, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY)))
-
         return Service.START_STICKY
     }
 
