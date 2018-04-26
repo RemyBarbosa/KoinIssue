@@ -49,11 +49,16 @@ class MainActivity : AppCompatActivity() {
             val input = Calendar.getInstance()
             TimePickerDialog(this,
                     TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
-                        programAlarmAtTime(Calendar.getInstance().apply {
-                                    set(Calendar.HOUR_OF_DAY, hourOfDay)
-                                    set(Calendar.MINUTE, minute)
-                                    set(Calendar.SECOND, 0)
-                                }.timeInMillis)
+
+                        Calendar.getInstance().apply {
+                            set(Calendar.HOUR_OF_DAY, hourOfDay)
+                            set(Calendar.MINUTE, minute)
+                            set(Calendar.SECOND, 0)
+                            if (timeInMillis < System.currentTimeMillis()) {
+                                add(Calendar.DAY_OF_YEAR, 1)
+                            }
+                        }.let { programAlarmAtTime(it.timeInMillis) }
+
                     },
                     input.get(Calendar.HOUR_OF_DAY), input.get(Calendar.MINUTE), false
             ).show()
