@@ -14,6 +14,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import android.view.WindowManager
 import fr.radiofrance.alarm.R
+import fr.radiofrance.alarm.RfAlarmManager
 import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 import fr.radiofrance.alarm.service.AlarmService
 import kotlinx.android.synthetic.main.activity_alarm.*
@@ -22,6 +23,8 @@ import java.util.*
 
 
 class AlarmActivity : AppCompatActivity() {
+
+    private val rfAlarmManager by lazy { RfAlarmManager(applicationContext) }
 
     private val ringtone by lazy { RingtoneManager.getRingtone(applicationContext, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
 
@@ -37,9 +40,10 @@ class AlarmActivity : AppCompatActivity() {
 
     private val alarmCustomBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(contxt: Context?, intent: Intent?) {
-            Log.d("AlarmActivity", "onReceive : ${intent}")
             intent?.action.takeIf { it == AlarmIntentBuilder.ALARM_CALLBACK_ON_RANG_CUSTOM_OK_ACTION }?.let {
                 ringtone.stop()
+                intent ?: return
+                rfAlarmManager.onAlarmRangCustomOk(intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
             }
         }
     }
@@ -68,8 +72,21 @@ class AlarmActivity : AppCompatActivity() {
 
         main_expected_hour_textview.text = "Expected: ${SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date(intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L)))}"
 
-        sendBroadcast(AlarmIntentBuilder.buildCallbackOnRangAction(applicationContext, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY)))
-
+        intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY).let { data ->
+            rfAlarmManager.onAlarmRang(data)
+            main_stop_button.setOnClickListener {
+                rfAlarmManager.onAlarmStopped(data)
+                closeScreen()
+            }
+            main_snooze_button.setOnClickListener {
+                rfAlarmManager.onAlarmSnoozed(data)
+                closeScreen()
+            }
+            main_continue_button.setOnClickListener {
+                rfAlarmManager.onAlarmContinued(data)
+                closeScreen()
+            }
+        }
     }
 
     override fun onResume() {
@@ -92,12 +109,12 @@ class AlarmActivity : AppCompatActivity() {
     }
 
     override fun onUserLeaveHint() {
-        stopAlarm()
+        closeScreen()
         super.onUserLeaveHint()
     }
 
     override fun onBackPressed() {
-        stopAlarm()
+        closeScreen()
         super.onBackPressed()
     }
 
@@ -109,7 +126,7 @@ class AlarmActivity : AppCompatActivity() {
         }
     }
 
-    private fun stopAlarm() {
+    private fun closeScreen() {
         applicationContext.stopService(Intent(applicationContext, AlarmService::class.java))
         finish()
     }

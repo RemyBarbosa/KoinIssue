@@ -36,6 +36,7 @@ class AlarmClockReceiver : BroadcastReceiver() {
 
         Intent(context, AlarmService::class.java)
                 .apply {
+                    action = AlarmIntentBuilder.ALARM_SERVICE_START_ACTION
                     putExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L))
                     putExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
                 }

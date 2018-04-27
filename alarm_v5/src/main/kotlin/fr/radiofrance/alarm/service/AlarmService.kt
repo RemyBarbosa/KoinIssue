@@ -51,19 +51,27 @@ class AlarmService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        startActivity(Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName(applicationContext, AlarmActivity::class.java)
-            setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-            putExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L))
-            putExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
-        })
+        when (intent.action) {
+            AlarmIntentBuilder.ALARM_SERVICE_START_ACTION -> lauchActivity(intent)
+            AlarmIntentBuilder.ALARM_SERVICE_STOP_FOREGROUND_ACTION -> stopForeground(true)
+        }
+
         return Service.START_STICKY
     }
 
     override fun onBind(intent: Intent): IBinder? {
         return null
+    }
+
+    private fun lauchActivity(intent: Intent) {
+        startActivity(Intent(Intent.ACTION_MAIN).apply {
+            component = ComponentName(applicationContext, AlarmActivity::class.java)
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            putExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L))
+            putExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
+        })
     }
 
 }

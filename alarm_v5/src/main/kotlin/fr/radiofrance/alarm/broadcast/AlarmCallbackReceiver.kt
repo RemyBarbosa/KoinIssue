@@ -5,14 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.content.LocalBroadcastManager
-import android.util.Log
 
 
 abstract class AlarmCallbackReceiver : BroadcastReceiver() {
 
     class OnRangCustomCallback(val context: Context, val data: Bundle) {
         fun onRangCustomSucceed() {
-            Log.d("AlarmCallbackReceiver", "onRangCustomSucceed : ${data}")
             LocalBroadcastManager.getInstance(context)
                     .sendBroadcast(AlarmIntentBuilder.buildCallbackOnRangCustomOkAction(context, data))
         }
@@ -21,15 +19,16 @@ abstract class AlarmCallbackReceiver : BroadcastReceiver() {
     final override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
         intent ?: return
-        Log.d("AlarmCallbackReceiver", "onReceive : ${intent.action}")
         intent.action?.let {
             when (it) {
                 AlarmIntentBuilder.ALARM_CALLBACK_ON_RANG_ACTION -> return onRang(context, OnRangCustomCallback(context, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY)))
+                AlarmIntentBuilder.ALARM_CALLBACK_ON_STOP_ACTION -> return onStop(context)
                 else -> return
             }
         }
     }
 
     open fun onRang(context: Context, callback: OnRangCustomCallback) {}
+    open fun onStop(context: Context) {}
 
 }

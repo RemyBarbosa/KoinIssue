@@ -24,6 +24,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="fr.radiofrance.alarm.ALARM_CALLBACK_ON_RANG_ACTION"/>
+                <action android:name="fr.radiofrance.alarm.ALARM_CALLBACK_ON_STOP_ACTION"/>
             </intent-filter>
         </receiver>
     </application>

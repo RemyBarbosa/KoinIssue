@@ -8,12 +8,13 @@ import fr.radiofrance.alarm.broadcast.AlarmCallbackReceiver
 class AppAlarmCallbackReceiver : AlarmCallbackReceiver() {
 
     override fun onRang(context: Context, callback: OnRangCustomCallback) {
-
         val player = DemoPlayer.getInstance(context)
-
         player.play("http://direct.fipradio.fr/live/fip-lofi.mp3")
-
         CheckPlayerHandler(player, callback).check()
+    }
+
+    override fun onStop(context: Context) {
+        DemoPlayer.getInstance(context).stop()
     }
 
     private class CheckPlayerHandler(private val player: DemoPlayer, private val callback: OnRangCustomCallback) : Handler() {
