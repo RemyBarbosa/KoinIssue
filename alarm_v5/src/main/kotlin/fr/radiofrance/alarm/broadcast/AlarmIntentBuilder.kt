@@ -16,10 +16,6 @@ object AlarmIntentBuilder {
     internal const val ALARM_CLOCK_ACTION = "fr.radiofrance.alarm.ALARM_CLOCK_ACTION"
     internal const val ALARM_CLOCK_INFO_SHOW_ACTION = "fr.radiofrance.alarm.ALARM_CLOCK_INFO_SHOW_ACTION"
 
-    internal const val ALARM_SERVICE_START_ACTION = "fr.radiofrance.alarm.ALARM_SERVICE_START_ACTION"
-    internal const val ALARM_SERVICE_STOP_FOREGROUND_ACTION = "fr.radiofrance.alarm.ALARM_SERVICE_STOP_FOREGROUND_ACTION"
-
-
     fun buildClockAction(context: Context, timeInMillis: Long, data: Bundle) = buildIntent(
             context = context,
             action = ALARM_CLOCK_ACTION,

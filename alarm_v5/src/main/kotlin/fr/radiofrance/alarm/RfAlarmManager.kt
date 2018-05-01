@@ -1,11 +1,9 @@
 package fr.radiofrance.alarm
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 import fr.radiofrance.alarm.schedule.AlarmScheduler
-import fr.radiofrance.alarm.service.AlarmService
 
 class RfAlarmManager(val context: Context) {
 
@@ -33,10 +31,6 @@ class RfAlarmManager(val context: Context) {
      * Call when custom alarm from app has started to play
      */
     internal fun onAlarmRangCustomOk(data: Bundle) {
-        // When custom alarm from app is ok, we can safely stop foreground service to remove notification
-        context.startService(Intent(context, AlarmService::class.java).apply {
-            action = AlarmIntentBuilder.ALARM_SERVICE_STOP_FOREGROUND_ACTION
-        })
 
         // TODO tracking
     }
