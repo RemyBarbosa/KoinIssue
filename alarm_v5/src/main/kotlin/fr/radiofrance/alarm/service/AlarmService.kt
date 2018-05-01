@@ -6,7 +6,10 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.IBinder
@@ -14,7 +17,6 @@ import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import fr.radiofrance.alarm.R
 import fr.radiofrance.alarm.RfAlarmManager
-import fr.radiofrance.alarm.activity.AlarmActivity
 import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 
 
@@ -97,8 +99,10 @@ class AlarmService : Service() {
 
     private fun onStartAction(intent: Intent) {
         ringtone.play()
-        launchActivity(intent)
-        rfAlarmManager.onAlarmRang(intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
+        rfAlarmManager.onAlarmRang(
+                intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L),
+                intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY)
+        )
     }
 
     private fun onUserContinueAction(intent: Intent) {
@@ -114,17 +118,6 @@ class AlarmService : Service() {
     private fun onUserStopAction(intent: Intent) {
         rfAlarmManager.onAlarmStopped(intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
         stopSelf()
-    }
-
-    private fun launchActivity(intent: Intent) {
-        startActivity(Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName(applicationContext, AlarmActivity::class.java)
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-            putExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, intent.getLongExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, 0L))
-            putExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY, intent.getBundleExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY))
-        })
     }
 
 }

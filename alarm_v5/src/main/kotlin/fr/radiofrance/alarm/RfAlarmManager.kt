@@ -1,7 +1,10 @@
 package fr.radiofrance.alarm
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import fr.radiofrance.alarm.activity.AlarmActivity
 import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 import fr.radiofrance.alarm.schedule.AlarmScheduler
 
@@ -18,7 +21,10 @@ class RfAlarmManager(val context: Context) {
     /**
      * Call when alarm activity is displaid
      */
-    internal fun onAlarmRang(data: Bundle) {
+    internal fun onAlarmRang(atTimeMillis: Long, data: Bundle) {
+        // Launch alarm activity
+        launchActivity(atTimeMillis, data)
+
         // Send broadcast for app receiver playing radio
         context.sendBroadcast(AlarmIntentBuilder.buildCallbackOnRangAction(context, data))
 
@@ -64,5 +70,16 @@ class RfAlarmManager(val context: Context) {
 
         // TODO tracking
 
+    }
+
+    private fun launchActivity(atTimeMillis: Long, data: Bundle) {
+        context.startActivity(Intent(Intent.ACTION_MAIN).apply {
+            component = ComponentName(context, AlarmActivity::class.java)
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            putExtra(AlarmIntentBuilder.ALARM_EXTRA_AT_TIME_KEY, atTimeMillis)
+            putExtra(AlarmIntentBuilder.ALARM_EXTRA_DATA_KEY, data)
+        })
     }
 }
