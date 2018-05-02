@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import fr.radiofrance.alarm.activity.AlarmActivity
+import fr.radiofrance.alarm.activity.AlarmTestActivity
 import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 import fr.radiofrance.alarm.schedule.AlarmScheduler
 
@@ -74,7 +75,7 @@ class RfAlarmManager(val context: Context) {
 
     private fun launchActivity(atTimeMillis: Long, data: Bundle) {
         context.startActivity(Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName(context, AlarmActivity::class.java)
+            component = ComponentName(context, AlarmTestActivity::class.java)
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS

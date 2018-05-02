@@ -12,6 +12,10 @@
             android:name=".activity.AlarmActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AlarmTheme"/>
+        <activity
+            android:name=".activity.AlarmTestActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AlarmTheme"/>
 
         <receiver
             android:name=".broadcast.AlarmClockReceiver"
