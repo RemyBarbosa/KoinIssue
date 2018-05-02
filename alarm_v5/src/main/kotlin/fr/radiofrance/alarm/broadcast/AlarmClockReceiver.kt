@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
+import android.text.format.DateUtils
 import android.util.Log
 import fr.radiofrance.alarm.service.AlarmService
 import java.text.SimpleDateFormat
@@ -12,6 +13,10 @@ import java.util.*
 
 
 class AlarmClockReceiver : BroadcastReceiver() {
+
+    companion object {
+        private const val WAKE_LOCK_TIMEOUT_MILLIS = 5 * DateUtils.SECOND_IN_MILLIS
+    }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.d("AlarmBroadcastReceiver", "onReceive at : " + SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(Date()))
@@ -32,7 +37,7 @@ class AlarmClockReceiver : BroadcastReceiver() {
             newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK
                     or PowerManager.ACQUIRE_CAUSES_WAKEUP
                     or PowerManager.ON_AFTER_RELEASE, "AlarmBroadcastReceiver")
-        }.acquire(5000L)
+        }.acquire(WAKE_LOCK_TIMEOUT_MILLIS)
 
         Intent(context, AlarmService::class.java)
                 .apply {

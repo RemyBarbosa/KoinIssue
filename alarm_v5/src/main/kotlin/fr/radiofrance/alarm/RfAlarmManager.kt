@@ -4,7 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import fr.radiofrance.alarm.activity.AlarmActivity
 import fr.radiofrance.alarm.activity.AlarmTestActivity
 import fr.radiofrance.alarm.broadcast.AlarmIntentBuilder
 import fr.radiofrance.alarm.schedule.AlarmScheduler

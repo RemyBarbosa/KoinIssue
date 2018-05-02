@@ -19,6 +19,10 @@ import java.util.*
 
 class AlarmActivity : AppCompatActivity() {
 
+    companion object {
+        private const val WAKE_LOCK_TIMEOUT_MILLIS = DateUtils.MINUTE_IN_MILLIS
+    }
+
     private val wakeLock by lazy {
         with(getSystemService(Context.POWER_SERVICE) as PowerManager) {
             newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK
@@ -32,7 +36,7 @@ class AlarmActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        wakeLock.acquire(60000L)
+        wakeLock.acquire(WAKE_LOCK_TIMEOUT_MILLIS)
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
 
         /*
