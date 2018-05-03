@@ -1,24 +1,19 @@
-buildscript {
+apply from: "versions.gradle"
 
-    ext.kotlinVersion = '1.2.30'
-    ext.supportLibraryVersion = '27.1.1'
+buildscript {
+    apply from: "versions.gradle"
 
     repositories {
         jcenter()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.1'
+        classpath "com.android.tools.build:gradle:$androidGradlePlugin"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
 }
 
 allprojects {
-
-    ext.configCompileSdkVersion = 27
-    ext.configMinSdkVersion = 17
-    ext.configTargetSdkVersion = 27
-
     repositories {
         jcenter()
         google()
