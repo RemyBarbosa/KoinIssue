@@ -6,27 +6,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
 
-    <application>
-
-        <activity
-            android:name=".activity.AlarmActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AlarmTheme"/>
-        <activity
-            android:name=".activity.AlarmTestActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AlarmTheme"/>
-
-        <receiver
-            android:name=".broadcast.AlarmClockReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="fr.radiofrance.alarm.ALARM_CLOCK_ACTION"/>
-            </intent-filter>
-        </receiver>
-
-        <service android:name=".service.AlarmService"/>
+    <application
+        android:name=".Application">
 
     </application>
 

@@ -14,5 +14,4 @@ val roomTestModule = applicationContext {
                 .build()
     }
 
-    bean { get<AlarmDatabase>().alarmDAO() }
 }

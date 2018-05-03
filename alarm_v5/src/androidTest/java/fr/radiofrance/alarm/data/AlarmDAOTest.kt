@@ -13,6 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.android.ext.koin.with
 import org.koin.standalone.StandAloneContext.closeKoin
+import org.koin.standalone.StandAloneContext.loadKoinModules
 import org.koin.standalone.StandAloneContext.startKoin
 import org.koin.standalone.inject
 import org.koin.test.KoinTest
@@ -32,7 +33,7 @@ class AlarmDAOTest : KoinTest {
 
     @Before
     fun before() {
-        startKoin(listOf(roomTestModule)) with Mockito.mock(Application::class.java)
+        loadKoinModules(roomTestModule)
     }
 
     @After
